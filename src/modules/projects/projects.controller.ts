@@ -28,7 +28,6 @@ export class ProjectsController {
     @UseGuards(AuthGuard)
     @Get("/:id")
     async getProject(@Param('id') id: string, @Req() req): Promise<ProjectDTO> {
-        // TODO: Get the userId from the request
         const userId = req.user.sub;
         return await this.projectsService.getProject(id, userId);
     }

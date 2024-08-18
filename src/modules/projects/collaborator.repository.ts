@@ -5,6 +5,7 @@ import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class CollaboratorRepository  {
+
     constructor(
         @InjectModel(Collaborator.name) private collaboratorModel: Model<Collaborator>
     ) {}
@@ -15,5 +16,9 @@ export class CollaboratorRepository  {
 
     async find(options: any): Promise<Collaborator[]> {
         return this.collaboratorModel.find(options).exec();
+    }
+
+    async findOne(options: any): Promise<Collaborator> {
+        return this.collaboratorModel.findOne(options).exec();
     }
 }

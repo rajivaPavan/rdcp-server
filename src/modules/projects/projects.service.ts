@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ProjectRepository } from './projects.repository';
 import { Project, ProjectRoleEnum } from './projects.schema';
 import { Types } from 'mongoose';
@@ -8,23 +8,33 @@ import { CollaboratorRepository } from './collaborator.repository';
 @Injectable()
 export class ProjectsService {
 
-
     constructor(private readonly projectRepository: ProjectRepository,
         private readonly collaboratorRepository: CollaboratorRepository
     ) { }
 
     async getProject(projectId: string, userId:string): Promise<ProjectDTO> {
+
         const project = await this.projectRepository.findById(projectId);
         console.log(project)
         if (!project) {
             throw new NotFoundException('Project not found');
         }
 
+        // Check if the user is a collaborator
+        const collaborator = await this.collaboratorRepository.findOne({ project: project._id, user: new Types.ObjectId(userId) });
+
+        if (!collaborator) {
+            throw new UnauthorizedException('User is not a collaborator');
+        }
+
+        // Get the roles of the user
+        const roles = collaborator.roles;
+
         return {
             id: project._id.toString(),
             name: project.name,
             description: project.description,
-            roles: [],
+            roles,
         };
     }
 
