@@ -13,37 +13,19 @@ interface IProjectsService {
 
 @Injectable()
 export class ProjectsService implements IProjectsService {
-    async addCollaborators(collaboratorsDTO: UpdateCollaboratorsDTO) {
-        // get the project
-        const projects = await this.projectRepository.findById(collaboratorsDTO.projectId);
 
-        if (!projects) {
-            throw new NotFoundException('Project not found');
-        }
-
-        // update the collaborators
-        projects.collaborators = collaboratorsDTO.collaborators.map(collaborator => {
-            return {
-                userId: new Types.ObjectId(collaborator.userId),
-                roles: collaborator.roles,
-            }
-        });
-
-        // save the project
-        return await this.projectRepository.update(collaboratorsDTO.projectId, projects);
-    }
 
     constructor(private readonly projectRepository: ProjectRepository) { }
 
     async getProject(projectId: string, userId:string): Promise<ProjectDTO> {
         const project = await this.projectRepository.findById(projectId);
-
+        console.log(project)
         if (!project) {
             throw new NotFoundException('Project not found');
         }
 
         const roles = project.collaborators
-            .find(collaborator => collaborator.userId.equals(new Types.ObjectId(userId)))
+            .find(collaborator => collaborator.userId.toString() == userId)
             .roles;
 
         return {
@@ -57,6 +39,7 @@ export class ProjectsService implements IProjectsService {
     async create(projectDTO: ProjectDTO, userId: string): Promise<any> {
 
         const project = new Project(projectDTO);
+        project._id = new Types.ObjectId();
 
         // Create the owner collaborator
         const owner: Collaborator = {
@@ -92,6 +75,26 @@ export class ProjectsService implements IProjectsService {
                 roles: collaborator ? collaborator.roles : [],
             };
         });
+    }
+
+    async addCollaborators(collaboratorsDTO: UpdateCollaboratorsDTO) {
+        // get the project
+        const projects = await this.projectRepository.findById(collaboratorsDTO.projectId);
+
+        if (!projects) {
+            throw new NotFoundException('Project not found');
+        }
+
+        // update the collaborators
+        projects.collaborators = collaboratorsDTO.collaborators.map(collaborator => {
+            return {
+                userId: new Types.ObjectId(collaborator.userId),
+                roles: collaborator.roles,
+            }
+        });
+
+        // save the project
+        return await this.projectRepository.update(collaboratorsDTO.projectId, projects);
     }
 
     async getCollaborators(projectId: string): Promise<any> {

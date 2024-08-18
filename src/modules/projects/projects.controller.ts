@@ -1,12 +1,14 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CollaboratorDTO, CreateDTO, ProjectDTO, UpdateCollaboratorsDTO } from './projects.dtos';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('projects')
 export class ProjectsController {
     constructor(private readonly projectsService: ProjectsService) {}
 
     // This endpoint will create a new project
+    @UseGuards(AuthGuard)
     @Post()
     async createProject(@Body() createDTO: CreateDTO): Promise<ProjectDTO> {
         const { project, userId } = createDTO;
@@ -20,10 +22,11 @@ export class ProjectsController {
     }
 
     // This endpoint will return a specific project
+    @UseGuards(AuthGuard)
     @Get("/:id")
-    async getProject(@Param('id') id: string): Promise<ProjectDTO> {
+    async getProject(@Param('id') id: string, @Req() req): Promise<ProjectDTO> {
         // TODO: Get the userId from the request
-        const userId = "userId";
+        const userId = req.user.sub;
         return await this.projectsService.getProject(id, userId);
     }
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Collaborator, Project } from './projects.schema';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class ProjectRepository {
   }
 
   async findById(id: string): Promise<Project> {
-    return this.projectModel.findById(id).exec();
+    return this.projectModel.findById(new Types.ObjectId(id)).exec();
   }
 
   async update(id: string, project: Project): Promise<Project> {
