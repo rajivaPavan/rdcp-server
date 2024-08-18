@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { User } from './user.schema';
 import { AddUserDTO, ResetPasswordDto } from './user.dto';
@@ -28,7 +28,12 @@ export class UserService {
     // add user to database
     const user = new User(dto);
 
-    await this.userRepository.create(user);
+    try{
+      await this.userRepository.create(user);
+    }
+    catch(err){
+      throw new ConflictException("User with email already exists");
+    }
 
     // send email to user
     this.emailService.sendEmail(user.email, 'Welcome', 'Welcome to our platform, you can now register');
@@ -68,5 +73,11 @@ export class UserService {
 
   async verifyOTP(email: string,otp: string) {
     return await this.otpService.verifyOTP(email, otp);
+  }
+}
+
+class UserExistsException extends Error {
+  constructor() {
+    super('User with email already exists');
   }
 }

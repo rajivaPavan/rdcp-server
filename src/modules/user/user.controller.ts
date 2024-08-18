@@ -5,7 +5,7 @@ import { AddUserDTO, ResetPasswordDto } from './user.dto';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Get()
   async getAllUsers(): Promise<User[]> {
@@ -13,18 +13,26 @@ export class UserController {
   }
 
   // TODO: Add Admin Guard
+  // Endpoint used by the admin to add a new user
   @Post()
   async addUser(@Body() dto: AddUserDTO) {
-    await this.userService.addUser(dto);
+      await this.userService.addUser(dto);
+  }
+
+  // TODO: Add Admin Guard and Implement
+  // Endpoint used by the user to admin to bulk add users
+  @Post('bulk')
+  async bulkAddUsers(@Body() users: AddUserDTO[]) {
+    throw new Error('Not implemented');
   }
 
   @Post('forgot-password')
   async forgotPassword(@Body() { email }: { email: string }) {
-      return await this.userService.forgotPassword(email);
+    return await this.userService.forgotPassword(email);
   }
 
   @Post('reset-password')
-  async resetPassword(@Body() resetPassword: ResetPasswordDto){
-      return await this.userService.resetPassword(resetPassword);
+  async resetPassword(@Body() resetPassword: ResetPasswordDto) {
+    return await this.userService.resetPassword(resetPassword);
   }
 }
