@@ -7,12 +7,15 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { EmailModule } from 'src/utitlies/email/email.module';
 import { OtpService } from 'src/utitlies/otp/otp.service';
 import { OTPModule } from 'src/utitlies/otp/otp.module';
+import { CryptService } from 'src/utitlies/crypt/crypt.service';
+import { CryptModule } from 'src/utitlies/crypt/crypt.module';
 
 @Module({
     imports:[
         MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
         EmailModule,
-        OTPModule
+        OTPModule,
+        CryptModule
     ],
     controllers: [UserController],
     providers: [UserService, UserRepository],

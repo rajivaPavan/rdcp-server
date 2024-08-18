@@ -4,6 +4,7 @@ import { User } from './user.schema';
 import { AddUserDTO } from './user.dto';
 import { EmailService } from '../../utitlies/email/email.service';
 import { OtpService } from 'src/utitlies/otp/otp.service';
+import { CryptService } from 'src/utitlies/crypt/crypt.service';
 
 
 @Injectable()
@@ -11,7 +12,8 @@ export class UserService {
 
   constructor(private readonly userRepository: UserRepository,
     private readonly emailService: EmailService,
-    private readonly otpService: OtpService
+    private readonly otpService: OtpService,
+    private readonly cryptService: CryptService
   ) { }
 
   async findAllUsers(): Promise<User[]> {
@@ -53,7 +55,7 @@ export class UserService {
 
     // Reset Password
     const user = await this.findUserByEmail(resetPassword.email);
-    user.password = resetPassword.password;
+    user.password = await this.cryptService.hashPassword(resetPassword.password); // TODO: Hash password
 
     await this.userRepository.update(user);
 
@@ -65,6 +67,6 @@ export class UserService {
   }
 
   async verifyOTP(email: string,otp: string) {
-    return await this.otpService.verifyOTP(email,otp);
+    return await this.otpService.verifyOTP(email, otp);
   }
 }
