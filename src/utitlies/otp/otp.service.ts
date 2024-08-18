@@ -28,10 +28,10 @@ export class OtpService {
     private async saveOTPToCache(email: string, otp: number) {
         // save otp to the cache
         const ttl = 60 * 5; // 5 minutes
-        await this.cacheManager.set(email, otp, ttl);
+        await this.cacheManager.set(email, otp.toString(), ttl);
     }
 
-    async verifyOTP(email: string, otp: number) {
+    async verifyOTP(email: string, otp: string) {
         // get otp from cache
         const cachedOTP = await this.cacheManager.get(email);
         const isOTPValid = cachedOTP === otp;

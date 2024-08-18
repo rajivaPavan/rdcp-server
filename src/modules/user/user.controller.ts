@@ -19,4 +19,13 @@ export class UserController {
     await this.userService.addUser(dto);
   }
 
+  @Post('forgot-password')
+  async forgotPassword(@Body() { email }: { email: string }) {
+      return await this.userService.forgotPassword(email);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() resetPassword: ResetPasswordDto){
+      return await this.userService.resetPassword(resetPassword);
+  }
 }

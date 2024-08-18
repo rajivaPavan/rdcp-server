@@ -30,30 +30,8 @@ export class AuthenticationService {
         };
     }
 
-    async register(email: string){
-        // check if user with email exists
-
-
-    }
-
     async logout() {
         return 'logout';
-    }
-
-    async resetPassword(email: string) {
-        // check if user with email exists
-        const user = await this.userService.findUserByEmail(email);
-
-        if (!user) {
-            throw new UnauthorizedException();
-        }
-
-        // Send OTP to user
-        this.userService.sendOTP(email);
-    }
-
-    verifyOTP(email: string, otp: string): boolean {
-        return true;
     }
 }
 

@@ -6,13 +6,16 @@ import { User } from './user.schema';
 @Injectable()
 export class UserRepository {
 
-
   constructor(@InjectModel('User') private userModel: Model<User>) {}
 
   async create(user: User): Promise<User> {
     const createdUser = new this.userModel(user);
     createdUser._id = new Types.ObjectId();
     return await createdUser.save();
+  }
+
+  async update(user: User) {
+    return this.userModel.updateOne({ _id: user._id }, user).exec();
   }
 
   async findAll(): Promise<User[]> {
