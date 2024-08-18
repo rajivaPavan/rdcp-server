@@ -4,7 +4,9 @@ import { Injectable } from '@nestjs/common';
 export class SessionStore {
     private readonly sessions: Map<string, any> = new Map();
 
-    createSession(sessionId: string, sessionData: any) {
+    createSession(sessionData: any) {
+        // create a session id - uuid
+        const sessionId = Math.random().toString(36).substring(7);
         this.sessions.set(sessionId, sessionData);
     }
 

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './user.schema';
-import { AddUserDTO } from './user.dto';
+import { AddUserDTO, ResetPasswordDto } from './user.dto';
 
 @Controller('users')
 export class UserController {
@@ -11,7 +11,6 @@ export class UserController {
   async getAllUsers(): Promise<User[]> {
     return await this.userService.findAllUsers();
   }
-  
 
   // TODO: Add Admin Guard
   @Post()

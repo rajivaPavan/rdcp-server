@@ -6,5 +6,8 @@ export interface AddUserDTO {
     role: RoleEnum;
 } 
 
-
-
+export interface ResetPasswordDto{
+    email: string;
+    otp: string;
+    password: string;
+}

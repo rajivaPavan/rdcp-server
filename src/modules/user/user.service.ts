@@ -1,7 +1,7 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { User } from './user.schema';
-import { AddUserDTO } from './user.dto';
+import { AddUserDTO, ResetPasswordDto } from './user.dto';
 import { EmailService } from '../../utitlies/email/email.service';
 import { OtpService } from 'src/utitlies/otp/otp.service';
 import { CryptService } from 'src/utitlies/crypt/crypt.service';
