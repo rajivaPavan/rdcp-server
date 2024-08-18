@@ -1,23 +1,26 @@
 import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
-import { CollaboratorDTO, CreateDTO, ProjectDTO, UpdateCollaboratorsDTO } from './projects.dtos';
+import { CollaboratorDTO, ProjectDTO, UpdateCollaboratorsDTO } from './projects.dtos';
 import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('projects')
 export class ProjectsController {
-    constructor(private readonly projectsService: ProjectsService) {}
+    constructor(private readonly projectsService: ProjectsService) { }
 
     // This endpoint will create a new project
     @UseGuards(AuthGuard)
     @Post()
-    async createProject(@Body() createDTO: CreateDTO): Promise<ProjectDTO> {
-        const { project, userId } = createDTO;
+    async createProject(@Body() project: ProjectDTO,
+        @Req() req): Promise<ProjectDTO> {
+        const userId = req.user.sub;
         return await this.projectsService.create(project, userId);
     }
 
     // This endpoint will return all projects where the user is a collaborator
-    @Get('/user/:userId')
-    async getProjects(@Param('userId') userId: string): Promise<ProjectDTO[]> {
+    @UseGuards(AuthGuard)
+    @Get()
+    async getProjects(@Req() req) : Promise<ProjectDTO[]> {
+        const userId = req.user.sub;
         return await this.projectsService.getProjectsOfUser(userId);
     }
 
@@ -39,9 +42,9 @@ export class ProjectsController {
 
     // TODO: Add Owner Policy Guard
     @Post("/collaborators")
-    async addCollaborators(@Body() collaboratorsDTO : UpdateCollaboratorsDTO ): Promise<any> {
+    async addCollaborators(@Body() collaboratorsDTO: UpdateCollaboratorsDTO): Promise<any> {
         await this.projectsService.addCollaborators(collaboratorsDTO);
-        return {message: "Collaborators added successfully", success: true};
+        return { message: "Collaborators added successfully", success: true };
     }
 
 }

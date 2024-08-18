@@ -7,11 +7,6 @@ export interface ProjectDTO{
     roles: ProjectRoleEnum[];
 }
 
-export interface CreateDTO {
-    project: ProjectDTO;
-    userId: string;
-}
-
 export interface CollaboratorDTO{
     userId: string;
     roles: ProjectRoleEnum[];

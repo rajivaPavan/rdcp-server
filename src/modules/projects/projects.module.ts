@@ -2,19 +2,22 @@ import { Module } from '@nestjs/common';
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Project, ProjectSchema } from './projects.schema';
+import { Collaborator, CollaboratorSchema, Project, ProjectSchema } from './projects.schema';
 import { ProjectRepository } from './projects.repository';
-import { JwtService } from '@nestjs/jwt';
-import { AuthModule, jwtModule } from '../auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { CollaboratorRepository } from './collaborator.repository';
+import { jwtModule } from '../auth/auth.module';
 
 @Module({
     imports: [
         ConfigModule,
-        MongooseModule.forFeature([{ name: Project.name, schema: ProjectSchema }]),
+        MongooseModule.forFeature([
+            { name: Project.name, schema: ProjectSchema },
+            { name: Collaborator.name, schema: CollaboratorSchema }
+        ]),
         jwtModule
     ],
     controllers: [ProjectsController],
-    providers: [ProjectsService, ProjectRepository]
+    providers: [ProjectsService, ProjectRepository, CollaboratorRepository]
 })
 export class ProjectsModule { }

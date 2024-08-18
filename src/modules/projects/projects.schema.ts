@@ -13,17 +13,6 @@ export enum ProjectRoleEnum {
     ANALYST_VIEW_ONLY = 'analyst_view_only',
 }
 
-@Schema()
-export class Collaborator {
-    @Prop({ type: Types.ObjectId, ref: User.name, required: true }) // Reference to the User schema
-    userId: Types.ObjectId;
-
-    @Prop({ type: [String], enum: ProjectRoleEnum, required: true })
-    roles: ProjectRoleEnum[];
-}
-
-export const CollaboratorSchema = SchemaFactory.createForClass(Collaborator);
-
 @Schema({ timestamps: true })
 export class Project {
     
@@ -39,11 +28,28 @@ export class Project {
 
     @Prop()
     description: string;
-
-    @Prop({ type: [CollaboratorSchema], default: [] })
-    collaborators: Collaborator[];
 }
 
+@Schema()
+export class Collaborator {
+
+    constructor(collaborator: Partial<Collaborator>) {
+        Object.assign(this, collaborator);
+    }
+
+    // reference to Project
+    @Prop({ type: Types.ObjectId, ref: Project.name, required: true })
+    project: Types.ObjectId;
+
+    // reference to User
+    @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+    user: Types.ObjectId;
+
+    @Prop({ type: [String], enum: ProjectRoleEnum, required: true })
+    roles: ProjectRoleEnum[];
+}
+
+export const CollaboratorSchema = SchemaFactory.createForClass(Collaborator);
 export const ProjectSchema = SchemaFactory.createForClass(Project);
 
 

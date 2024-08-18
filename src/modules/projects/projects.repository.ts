@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { Collaborator, Project } from './projects.schema';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import { Connection, Model, Types } from 'mongoose';
+import { Collaborator, Project, ProjectRoleEnum } from './projects.schema';
 
 @Injectable()
 export class ProjectRepository {
 
   constructor(@InjectModel(Project.name) private projectModel: Model<Project>) {}
 
-  async create(project: Project): Promise<Project> {
+  async create(project: Project, collaborator: Collaborator): Promise<Project> {
     return this.projectModel.create(project);
   }
 

@@ -1,21 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ProjectRepository } from './projects.repository';
-import { Collaborator, Project, ProjectRoleEnum } from './projects.schema';
+import { Project, ProjectRoleEnum } from './projects.schema';
 import { Types } from 'mongoose';
 import { ProjectDTO, UpdateCollaboratorsDTO } from './projects.dtos';
-
-interface IProjectsService {
-    getProject(projectId: string, userId:string): Promise<ProjectDTO>;
-    create(projectDTO: ProjectDTO, userId: string): Promise<any>;
-    getProjectsOfUser(userId: string): Promise<ProjectDTO[]>;
-    getCollaborators(projectId: string): Promise<any>;
-}
+import { CollaboratorRepository } from './collaborator.repository';
 
 @Injectable()
-export class ProjectsService implements IProjectsService {
+export class ProjectsService {
 
 
-    constructor(private readonly projectRepository: ProjectRepository) { }
+    constructor(private readonly projectRepository: ProjectRepository,
+        private readonly collaboratorRepository: CollaboratorRepository
+    ) { }
 
     async getProject(projectId: string, userId:string): Promise<ProjectDTO> {
         const project = await this.projectRepository.findById(projectId);
@@ -24,55 +20,58 @@ export class ProjectsService implements IProjectsService {
             throw new NotFoundException('Project not found');
         }
 
-        const roles = project.collaborators
-            .find(collaborator => collaborator.userId.toString() == userId)
-            .roles;
-
         return {
             id: project._id.toString(),
             name: project.name,
             description: project.description,
-            roles: roles,
+            roles: [],
         };
     }
 
     async create(projectDTO: ProjectDTO, userId: string): Promise<any> {
 
-        const project = new Project(projectDTO);
-        project._id = new Types.ObjectId();
+        let project = new Project({
+            ...projectDTO,
+            _id: new Types.ObjectId(),
+        });
 
-        // Create the owner collaborator
-        const owner: Collaborator = {
-            userId: new Types.ObjectId(userId),
+        const collaborator = {
+            project: project._id,
+            user: new Types.ObjectId(userId),
             roles: [ProjectRoleEnum.OWNER],
         };
 
-        // Create the project
-        project.collaborators = [owner];
-
-        return await this.projectRepository.create(project);
+        project = await this.projectRepository.create(project, collaborator);
+        await this.collaboratorRepository.create(collaborator);
+        
+        return project;
     }
 
     async getProjectsOfUser(userId: string): Promise<ProjectDTO[]> {
         const userObjectId = new Types.ObjectId(userId);
 
         // Find projects where the user is a collaborator
-        const projects = await this.projectRepository
-            .find({ 'collaborators.userId': userObjectId })
+        const collaboration = await this.collaboratorRepository
+            .find({ user: userObjectId })
 
-        // Format the results to include the roles of the user in each project
+        // Get a map from project id to roles
+        const projectRoles = collaboration.reduce((acc, curr) => {
+            acc[curr.project.toString()] = curr.roles;
+            return acc;
+        }, {});
+
+        // Get the project ids
+        const projectIds = collaboration.map(collaboration => collaboration.project);
+
+        // Find the projects
+        const projects = await this.projectRepository.find({ _id: { $in: projectIds } });
+
         return projects.map(project => {
-
-            // Find the collaborator entry for this user in the project
-            const collaborator = project.collaborators.find(
-                (collab) => collab.userId.equals(userObjectId),
-            );
-
             return {
                 id: project._id.toString(),
                 name: project.name,
                 description: project.description,
-                roles: collaborator ? collaborator.roles : [],
+                roles: projectRoles[project._id.toString()],
             };
         });
     }
@@ -85,13 +84,13 @@ export class ProjectsService implements IProjectsService {
             throw new NotFoundException('Project not found');
         }
 
-        // update the collaborators
-        projects.collaborators = collaboratorsDTO.collaborators.map(collaborator => {
-            return {
-                userId: new Types.ObjectId(collaborator.userId),
-                roles: collaborator.roles,
-            }
-        });
+        // // update the collaborators
+        // projects.collaborators = collaboratorsDTO.collaborators.map(collaborator => {
+        //     return {
+        //         userId: new Types.ObjectId(collaborator.userId),
+        //         roles: collaborator.roles,
+        //     }
+        // });
 
         // save the project
         return await this.projectRepository.update(collaboratorsDTO.projectId, projects);
@@ -106,11 +105,11 @@ export class ProjectsService implements IProjectsService {
 
         const project = projects[0];
 
-        return project.collaborators.map(collaborator => {
-            return {
-                userId: collaborator.userId.toString(),
-                roles: collaborator.roles,
-            };
-        });
+        // return project.collaborators.map(collaborator => {
+        //     return {
+        //         userId: collaborator.userId.toString(),
+        //         roles: collaborator.roles,
+        //     };
+        // });
     }
 }
