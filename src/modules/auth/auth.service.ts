@@ -14,19 +14,30 @@ export class AuthenticationService {
     ) { }
 
     async login(email: string, password: string) {
+        
         const user = await this.userService.findUserByEmail(email);
-
         // Check if user exists and password is correct
-        if (!user || await this.cryptService.comparePassword(password, user.password)) {
+        if (!user) {
+            throw new UnauthorizedException();
+        }
+
+        if (!await this.cryptService.comparePassword(password, user.password)) {
             throw new UnauthorizedException();
         }
 
         // Generate JWT token
-        const payload = { email: user.email, name: user.name };
-        const access_token = this.jwtService.sign(payload);
+        const payload = {
+            email: user.email,
+            sub: user._id,
+            role: user.role
+        };
+
+        const access_token = this.jwtService.sign(payload, { expiresIn: '1h' });
 
         return {
-            access_token
+            email: user.email,
+            role: user.role,
+            jwt: access_token
         };
     }
 
