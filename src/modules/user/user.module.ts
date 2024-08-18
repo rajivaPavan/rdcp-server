@@ -4,18 +4,15 @@ import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { UserSchema } from './user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { EmailService } from '../../utitlies/email/email.service';
-import { OtpService } from 'src/utitlies/otp/otp.service';
-import { CacheModule } from '@nestjs/cache-manager';
-import { OTPModule } from 'src/utitlies/otp/otp.module';
+import { EmailModule } from 'src/utitlies/email/email.module';
 
 @Module({
     imports:[
         MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
-        OTPModule,
+        EmailModule
     ],
     controllers: [UserController],
-    providers: [UserService, UserRepository, EmailService, OtpService],
+    providers: [UserService, UserRepository],
     exports: [UserService],
 })
 export class UserModule {}
