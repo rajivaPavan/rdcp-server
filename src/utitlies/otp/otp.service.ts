@@ -7,8 +7,9 @@ import { EmailService } from 'src/utitlies/email/email.service';
 export class OtpService {
 
     constructor(
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private readonly emailService: EmailService,
-        @Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+        ) {}
 
     async sendOTP(email: string) {
 

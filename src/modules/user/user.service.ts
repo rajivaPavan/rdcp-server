@@ -11,6 +11,7 @@ export class UserService {
 
   constructor(private readonly userRepository: UserRepository,
     private readonly emailService: EmailService,
+    private readonly otpService: OtpService
   ) {}
 
   async findAllUsers(): Promise<User[]> {
@@ -32,6 +33,6 @@ export class UserService {
   }
 
   async sendOTP(email: string) {
-    // await this.otpService.sendOTP(email);
+    await this.otpService.sendOTP(email);
   }
 }

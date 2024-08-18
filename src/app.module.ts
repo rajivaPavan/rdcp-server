@@ -23,13 +23,13 @@ const uri = process.env.MONGODB_URI;
         dbName: 'rdcp_db'
       })
     }),
-    CacheModule.register<RedisClientOptions>({
-      global: true,
+    CacheModule.register({
+      isGlobal: true,
       store: redisStore,
-      // Store-specific configuration:
       host: 'localhost',
       port: 6379,
     }),
+    OTPModule,
     UserModule,
     AuthModule,
     ProjectsModule
