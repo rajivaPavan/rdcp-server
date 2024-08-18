@@ -16,6 +16,10 @@ export class ProjectRepository {
     return this.projectModel.find(options).exec();
   }
 
+  async findById(id: string): Promise<Project> {
+    return this.projectModel.findById(id).exec();
+  }
+
   async update(id: string, project: Project): Promise<Project> {
     return this.projectModel.findByIdAndUpdate
     (id, project, { new: true }).exec();

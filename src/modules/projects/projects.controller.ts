@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
-import { CreateDTO, ProjectDTO } from './projects.dtos';
+import { CollaboratorDTO, CreateDTO, ProjectDTO, UpdateCollaboratorsDTO } from './projects.dtos';
 
 @Controller('projects')
 export class ProjectsController {
@@ -22,7 +22,23 @@ export class ProjectsController {
     // This endpoint will return a specific project
     @Get("/:id")
     async getProject(@Param('id') id: string): Promise<ProjectDTO> {
-        return await this.projectsService.getProject(id);
+        // TODO: Get the userId from the request
+        const userId = "userId";
+        return await this.projectsService.getProject(id, userId);
+    }
+
+    // TODO: Add Owner Policy Guard
+    // This endpoint will return all collaborators of a project
+    @Get("/collaborators/:projectId")
+    async getCollaborators(@Param('projectId') projectId: string): Promise<CollaboratorDTO[]> {
+        return await this.projectsService.getCollaborators(projectId);
+    }
+
+    // TODO: Add Owner Policy Guard
+    @Post("/collaborators")
+    async addCollaborators(@Body() collaboratorsDTO : UpdateCollaboratorsDTO ): Promise<any> {
+        await this.projectsService.addCollaborators(collaboratorsDTO);
+        return {message: "Collaborators added successfully", success: true};
     }
 
 }
