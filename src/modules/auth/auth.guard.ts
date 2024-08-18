@@ -27,9 +27,9 @@ export class AuthGuard implements CanActivate {
           secret: this.config.get<string>('JWT_SECRET')
         }
       );
-      // 💡 We're assigning the payload to the request object here
-      // so that we can access it in our route handlers
-      request['user'] = payload;
+      // Assigning the payload to the request object here so that 
+      // it can be accessed in the route handlers
+      request.user = payload;
     } catch {
       throw new UnauthorizedException();
     }
