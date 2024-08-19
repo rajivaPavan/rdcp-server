@@ -3,3 +3,8 @@ interface LoginDto{
     password: string;
 }
 
+interface LoginResponseDto{
+    email: string;
+    role: string;
+    jwt: string;
+}
