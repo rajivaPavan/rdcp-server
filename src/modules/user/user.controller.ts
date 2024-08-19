@@ -25,14 +25,4 @@ export class UserController {
   async bulkAddUsers(@Body() users: AddUserDTO[]) {
     throw new Error('Not implemented');
   }
-
-  @Post('forgot-password')
-  async forgotPassword(@Body() { email }: { email: string }) {
-    return await this.userService.forgotPassword(email);
-  }
-
-  @Post('reset-password')
-  async resetPassword(@Body() resetPassword: ResetPasswordDto) {
-    return await this.userService.resetPassword(resetPassword);
-  }
 }
