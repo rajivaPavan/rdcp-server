@@ -9,6 +9,7 @@ import type { RedisClientOptions } from 'redis';
 import { OtpService } from './utitlies/otp/otp.service';
 import * as redisStore from 'cache-manager-redis-store';
 import { OTPModule } from './utitlies/otp/otp.module';
+import { FormsModule } from './modules/forms/forms.module';
 
 // read the URI from the environment variable
 const uri = process.env.MONGODB_URI;
@@ -32,7 +33,8 @@ const uri = process.env.MONGODB_URI;
     OTPModule,
     UserModule,
     AuthModule,
-    ProjectsModule
+    ProjectsModule,
+    FormsModule
   ]
 })
 export class AppModule { }

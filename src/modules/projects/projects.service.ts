@@ -8,7 +8,8 @@ import { CollaboratorRepository } from './collaborator.repository';
 @Injectable()
 export class ProjectsService {
 
-    constructor(private readonly projectRepository: ProjectRepository,
+    constructor(
+        private readonly projectRepository: ProjectRepository,
         private readonly collaboratorRepository: CollaboratorRepository
     ) { }
 
@@ -87,6 +88,7 @@ export class ProjectsService {
         });
     }
 
+    // TODO: 
     async addCollaborators(collaboratorsDTO: AddCollaboratorsDTO, userId: string): Promise<any> {
         // get the project
         const project = await this.projectRepository.findById(collaboratorsDTO.projectId);
@@ -113,6 +115,7 @@ export class ProjectsService {
         await this.collaboratorRepository.createMany(newCollaborators);
     }
 
+    // TODO:
     async getCollaborators(projectId: string, userId: string): Promise<any> {
         const projects = await this.projectRepository.find({ _id: new Types.ObjectId(projectId) });
 
