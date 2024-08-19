@@ -12,7 +12,7 @@ import { Request } from 'express';
 export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService,
     private config: ConfigService
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -27,9 +27,19 @@ export class AuthGuard implements CanActivate {
           secret: this.config.get<string>('JWT_SECRET')
         }
       );
-      // Assigning the payload to the request object here so that 
-      // it can be accessed in the route handlers
-      request.user = payload;
+
+      // TODO: Payload should be sessionId 
+      // and user data should be fetched from the session store 
+      // and then attached to the request object
+      request.user = {
+        id: payload.sub,
+        email: payload.email,
+        role: payload.role,
+      };
+
+      // Assigning the sessionId to the request object
+      request.sessionId = payload.sessionId;
+
     } catch {
       throw new UnauthorizedException();
     }

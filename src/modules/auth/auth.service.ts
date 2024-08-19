@@ -14,7 +14,7 @@ export class AuthenticationService {
     ) { }
 
     async login(email: string, password: string) {
-        
+
         const user = await this.userService.findUserByEmail(email);
         // Check if user exists and password is correct
         if (!user) {
@@ -26,6 +26,7 @@ export class AuthenticationService {
         }
 
         // Generate JWT token
+        // TODO: Payload should be sessionId and user data should be fetched from the session store
         const payload = {
             email: user.email,
             sub: user._id,
@@ -41,8 +42,8 @@ export class AuthenticationService {
         };
     }
 
-    async logout() {
-        return 'logout';
+    async logout(sessionId: string, userId: string) {
+        // Implement logout functionality
     }
 }
 

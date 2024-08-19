@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Request, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Post, Req, Request, UseGuards } from "@nestjs/common";
 import AuthenticationService from "./auth.service";
 import { AuthGuard } from "./auth.guard";
 
@@ -12,8 +12,10 @@ export class AuthenticationController {
     }
 
     @Post('logout')
-    async logout() {
-        return '';
+    async logout(@Req () req): Promise<any> {
+        const token = req.headers.authorization.split(' ')[1];
+        const userId = req.user.id;
+        return await this.authService.logout(token, userId);
     }
 
 }
