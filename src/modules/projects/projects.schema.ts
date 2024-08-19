@@ -28,6 +28,9 @@ export class Project {
 
     @Prop()
     description: string;
+
+    @Prop({auto:true})
+    createdAt: Date;
 }
 
 @Schema()

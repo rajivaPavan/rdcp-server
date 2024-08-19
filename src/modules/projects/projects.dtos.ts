@@ -12,8 +12,9 @@ export interface CollaboratorDTO{
     roles: ProjectRoleEnum[];
 }
 
-export interface UpdateCollaboratorsDTO {
-    collaborators: CollaboratorDTO[];
+export interface AddCollaboratorsDTO {
+    userIds: string[];
+    roles: ProjectRoleEnum[];
     projectId: string;
 }
 

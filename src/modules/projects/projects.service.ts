@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/co
 import { ProjectRepository } from './projects.repository';
 import { Project, ProjectRoleEnum } from './projects.schema';
 import { Types } from 'mongoose';
-import { ProjectDTO, UpdateCollaboratorsDTO } from './projects.dtos';
+import { ProjectDTO, AddCollaboratorsDTO } from './projects.dtos';
 import { CollaboratorRepository } from './collaborator.repository';
 
 @Injectable()
@@ -81,45 +81,48 @@ export class ProjectsService {
                 id: project._id.toString(),
                 name: project.name,
                 description: project.description,
+                createdAt: project.createdAt,
                 roles: projectRoles[project._id.toString()],
             };
         });
     }
 
-    async addCollaborators(collaboratorsDTO: UpdateCollaboratorsDTO) {
+    async addCollaborators(collaboratorsDTO: AddCollaboratorsDTO, userId: string): Promise<any> {
         // get the project
-        const projects = await this.projectRepository.findById(collaboratorsDTO.projectId);
+        const project = await this.projectRepository.findById(collaboratorsDTO.projectId);
 
-        if (!projects) {
+        if (!project) {
             throw new NotFoundException('Project not found');
         }
 
-        // // update the collaborators
-        // projects.collaborators = collaboratorsDTO.collaborators.map(collaborator => {
-        //     return {
-        //         userId: new Types.ObjectId(collaborator.userId),
-        //         roles: collaborator.roles,
-        //     }
-        // });
+        // Check if the user is a owner
+        const collaborator = await this.collaboratorRepository.findOne({ project: project._id, user: new Types.ObjectId(userId) });
+        if (!collaborator || !collaborator.roles.includes(ProjectRoleEnum.OWNER)) {
+            throw new UnauthorizedException('User is not an owner');
+        }
 
-        // save the project
-        return await this.projectRepository.update(collaboratorsDTO.projectId, projects);
+        // Add the new collaborators
+        const newCollaborators = collaboratorsDTO.userIds.map(userId => {
+            return {
+                project: project._id,
+                user: new Types.ObjectId(userId),
+                roles: collaboratorsDTO.roles,
+            };
+        });
+
+        await this.collaboratorRepository.createMany(newCollaborators);
     }
 
-    async getCollaborators(projectId: string): Promise<any> {
+    async getCollaborators(projectId: string, userId: string): Promise<any> {
         const projects = await this.projectRepository.find({ _id: new Types.ObjectId(projectId) });
 
         if (projects.length === 0) {
             throw new NotFoundException('Project not found');
         }
 
-        const project = projects[0];
+        // Get the collaborators
+        const collaborators = await this.collaboratorRepository.find({ project: projects[0]._id });
 
-        // return project.collaborators.map(collaborator => {
-        //     return {
-        //         userId: collaborator.userId.toString(),
-        //         roles: collaborator.roles,
-        //     };
-        // });
+        // Check if the user is a collaborator
     }
 }
