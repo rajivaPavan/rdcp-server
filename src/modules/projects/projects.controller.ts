@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CollaboratorDTO, ProjectDTO, AddCollaboratorsDTO } from './projects.dtos';
 import { AuthGuard } from '../auth/auth.guard';
@@ -19,7 +19,7 @@ export class ProjectsController {
     // This endpoint will return all projects where the user is a collaborator
     @UseGuards(AuthGuard)
     @Get()
-    async getProjects(@Req() req) : Promise<ProjectDTO[]> {
+    async getProjects(@Req() req): Promise<ProjectDTO[]> {
         const userId = req.user.id;
         return await this.projectsService.getProjectsOfUser(userId);
     }
@@ -27,9 +27,16 @@ export class ProjectsController {
     // This endpoint will return a specific project
     @UseGuards(AuthGuard)
     @Get("/:id")
-    async getProject(@Param('id') id: string, @Req() req): Promise<ProjectDTO> {
+    async getProject(@Param('id') id: string,
+        // withForms is a string because it is a query parameter
+        @Query('forms') withForms: string | undefined,
+        @Req() req): Promise<ProjectDTO> {
         const userId = req.user.id;
-        return await this.projectsService.getProject(id, userId);
+        // If withForms is not provided, it will be true by default
+        // If withForms is provided and is 'false', it will be false
+        // if withForms is provide and it not 'false', it will be true
+        const _withForms = withForms === undefined ? true : withForms !== 'false';
+        return await this.projectsService.getProject(id, userId, _withForms);
     }
 
     // This endpoint will return all collaborators of a project

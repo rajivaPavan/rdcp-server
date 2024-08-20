@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ProjectRepository } from './projects.repository';
 import { Project, ProjectRoleEnum } from './projects.schema';
 import { Types } from 'mongoose';
@@ -16,10 +16,9 @@ export class ProjectsService {
     ) { }
 
     // This function will return a specific project with the roles of the user in that project and the forms in that project
-    async getProject(projectId: string, userId:string): Promise<ProjectDTO> {
+    async getProject(projectId: string, userId: string, withForms?: boolean): Promise<ProjectDTO> {
 
         const project = await this.projectRepository.findById(projectId);
-        console.log(project)
         if (!project) {
             throw new NotFoundException('Project not found');
         }
@@ -28,20 +27,22 @@ export class ProjectsService {
         const collaborator = await this.collaboratorRepository.findOne({ project: project._id, user: new Types.ObjectId(userId) });
 
         if (!collaborator) {
-            throw new UnauthorizedException('User is not a collaborator');
+            throw new ForbiddenException('User is not a collaborator');
         }
 
         // Get the roles of the user
         const roles = collaborator.roles;
 
         // Get the forms in the project
-        const forms = await this.formService.getForms(projectId, userId);
+        let forms = undefined;
+        if (withForms)
+            forms = await this.formService.getForms(projectId, userId);
 
         return {
             id: project._id.toString(),
             name: project.name,
             description: project.description,
-            roles : roles,
+            roles: roles,
             forms: forms,
         };
     }
@@ -62,10 +63,10 @@ export class ProjectsService {
             roles: [ProjectRoleEnum.OWNER],
         };
 
-        console.log("collaborator",collaborator);
-                
+        console.log("collaborator", collaborator);
+
         await this.collaboratorRepository.create(collaborator);
-        
+
         return {
             ...project,
             id: project._id.toString(),
@@ -114,7 +115,7 @@ export class ProjectsService {
         // Check if the user is a owner
         const collaborator = await this.collaboratorRepository.findOne({ project: project._id, user: new Types.ObjectId(userId) });
         if (!collaborator || !collaborator.roles.includes(ProjectRoleEnum.OWNER)) {
-            throw new UnauthorizedException('User is not an owner');
+            throw new ForbiddenException('User is not an owner');
         }
 
         // Add the new collaborators
