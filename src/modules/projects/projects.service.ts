@@ -53,16 +53,23 @@ export class ProjectsService {
             _id: new Types.ObjectId(),
         });
 
+
+        project = await this.projectRepository.create(project);
+
         const collaborator = {
             project: project._id,
             user: new Types.ObjectId(userId),
             roles: [ProjectRoleEnum.OWNER],
         };
 
-        project = await this.projectRepository.create(project, collaborator);
+        console.log("collaborator",collaborator);
+                
         await this.collaboratorRepository.create(collaborator);
         
-        return project;
+        return {
+            ...project,
+            id: project._id.toString(),
+        };
     }
 
     async getProjectsOfUser(userId: string): Promise<ProjectDTO[]> {

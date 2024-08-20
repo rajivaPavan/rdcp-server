@@ -8,7 +8,7 @@ export class ProjectRepository {
 
   constructor(@InjectModel(Project.name) private projectModel: Model<Project>) {}
 
-  async create(project: Project, collaborator: Collaborator): Promise<Project> {
+  async create(project: Project): Promise<Project> {
     return this.projectModel.create(project);
   }
 
@@ -17,7 +17,7 @@ export class ProjectRepository {
   }
 
   async findById(id: string): Promise<Project> {
-    return this.projectModel.findById(new Types.ObjectId(id)).exec();
+    return this.projectModel.findById(id).exec();
   }
 
   async update(id: string, project: Project): Promise<Project> {
