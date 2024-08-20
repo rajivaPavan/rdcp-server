@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { User } from './user.schema';
 import { AddUserDTO, ResetPasswordDto } from './user.dto';
@@ -43,7 +43,8 @@ export class UserService {
     // check if user with email exists
     const user = await this.findUserByEmail(email);
     if (!user) {
-      throw new UnauthorizedException();
+      // Do nothing
+      return;
     }
 
     // Send OTP to user

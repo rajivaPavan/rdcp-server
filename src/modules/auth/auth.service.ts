@@ -16,13 +16,14 @@ export class AuthenticationService {
     async login(email: string, password: string) {
 
         const user = await this.userService.findUserByEmail(email);
+        
         // Check if user exists and password is correct
         if (!user) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException("Invalid Credentials");
         }
 
         if (!await this.cryptService.comparePassword(password, user.password)) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException("Invalid Credentials");
         }
 
         // Generate JWT token
