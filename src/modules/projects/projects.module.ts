@@ -7,6 +7,7 @@ import { ProjectRepository } from './projects.repository';
 import { ConfigModule } from '@nestjs/config';
 import { CollaboratorRepository } from './collaborator.repository';
 import { jwtModule } from '../auth/auth.module';
+import { FormsModule } from '../forms/forms.module';
 
 @Module({
     imports: [
@@ -15,7 +16,8 @@ import { jwtModule } from '../auth/auth.module';
             { name: Project.name, schema: ProjectSchema },
             { name: Collaborator.name, schema: CollaboratorSchema }
         ]),
-        jwtModule
+        jwtModule,
+        FormsModule
     ],
     controllers: [ProjectsController],
     providers: [ProjectsService, ProjectRepository, CollaboratorRepository]

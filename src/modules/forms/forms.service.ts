@@ -16,7 +16,7 @@ export class FormsService {
         // check if user is authorized to create form 
         // ie. user is a owner or manager of the project
 
-        const form  = new Form({
+        const form = new Form({
             _id: new Types.ObjectId(),
             name: formDto.name,
             description: formDto.description,
@@ -31,24 +31,19 @@ export class FormsService {
         return {
             ...createdForm,
             id: createdForm._id.toString(),
-            projectId: createdForm.projectId.toString()
-        };        
+            projectId: createdForm.projectId.toString(),
+        };
     }
 
-    async getForms(projectId: string, userId: string): Promise<ProjectFormsResponseDTO> {
-        // check if user is authorized to get forms
-        // ie. user is a collaborator of the project
+    async getForms(projectId: string, userId: string) {
 
         const forms = await this.formRepository.find({ projectId: new Types.ObjectId(projectId) });
 
-        return {
-            forms: forms.map(form => ({
-                ...form,
-                id: form._id.toString(),
-                projectId: form.projectId.toString()
-            })),
-            roles: []
-        };
+        return forms.map(form => ({
+            ...form,
+            id: form._id.toString(),
+            projectId: form.projectId.toString(),
+        }));
     }
 
 }

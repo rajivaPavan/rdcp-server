@@ -1,3 +1,4 @@
+import { FormDTO, ProjectFormsResponseDTO } from "../forms/forms.dto";
 import { ProjectRoleEnum } from "./projects.schema";
 
 export interface ProjectDTO{
@@ -5,6 +6,7 @@ export interface ProjectDTO{
     name: string;
     description: string;
     roles: ProjectRoleEnum[];
+    forms?: FormDTO[];
 }
 
 export interface CollaboratorDTO{

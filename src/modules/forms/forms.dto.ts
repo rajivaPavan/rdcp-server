@@ -13,5 +13,4 @@ export interface FormDTO{
 
 export interface ProjectFormsResponseDTO {
     forms: FormDTO[];
-    roles: ProjectRoleEnum[];
 }

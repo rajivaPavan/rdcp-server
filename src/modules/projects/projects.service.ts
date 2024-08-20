@@ -4,15 +4,18 @@ import { Project, ProjectRoleEnum } from './projects.schema';
 import { Types } from 'mongoose';
 import { ProjectDTO, AddCollaboratorsDTO } from './projects.dtos';
 import { CollaboratorRepository } from './collaborator.repository';
+import { FormsService } from '../forms/forms.service';
 
 @Injectable()
 export class ProjectsService {
 
     constructor(
+        private readonly formService: FormsService,
         private readonly projectRepository: ProjectRepository,
         private readonly collaboratorRepository: CollaboratorRepository
     ) { }
 
+    // This function will return a specific project with the roles of the user in that project and the forms in that project
     async getProject(projectId: string, userId:string): Promise<ProjectDTO> {
 
         const project = await this.projectRepository.findById(projectId);
@@ -31,11 +34,15 @@ export class ProjectsService {
         // Get the roles of the user
         const roles = collaborator.roles;
 
+        // Get the forms in the project
+        const forms = await this.formService.getForms(projectId, userId);
+
         return {
             id: project._id.toString(),
             name: project.name,
             description: project.description,
-            roles,
+            roles : roles,
+            forms: forms,
         };
     }
 

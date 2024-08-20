@@ -16,6 +16,7 @@ import { ConfigModule } from '@nestjs/config';
     jwtModule
   ],
   controllers: [FormsController],
-  providers: [FormsService, FormRepository]
+  providers: [FormsService, FormRepository],
+  exports: [FormsService]
 })
 export class FormsModule { }

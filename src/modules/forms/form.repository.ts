@@ -10,11 +10,12 @@ export class FormRepository {
     ) { }
 
     async create(form: Form): Promise<Form> {
-        return await this.formModel.create(form);
+        const created = await this.formModel.create(form);
+        return created.toObject();
     }
 
     async find(options: any): Promise<Form[]> {
-        return await this.formModel.find(options).exec();
+        return await this.formModel.find(options).lean().exec();
     }
 
     async findOne(options: any): Promise<Form> {
