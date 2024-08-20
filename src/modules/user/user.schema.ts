@@ -13,9 +13,8 @@ export class User {
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);
-  }
-
-  @Prop({type: Types.ObjectId, auto: true})
+  }  
+  
   _id: Types.ObjectId;
 
   @Prop({required: true})

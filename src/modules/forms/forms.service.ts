@@ -30,8 +30,8 @@ export class FormsService {
 
         return {
             ...createdForm,
-            id: createdForm._id.toHexString(),
-            projectId: createdForm.projectId.toHexString()
+            id: createdForm._id.toString(),
+            projectId: createdForm.projectId.toString()
         };        
     }
 
@@ -44,8 +44,8 @@ export class FormsService {
         return {
             forms: forms.map(form => ({
                 ...form,
-                id: form._id.toHexString(),
-                projectId: form.projectId.toHexString()
+                id: form._id.toString(),
+                projectId: form.projectId.toString()
             })),
             roles: []
         };

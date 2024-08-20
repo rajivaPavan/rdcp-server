@@ -20,7 +20,6 @@ export class Project {
         Object.assign(this, project);
     }
 
-    @Prop({ type: Types.ObjectId, auto: true }) 
     _id: Types.ObjectId;
 
     @Prop({ required: true })

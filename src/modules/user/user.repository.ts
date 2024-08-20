@@ -10,12 +10,11 @@ export class UserRepository {
 
   async create(user: User): Promise<User> {
     const createdUser = new this.userModel(user);
-    createdUser._id = new Types.ObjectId();
     return await createdUser.save();
   }
 
   async update(user: User) {
-    return this.userModel.updateOne({ _id: user._id }, user).exec();
+    return this.userModel.findOneAndUpdate(user, user).exec();
   }
 
   async findAll(): Promise<User[]> {

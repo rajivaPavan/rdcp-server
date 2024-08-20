@@ -11,7 +11,6 @@ export class Form {
         Object.assign(this, form);
     }
 
-    @Prop({ type: Types.ObjectId, auto: true })
     _id: Types.ObjectId;
 
     @Prop({ type: Types.ObjectId, ref: Project.name, required: true })
