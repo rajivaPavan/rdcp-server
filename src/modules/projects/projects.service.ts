@@ -86,7 +86,8 @@ export class ProjectsService {
         }));
     }
 
-    async updateProject(id: string, projectDTO: ProjectDTO, userId: string): Promise<ProjectDTO> {
+    async updateProject(projectDTO: ProjectDTO, userId: string): Promise<ProjectDTO> {
+        const id = projectDTO.id;
         await this.findProjectOrFail(id);
         await this.authorizeUser(id, userId, ProjectRoleEnum.OWNER);
 

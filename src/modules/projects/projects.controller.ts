@@ -3,12 +3,12 @@ import { ProjectsService } from './projects.service';
 import { CollaboratorDTO, ProjectDTO, AddCollaboratorsDTO } from './projects.dtos';
 import { AuthGuard } from '../auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('projects')
 export class ProjectsController {
     constructor(private readonly projectsService: ProjectsService) { }
 
     // This endpoint will create a new project
-    @UseGuards(AuthGuard)
     @Post()
     async createProject(@Body() project: ProjectDTO,
         @Req() req): Promise<ProjectDTO> {
@@ -17,7 +17,6 @@ export class ProjectsController {
     }
 
     // This endpoint will return all projects where the user is a collaborator
-    @UseGuards(AuthGuard)
     @Get()
     async getProjects(@Req() req): Promise<ProjectDTO[]> {
         const userId = req.user.id;
@@ -25,7 +24,6 @@ export class ProjectsController {
     }
 
     // This endpoint will return a specific project
-    @UseGuards(AuthGuard)
     @Get("/:id")
     async getProject(@Param('id') id: string,
         // withForms is a string because it is a query parameter
@@ -55,17 +53,19 @@ export class ProjectsController {
     }
 
     /// Update endpoint for project
-    @Patch("/:id")
-    async updateProject(@Param('id') id: string, @Body() project: ProjectDTO, @Req() req): Promise<any> {
+    @Patch()
+    async updateProject(@Body() project: ProjectDTO, @Req() req): Promise<any> {
         const userId = req.user.id;
-        await this.projectsService.updateProject(id, project, userId);
+        await this.projectsService.updateProject(project, userId);
         return { message: "Project updated successfully", success: true };
     }
 
-    @Delete("/:id")
-    async deleteProject(@Param('id') id: string, @Req() req): Promise<any> {
+
+    @Delete("/:projectId")
+    async deleteProject(@Param('projectId') projectId: string, @Req() req): Promise<any> {
         const userId = req.user.id;
-        await this.projectsService.deleteProject(id, userId);
+        console.log("projectId", projectId);
+        await this.projectsService.deleteProject(projectId, userId);
         return { message: "Project deleted successfully", success: true };
     }
 
