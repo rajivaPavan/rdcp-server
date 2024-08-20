@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CollaboratorDTO, ProjectDTO, AddCollaboratorsDTO } from './projects.dtos';
 import { AuthGuard } from '../auth/auth.guard';
@@ -52,6 +52,21 @@ export class ProjectsController {
         const userId = req.user.id;
         await this.projectsService.addCollaborators(collaboratorsDTO, userId);
         return { message: "Collaborators added successfully", success: true };
+    }
+
+    /// Update endpoint for project
+    @Patch("/:id")
+    async updateProject(@Param('id') id: string, @Body() project: ProjectDTO, @Req() req): Promise<any> {
+        const userId = req.user.id;
+        await this.projectsService.updateProject(id, project, userId);
+        return { message: "Project updated successfully", success: true };
+    }
+
+    @Delete("/:id")
+    async deleteProject(@Param('id') id: string, @Req() req): Promise<any> {
+        const userId = req.user.id;
+        await this.projectsService.deleteProject(id, userId);
+        return { message: "Project deleted successfully", success: true };
     }
 
 }

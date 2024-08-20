@@ -15,93 +15,100 @@ export class ProjectsService {
         private readonly collaboratorRepository: CollaboratorRepository
     ) { }
 
-    // This function will return a specific project with the roles of the user in that project and the forms in that project
-    async getProject(projectId: string, userId: string, withForms?: boolean): Promise<ProjectDTO> {
-
+    private async findProjectOrFail(projectId: string): Promise<Project> {
         const project = await this.projectRepository.findById(projectId);
         if (!project) {
             throw new NotFoundException('Project not found');
         }
+        return project;
+    }
 
-        // Check if the user is a collaborator
+    private async authorizeUser(projectId: string, userId: string, requiredRole: ProjectRoleEnum): Promise<void> {
+        const collaborator = await this.collaboratorRepository.findOne({ project: new Types.ObjectId(projectId), user: new Types.ObjectId(userId) });
+        if (!collaborator || !collaborator.roles.includes(requiredRole)) {
+            throw new ForbiddenException('User does not have the required permissions');
+        }
+    }
+
+    async getProject(projectId: string, userId: string, withForms?: boolean): Promise<ProjectDTO> {
+        const project = await this.findProjectOrFail(projectId);
+
         const collaborator = await this.collaboratorRepository.findOne({ project: project._id, user: new Types.ObjectId(userId) });
 
-        if (!collaborator) {
-            throw new ForbiddenException('User is not a collaborator');
-        }
-
-        // Get the roles of the user
-        const roles = collaborator.roles;
-
-        // Get the forms in the project
-        let forms = undefined;
-        if (withForms)
-            forms = await this.formService.getForms(projectId, userId);
+        const forms = withForms ? await this.formService.getForms(projectId, userId) : undefined;
 
         return {
             id: project._id.toString(),
             name: project.name,
             description: project.description,
-            roles: roles,
-            forms: forms,
+            roles: collaborator?.roles || [],
+            forms,
         };
     }
 
-    async create(projectDTO: ProjectDTO, userId: string): Promise<any> {
+    async create(projectDTO: ProjectDTO, userId: string): Promise<ProjectDTO> {
+        const project = new Project({ ...projectDTO, _id: new Types.ObjectId() });
+        const createdProject = await this.projectRepository.create(project);
 
-        let project = new Project({
-            ...projectDTO,
-            _id: new Types.ObjectId(),
+        const roles = [ProjectRoleEnum.OWNER];
+        
+        await this.collaboratorRepository.create({
+            project: createdProject._id,
+            user: new Types.ObjectId(userId),
+            roles: roles,
         });
 
-
-        project = await this.projectRepository.create(project);
-
-        const collaborator = {
-            project: project._id,
-            user: new Types.ObjectId(userId),
-            roles: [ProjectRoleEnum.OWNER],
-        };
-
-        console.log("collaborator", collaborator);
-
-        await this.collaboratorRepository.create(collaborator);
-
         return {
-            ...project,
-            id: project._id.toString(),
+            ...createdProject,
+            id: createdProject._id.toString(),
+            roles,
         };
     }
 
     async getProjectsOfUser(userId: string): Promise<ProjectDTO[]> {
         const userObjectId = new Types.ObjectId(userId);
+        const collaborations = await this.collaboratorRepository.find({ user: userObjectId });
 
-        // Find projects where the user is a collaborator
-        const collaboration = await this.collaboratorRepository
-            .find({ user: userObjectId })
-
-        // Get a map from project id to roles
-        const projectRoles = collaboration.reduce((acc, curr) => {
+        const projectRoles = collaborations.reduce((acc, curr) => {
             acc[curr.project.toString()] = curr.roles;
             return acc;
         }, {});
 
-        // Get the project ids
-        const projectIds = collaboration.map(collaboration => collaboration.project);
-
-        // Find the projects
+        const projectIds = collaborations.map(collab => collab.project);
         const projects = await this.projectRepository.find({ _id: { $in: projectIds } });
 
-        return projects.map(project => {
-            return {
-                id: project._id.toString(),
-                name: project.name,
-                description: project.description,
-                createdAt: project.createdAt,
-                roles: projectRoles[project._id.toString()],
-            };
-        });
+        return projects.map(project => ({
+            id: project._id.toString(),
+            name: project.name,
+            description: project.description,
+            createdAt: project.createdAt,
+            roles: projectRoles[project._id.toString()],
+        }));
     }
+
+    async updateProject(id: string, projectDTO: ProjectDTO, userId: string): Promise<ProjectDTO> {
+        await this.findProjectOrFail(id);
+        await this.authorizeUser(id, userId, ProjectRoleEnum.OWNER);
+
+        const updatedProject = await this.projectRepository.update(id, projectDTO);
+        const collaborator = await this.collaboratorRepository.findOne(
+            { project: new Types.ObjectId(id), user: new Types.ObjectId(userId) });
+
+        return {
+            id: updatedProject._id.toString(),
+            name: updatedProject.name,
+            description: updatedProject.description,
+            roles: collaborator?.roles || [],
+        };
+    }
+
+    async deleteProject(id: string, userId: string): Promise<void> {
+        await this.findProjectOrFail(id);
+        await this.authorizeUser(id, userId, ProjectRoleEnum.OWNER);
+
+        await this.projectRepository.delete(id);
+    }
+
 
     // TODO: 
     async addCollaborators(collaboratorsDTO: AddCollaboratorsDTO, userId: string): Promise<any> {

@@ -20,13 +20,13 @@ export class ProjectRepository {
     return this.projectModel.findById(id).exec();
   }
 
-  async update(id: string, project: Project): Promise<Project> {
-    return this.projectModel.findByIdAndUpdate
+  async update(id: string, project: Partial<Project>): Promise<Project> {
+    return await this.projectModel.findByIdAndUpdate
     (id, project, { new: true }).exec();
   }
 
-  async delete(id: string): Promise<Project> {
-    return this.projectModel.findByIdAndDelete(id).exec();
+  async delete(id: string) {
+    return await this.projectModel.findByIdAndDelete(id).exec();
   }
 
 }
