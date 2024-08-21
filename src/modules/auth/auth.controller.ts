@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, Request, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Logger, Param, Post, Query, Req, Request, UseGuards } from "@nestjs/common";
 import AuthenticationService from "./auth.service";
 import { UserService } from "../user/user.service";
 import { ResetPasswordDto } from "../user/user.dto";
@@ -10,8 +10,11 @@ export class AuthenticationController {
         private readonly userService: UserService
     ) { }
 
+    private readonly logger = new Logger(AuthenticationController.name);
+
     @Post('login')
     async login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {
+        this.logger.debug(`Login request for ${loginDto.email}`);
         return await this.authService.login(loginDto.email, loginDto.password);
     }
 
@@ -23,8 +26,16 @@ export class AuthenticationController {
     }
 
     @Get('reset-password')
-    async forgotPassword(@Param() { email }: { email: string }) {
+    async forgotPassword(@Query('email') email: string) {
+        
+        this.logger.debug(`Forgot password request for ${email}`);
+        
+        if(!email) {
+            throw new BadRequestException('Email is required');
+        }
+
         await this.userService.forgotPassword(email);
+        
         return {
             message: 'Request was successful',
         }
@@ -32,6 +43,7 @@ export class AuthenticationController {
 
     @Post('reset-password')
     async resetPassword(@Body() resetPassword: ResetPasswordDto) {
+        this.logger.debug(`Reset password request for ${resetPassword.email}`);
         await this.userService.resetPassword(resetPassword);
         return {
             message: 'Password reset was successful',

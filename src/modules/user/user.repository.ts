@@ -14,7 +14,7 @@ export class UserRepository {
   }
 
   async update(user: User) {
-    return this.userModel.findOneAndUpdate(user, user).exec();
+    return this.userModel.findByIdAndUpdate(user._id.toString(), user).exec();
   }
 
   async findAll(): Promise<User[]> {
