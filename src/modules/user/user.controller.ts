@@ -17,6 +17,7 @@ export class UserController {
   @Post()
   async addUser(@Body() dto: AddUserDTO) {
       await this.userService.addUser(dto);
+      return { message: 'User added successfully', success: true };
   }
 
   // TODO: Add Admin Guard and Implement
