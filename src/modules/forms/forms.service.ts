@@ -46,6 +46,29 @@ export class FormsService {
         }));
     }
 
+    async getForm(formId: string) {
+        const form = await this.formRepository.findById(formId);
+
+        return {
+            ...form,
+            id: form._id.toString(),
+            projectId: form.projectId.toString(),
+        };
+    }
+
+    async updateForm(formId: string, formDto: FormDTO) {
+
+        // remove prop projectId from formDto
+        const { projectId, ...form } = formDto;
+        const updatedForm = await this.formRepository.update(formId, form);
+
+        return {
+            ...updatedForm,
+            id: updatedForm._id.toString(),
+            projectId: updatedForm.projectId.toString(),
+        };
+    }
+
     async deleteForm(formId: string) {
         return this.formRepository.delete(formId);
     }

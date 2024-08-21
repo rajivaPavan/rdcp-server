@@ -19,15 +19,15 @@ export class FormRepository {
     }
 
     async findOne(options: any): Promise<Form> {
-        return await this.formModel.findOne(options).exec();
+        return await this.formModel.findOne(options).lean().exec();
     }
 
     async findById(id: string): Promise<Form> {
-        return await this.formModel.findById(id).exec();
+        return await this.formModel.findById(id).lean().exec();
     }
 
-    async update(id: string, form: Form): Promise<Form> {
-        return await this.formModel.findByIdAndUpdate(id, form, { new: true }).exec();
+    async update(id: string, form: Partial<Form>): Promise<Form> {
+        return await this.formModel.findByIdAndUpdate(id, form, { new: true }).lean().exec();
     }
 
     async delete(id: string): Promise<Form> {
