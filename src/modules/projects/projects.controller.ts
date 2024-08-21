@@ -44,9 +44,9 @@ export class ProjectsController {
 
     // This endpoint will return all collaborators of a project
     @Get("/collaborators/:projectId")
-    async getCollaborators(@Param('projectId') projectId: string): Promise<CollaboratorDTO[]> {
-        // return await this.projectsService.getCollaborators(projectId);
-        throw new Error("Not implemented");
+    async getCollaborators(@Param('projectId') projectId: string, @Req() req): Promise<CollaboratorDTO[]> {
+        const userId = req.user.id;
+        return await this.projectsService.getCollaborators(projectId, userId);
     }
 
     // This endpoint will add collaborators to a project

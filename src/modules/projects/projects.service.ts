@@ -149,6 +149,9 @@ export class ProjectsService {
         // Get the collaborators
         const collaborators = await this.collaboratorRepository.find({ project: projects[0]._id });
 
-        // Check if the user is a collaborator
+        return collaborators.map(collaborator => ({
+            userId: collaborator.user.toString(),
+            roles: collaborator.roles,
+        }));
     }
 }
