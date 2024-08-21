@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CollaboratorDTO, ProjectDTO, AddCollaboratorsDTO } from './projects.dtos';
 import { AuthGuard } from '../auth/auth.guard';
@@ -7,6 +7,7 @@ import { AuthGuard } from '../auth/auth.guard';
 @Controller('projects')
 export class ProjectsController {
     constructor(private readonly projectsService: ProjectsService) { }
+    private readonly logger = new Logger('ProjectsController');
 
     // This endpoint will create a new project
     @Post()
@@ -19,6 +20,7 @@ export class ProjectsController {
     // This endpoint will return all projects where the user is a collaborator
     @Get()
     async getProjects(@Req() req): Promise<ProjectDTO[]> {
+        this.logger.debug(`Getting projects of user ${req.user.id}`);
         const userId = req.user.id;
         return await this.projectsService.getProjectsOfUser(userId);
     }
@@ -29,6 +31,9 @@ export class ProjectsController {
         // withForms is a string because it is a query parameter
         @Query('forms') withForms: string | undefined,
         @Req() req): Promise<ProjectDTO> {
+
+        this.logger.debug(`Getting project with id ${id}`);
+
         const userId = req.user.id;
         // If withForms is not provided, it will be true by default
         // If withForms is provided and is 'false', it will be false
