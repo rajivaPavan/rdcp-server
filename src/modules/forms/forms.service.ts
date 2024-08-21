@@ -46,4 +46,8 @@ export class FormsService {
         }));
     }
 
+    async deleteForm(formId: string) {
+        return this.formRepository.delete(formId);
+    }
+
 }
