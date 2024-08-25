@@ -18,7 +18,7 @@ export class ProjectsService {
     private async findProjectOrFail(projectId: string): Promise<Project> {
         const project = await this.projectRepository.findById(projectId);
         if (!project) {
-            throw new NotFoundException('Project not found');
+            throw new ProjectNotFoundException();
         }
         return project;
     }
@@ -26,7 +26,7 @@ export class ProjectsService {
     private async authorizeUser(projectId: string, userId: string, requiredRole: ProjectRoleEnum): Promise<void> {
         const collaborator = await this.collaboratorRepository.findOne({ project: new Types.ObjectId(projectId), user: new Types.ObjectId(userId) });
         if (!collaborator || !collaborator.roles.includes(requiredRole)) {
-            throw new ForbiddenException('User does not have the required permissions');
+            throw new UnauthorizedProjectAccessException();
         }
     }
 
@@ -117,13 +117,13 @@ export class ProjectsService {
         const project = await this.projectRepository.findById(collaboratorsDTO.projectId);
 
         if (!project) {
-            throw new NotFoundException('Project not found');
+            throw new ProjectNotFoundException();
         }
 
         // Check if the user is a owner
         const collaborator = await this.collaboratorRepository.findOne({ project: project._id, user: new Types.ObjectId(userId) });
         if (!collaborator || !collaborator.roles.includes(ProjectRoleEnum.OWNER)) {
-            throw new ForbiddenException('User is not an owner');
+            throw new UnauthorizedProjectAccessException();
         }
 
         // Add the new collaborators
@@ -143,7 +143,7 @@ export class ProjectsService {
         const projects = await this.projectRepository.find({ _id: new Types.ObjectId(projectId) });
 
         if (projects.length === 0) {
-            throw new NotFoundException('Project not found');
+            throw new ProjectNotFoundException();
         }
 
         // Get the collaborators
@@ -153,5 +153,17 @@ export class ProjectsService {
             userId: collaborator.user.toString(),
             roles: collaborator.roles,
         }));
+    }
+}
+
+class ProjectNotFoundException extends NotFoundException {
+    constructor() {
+        super('Project not found');
+    }
+}
+
+class UnauthorizedProjectAccessException extends UnauthorizedException {
+    constructor() {
+        super('User does not have necesary permission to do this action in the project');
     }
 }

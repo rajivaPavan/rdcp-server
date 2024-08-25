@@ -19,11 +19,11 @@ export class AuthenticationService {
         
         // Check if user exists and password is correct
         if (!user) {
-            throw new UnauthorizedException("Invalid Credentials");
+            throw new InvalidCredentialsException();
         }
 
         if (!await this.cryptService.comparePassword(password, user.password)) {
-            throw new UnauthorizedException("Invalid Credentials");
+            throw new InvalidCredentialsException();
         }
 
         // Generate JWT token
@@ -49,3 +49,10 @@ export class AuthenticationService {
 }
 
 export default AuthenticationService;
+
+
+class InvalidCredentialsException extends UnauthorizedException {
+    constructor() {
+        super("Invalid Credentials");
+    }
+}

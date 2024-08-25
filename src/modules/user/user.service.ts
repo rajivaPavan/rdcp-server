@@ -32,7 +32,7 @@ export class UserService {
       await this.userRepository.create(user);
     }
     catch(err){
-      throw new ConflictException("User with email already exists");
+      throw new UserExistsException();
     }
 
     // send email to user
@@ -56,12 +56,12 @@ export class UserService {
     const res = await this.verifyOTP(resetPassword.email, resetPassword.otp);
 
     if (!res) {
-      throw new UnauthorizedException();
+      throw new InvalidOtpException();
     }
 
     // Reset Password
     const user = await this.findUserByEmail(resetPassword.email);
-    user.password = await this.cryptService.hashPassword(resetPassword.password); // TODO: Hash password
+    user.password = await this.cryptService.hashPassword(resetPassword.password);
 
     await this.userRepository.update(user);
 
@@ -77,8 +77,14 @@ export class UserService {
   }
 }
 
-class UserExistsException extends Error {
+class UserExistsException extends ConflictException {
   constructor() {
     super('User with email already exists');
+  }
+}
+
+class InvalidOtpException extends UnauthorizedException {
+  constructor() {
+    super('Invalid OTP');
   }
 }

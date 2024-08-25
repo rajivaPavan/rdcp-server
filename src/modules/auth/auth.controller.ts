@@ -31,7 +31,7 @@ export class AuthenticationController {
         this.logger.debug(`Forgot password request for ${email}`);
         
         if(!email) {
-            throw new BadRequestException('Email is required');
+            throw new EmailRequiredException();
         }
 
         await this.userService.forgotPassword(email);
@@ -50,4 +50,10 @@ export class AuthenticationController {
         }
     }
 
+}
+
+class EmailRequiredException extends BadRequestException {
+    constructor() {
+        super('Email is required');
+    }
 }
