@@ -28,12 +28,14 @@ export class UserService {
     // add user to database
     const user = new User(dto);
 
-    try{
-      await this.userRepository.create(user);
-    }
-    catch(err){
+    // check if user with email exists
+    const existingUser = await this.findUserByEmail(user.email);
+
+    if (existingUser) {
       throw new UserExistsException();
     }
+
+    await this.userRepository.create(user);
 
     // send email to user
     this.emailService.sendEmail(user.email, 'Welcome', 'Welcome to our platform, you can now register');
@@ -43,7 +45,6 @@ export class UserService {
     // check if user with email exists
     const user = await this.findUserByEmail(email);
     if (!user) {
-      // Do nothing
       return;
     }
 
@@ -68,11 +69,11 @@ export class UserService {
     this.emailService.sendEmail(user.email, 'Password Reset', 'Your password has been reset, you can now login with your new password');
   }
 
-  async sendOTP(email: string) {
+  private async sendOTP(email: string) {
     await this.otpService.sendOTP(email);
   }
 
-  async verifyOTP(email: string,otp: string) {
+  private async verifyOTP(email: string, otp: string) {
     return await this.otpService.verifyOTP(email, otp);
   }
 }
