@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { UserService } from "../user/user.service";
 import { JwtService } from "@nestjs/jwt";
 import { CryptService } from "../../utilities/crypt/crypt.service";
+import { InvalidCredentialsException } from "./auth.exceptions";
 
 // AuthenticationService
 @Injectable()
@@ -34,7 +35,7 @@ export class AuthenticationService {
             role: user.role
         };
 
-        const access_token = this.jwtService.sign(payload, { expiresIn: '1h' });
+        const access_token = this.jwtService.sign(payload);
 
         return {
             email: user.email,
@@ -51,8 +52,3 @@ export class AuthenticationService {
 export default AuthenticationService;
 
 
-class InvalidCredentialsException extends UnauthorizedException {
-    constructor() {
-        super("Invalid Credentials");
-    }
-}
