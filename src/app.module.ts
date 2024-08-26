@@ -6,9 +6,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import type { RedisClientOptions } from 'redis';
-import { OtpService } from './utitlies/otp/otp.service';
+import { OtpService } from './utilities/otp/otp.service';
 import * as redisStore from 'cache-manager-redis-store';
-import { OTPModule } from './utitlies/otp/otp.module';
+import { OTPModule } from './utilities/otp/otp.module';
 import { FormsModule } from './modules/forms/forms.module';
 
 // read the URI from the environment variable

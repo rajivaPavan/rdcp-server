@@ -4,11 +4,11 @@ import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { UserSchema } from './user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { EmailModule } from 'src/utitlies/email/email.module';
-import { OtpService } from 'src/utitlies/otp/otp.service';
-import { OTPModule } from 'src/utitlies/otp/otp.module';
-import { CryptService } from 'src/utitlies/crypt/crypt.service';
-import { CryptModule } from 'src/utitlies/crypt/crypt.module';
+import { EmailModule } from 'src/utilities/email/email.module';
+import { OtpService } from 'src/utilities/otp/otp.service';
+import { OTPModule } from 'src/utilities/otp/otp.module';
+import { CryptService } from 'src/utilities/crypt/crypt.service';
+import { CryptModule } from 'src/utilities/crypt/crypt.module';
 
 @Module({
     imports:[
