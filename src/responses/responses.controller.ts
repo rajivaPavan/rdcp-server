@@ -1,13 +1,17 @@
 import { Body, Controller, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { ResponsesService } from './responses.service';
 
 @Controller('responses')
 export class ResponsesController {
 
+    constructor(
+        private readonly responsesService: ResponsesService,
+    ) {}
+
     @Post('submit')
     @UseInterceptors(AnyFilesInterceptor())
-    uploadFile(@UploadedFiles() files: Array<Express.Multer.File>, @Body() body: any) {
-        console.log(body);
-        console.log(files);
+    async uploadFile(@UploadedFiles() files: Array<Express.Multer.File>, @Body() body: any) {
+        await this.responsesService.submit(body, files);
     }
 }
