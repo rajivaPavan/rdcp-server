@@ -4,7 +4,7 @@ import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { Types } from 'mongoose';
 import { RoleEnum } from '../user/user.schema';
-import { CryptService } from '../../utilities/crypt/crypt.service';
+import { CryptService } from '../utilities/crypt/crypt.service';
 import { InvalidCredentialsException } from './auth.exceptions';
 
 describe('AuthenticatonService', () => {

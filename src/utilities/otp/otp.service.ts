@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { EmailService } from '../../utilities/email/email.service';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class OtpService {

@@ -2,9 +2,9 @@ import { ConflictException, Inject, Injectable, NotFoundException, UnauthorizedE
 import { UserRepository } from './user.repository';
 import { User } from './user.schema';
 import { AddUserDTO, ResetPasswordDto } from './user.dto';
-import { EmailService } from '../../utilities/email/email.service';
-import { OtpService } from '../../utilities/otp/otp.service';
-import { CryptService } from '../../utilities/crypt/crypt.service';
+import { EmailService } from '../utilities/email/email.service';
+import { OtpService } from '../utilities/otp/otp.service';
+import { CryptService } from '../utilities/crypt/crypt.service';
 
 
 @Injectable()
