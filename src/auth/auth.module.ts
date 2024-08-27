@@ -4,7 +4,7 @@ import { AuthenticationService } from './auth.service';
 import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CryptService } from '../../utilities/crypt/crypt.service';
+import { CryptService } from '../utilities/crypt/crypt.service';
 import { CryptModule } from 'src/utilities/crypt/crypt.module';
 
 export const jwtModule = JwtModule.registerAsync({

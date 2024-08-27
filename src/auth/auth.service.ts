@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { UserService } from "../user/user.service";
 import { JwtService } from "@nestjs/jwt";
-import { CryptService } from "../../utilities/crypt/crypt.service";
+import { CryptService } from "../utilities/crypt/crypt.service";
 import { InvalidCredentialsException } from "./auth.exceptions";
 
 // AuthenticationService
