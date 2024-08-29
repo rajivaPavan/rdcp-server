@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -11,7 +10,8 @@ import {
 import AuthenticationService from './auth.service';
 import { UsersService } from '../users/users.service';
 import { ResetPasswordDto } from '../users/dtos/reset-password.dto';
-import { LoginDto } from "./dtos/login.dto";
+import { LoginDto } from './dtos/login.dto';
+import { EmailRequiredException } from './exceptions/email-required.exception';
 
 @Controller('auth')
 export class AuthenticationController {
@@ -61,8 +61,3 @@ export class AuthenticationController {
   }
 }
 
-class EmailRequiredException extends BadRequestException {
-  constructor() {
-    super('Email is required');
-  }
-}
