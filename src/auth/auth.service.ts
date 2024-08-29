@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CryptService } from '../utilities/crypt/crypt.service';
 import { InvalidCredentialsException } from './exceptions/invalid-credentials.exception';
-import { User } from "../users/entities/user.schema";
+import { User } from '../users/entities/user.schema';
 
 // AuthenticationService
 @Injectable()
@@ -13,7 +13,6 @@ export class AuthenticationService {
   ) {}
 
   async login(user: User, password: string) {
-
     // Check if user exists and password is correct
     if (!user) {
       throw new InvalidCredentialsException();

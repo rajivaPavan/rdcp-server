@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Types } from 'mongoose';
 import { CryptService } from '../utilities/crypt/crypt.service';
 import { InvalidCredentialsException } from './exceptions/invalid-credentials.exception';
-import { UserRoleEnum } from "../users/entities/user-role.enum";
+import { UserRoleEnum } from '../users/entities/user-role.enum';
 
 describe('AuthenticationService', () => {
   let service: AuthenticationService;
