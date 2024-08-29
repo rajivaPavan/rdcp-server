@@ -25,7 +25,8 @@ export class AuthenticationController {
   @Post('login')
   async login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {
     this.logger.debug(`Login request for ${loginDto.email}`);
-    return await this.authService.login(loginDto.email, loginDto.password);
+    const user = await this.userService.findUserByEmail(loginDto.email);
+    return await this.authService.login(user, loginDto.password);
   }
 
   @Post('logout')

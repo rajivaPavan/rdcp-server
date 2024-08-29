@@ -1,20 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { CryptService } from '../utilities/crypt/crypt.service';
 import { InvalidCredentialsException } from './exceptions/invalid-credentials.exception';
+import { User } from "../users/entities/user.schema";
 
 // AuthenticationService
 @Injectable()
 export class AuthenticationService {
   constructor(
-    private readonly userService: UsersService,
     private readonly jwtService: JwtService,
     private readonly cryptService: CryptService,
   ) {}
 
-  async login(email: string, password: string) {
-    const user = await this.userService.findUserByEmail(email);
+  async login(user: User, password: string) {
 
     // Check if user exists and password is correct
     if (!user) {
