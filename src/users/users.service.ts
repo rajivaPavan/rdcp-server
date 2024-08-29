@@ -1,20 +1,24 @@
-import { ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { UserRepository } from './user.repository';
-import { User } from './user.schema';
-import { AddUserDTO, ResetPasswordDto } from './user.dto';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { UsersRepository } from './users.repository';
+import { User } from './entities/user.schema';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { EmailService } from '../utilities/email/email.service';
 import { OtpService } from '../utilities/otp/otp.service';
 import { CryptService } from '../utilities/crypt/crypt.service';
-
+import { AddUserDTO } from './dtos/add-user.dto';
 
 @Injectable()
-export class UserService {
-
-  constructor(private readonly userRepository: UserRepository,
+export class UsersService {
+  constructor(
+    private readonly userRepository: UsersRepository,
     private readonly emailService: EmailService,
     private readonly otpService: OtpService,
-    private readonly cryptService: CryptService
-  ) { }
+    private readonly cryptService: CryptService,
+  ) {}
 
   async findAllUsers(): Promise<User[]> {
     return await this.userRepository.findAll();
@@ -38,7 +42,11 @@ export class UserService {
     await this.userRepository.create(user);
 
     // send email to user
-    this.emailService.sendEmail(user.email, 'Welcome', 'Welcome to our platform, you can now register');
+    this.emailService.sendEmail(
+      user.email,
+      'Welcome',
+      'Welcome to our platform, you can now register',
+    );
   }
 
   async forgotPassword(email: string) {
@@ -62,11 +70,17 @@ export class UserService {
 
     // Reset Password
     const user = await this.findUserByEmail(resetPassword.email);
-    user.password = await this.cryptService.hashPassword(resetPassword.password);
+    user.password = await this.cryptService.hashPassword(
+      resetPassword.password,
+    );
 
     await this.userRepository.update(user);
 
-    this.emailService.sendEmail(user.email, 'Password Reset', 'Your password has been reset, you can now login with your new password');
+    this.emailService.sendEmail(
+      user.email,
+      'Password Reset',
+      'Your password has been reset, you can now login with your new password',
+    );
   }
 
   private async sendOTP(email: string) {

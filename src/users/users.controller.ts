@@ -1,11 +1,12 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { UserService } from './user.service';
-import { User } from './user.schema';
-import { AddUserDTO, ResetPasswordDto } from './user.dto';
+import { UsersService } from './users.service';
+import { User } from './entities/user.schema';
+
+import { AddUserDTO } from "./dtos/add-user.dto";
 
 @Controller('users')
-export class UserController {
-  constructor(private readonly userService: UserService) { }
+export class UsersController {
+  constructor(private readonly userService: UsersService) {}
 
   @Get()
   async getAllUsers(): Promise<User[]> {
@@ -16,8 +17,8 @@ export class UserController {
   // Endpoint used by the admin to add a new user
   @Post()
   async addUser(@Body() dto: AddUserDTO) {
-      await this.userService.addUser(dto);
-      return { message: 'User added successfully', success: true };
+    await this.userService.addUser(dto);
+    return { message: 'User added successfully', success: true };
   }
 
   // TODO: Add Admin Guard and Implement

@@ -1,22 +1,20 @@
 import { Module } from '@nestjs/common';
 import { FormsController } from './forms.controller';
 import { FormsService } from './forms.service';
-import { FormRepository } from './form.repository';
+import { FormsRepository } from './forms.repository';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Form, FormSchema } from './form.schema';
+import { Form, FormSchema } from './entities/form.schema';
 import { jwtModule } from '../auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     ConfigModule,
-    MongooseModule.forFeature([
-      { name: Form.name, schema: FormSchema },
-    ]),
-    jwtModule
+    MongooseModule.forFeature([{ name: Form.name, schema: FormSchema }]),
+    jwtModule,
   ],
   controllers: [FormsController],
-  providers: [FormsService, FormRepository],
-  exports: [FormsService]
+  providers: [FormsService, FormsRepository],
+  exports: [FormsService],
 })
-export class FormsModule { }
+export class FormsModule {}
