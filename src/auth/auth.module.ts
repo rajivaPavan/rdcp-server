@@ -6,20 +6,21 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CryptModule } from 'src/utilities/crypt/crypt.module';
 
-export const jwtModule = JwtModule.registerAsync({
-  imports: [ConfigModule],
-  inject: [ConfigService],
-  useFactory: async (config: ConfigService) => ({
-    global: true,
-    secret: config.get('JWT_SECRET'),
-    signOptions: {
-      expiresIn: '1d',
-    },
-  }),
-});
-
 @Module({
-  imports: [ConfigModule, jwtModule, UsersModule, CryptModule],
+  imports: [
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        secret: config.get('JWT_SECRET'),
+        signOptions: {
+          expiresIn: '1d',
+        },
+      }),
+    }),
+    UsersModule,
+    CryptModule,
+  ],
   controllers: [AuthenticationController],
   providers: [AuthenticationService],
 })

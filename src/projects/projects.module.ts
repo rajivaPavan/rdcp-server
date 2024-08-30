@@ -9,7 +9,6 @@ import {
 import { ProjectRepository } from './projects.repository';
 import { ConfigModule } from '@nestjs/config';
 import { CollaboratorsRepository } from './collaborators.repository';
-import { jwtModule } from '../auth/auth.module';
 import { FormsModule } from '../forms/forms.module';
 import { Collaborator, CollaboratorSchema } from "./entities/collaborator.schema";
 
@@ -20,7 +19,6 @@ import { Collaborator, CollaboratorSchema } from "./entities/collaborator.schema
       { name: Project.name, schema: ProjectSchema },
       { name: Collaborator.name, schema: CollaboratorSchema },
     ]),
-    jwtModule,
     FormsModule,
   ],
   controllers: [ProjectsController],
