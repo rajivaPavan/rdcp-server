@@ -1,0 +1,43 @@
+name: Continuous Integration Testing
+
+on:
+  pull_request:
+    branches:
+      - 'dev'
+      - 'main'
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use NodeJS ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install yarn
+        uses: borales/actions-yarn@v2.0.0
+        with:
+          cmd: install
+      - name: Run unit tests
+        run: yarn test
+  e2e-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use NodeJS ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install yarn
+        uses: borales/actions-yarn@v2.0.0
+        with:
+          cmd: install
+      - name: Run e2e tests
+        run: yarn test:e2e
