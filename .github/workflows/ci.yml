@@ -19,11 +19,13 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install yarn
-        uses: borales/actions-yarn@v2.0.0
+        uses: borales/actions-yarn@v4
         with:
           cmd: install
       - name: Run unit tests
-        run: yarn test
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: test
   e2e-tests:
     runs-on: ubuntu-latest
     strategy:
@@ -36,8 +38,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install yarn
-        uses: borales/actions-yarn@v2.0.0
+        uses: borales/actions-yarn@v4
         with:
           cmd: install
       - name: Run e2e tests
-        run: yarn test:e2e
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: test:e2e
