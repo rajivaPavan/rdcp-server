@@ -7,20 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CryptModule } from 'src/utilities/crypt/crypt.module';
 
 @Module({
-  imports: [
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (config: ConfigService) => ({
-        secret: config.get('JWT_SECRET'),
-        signOptions: {
-          expiresIn: '1d',
-        },
-      }),
-    }),
-    UsersModule,
-    CryptModule,
-  ],
+  imports: [UsersModule, CryptModule],
   controllers: [AuthenticationController],
   providers: [AuthenticationService],
 })
