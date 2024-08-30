@@ -47,10 +47,9 @@ describe('AuthenticationService', () => {
   });
 
   it('should return access token for valid credentials', async () => {
-    const email = 'valid@rdcp.com';
     const password = 'testpassword';
     const user = {
-      email: email,
+      email: 'valid@rdcp.com',
       name: 'Valid User',
       role: UserRoleEnum.USER,
       password: password,
@@ -71,10 +70,9 @@ describe('AuthenticationService', () => {
   });
 
   it('should throw InvalidCredentialsException for valid email, invalid password', async () => {
-    const email = 'valid@rdcp.com';
     const password = 'wrongpassword';
     const user = {
-      email: email,
+      email: 'valid@rdcp.com',
       name: 'Valid User',
       role: UserRoleEnum.USER,
       password: 'hashedpassword',
