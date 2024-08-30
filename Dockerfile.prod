@@ -1,0 +1,45 @@
+# Stage 1: Build the application
+FROM node:20.17-alpine as builder
+
+# Set the working directory
+WORKDIR /usr/src/app
+
+# Copy package.json and yarn.lock files
+COPY package.json yarn.lock ./
+
+# Install dependencies
+RUN yarn install --frozen-lockfile
+
+# Copy the rest of the files
+COPY . .
+
+# Build the application
+RUN yarn build
+
+# Stage 2: Create a lightweight image for production
+FROM node:20.17-alpine as production
+
+# Set environment to production
+ENV NODE_ENV=production
+
+# Set the working directory
+WORKDIR /usr/src/app
+
+# Copy only the necessary files from the builder stage
+COPY --from=builder /usr/src/app/package.json /usr/src/app/yarn.lock ./
+COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+
+# Expose the port
+EXPOSE 3000
+
+# Create a non-root user and switch to it
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
+# Start the application
+CMD ["node", "dist/main.js"]
+
+# (Optional) Add a healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
