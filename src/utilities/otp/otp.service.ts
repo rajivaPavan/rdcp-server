@@ -1,13 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { EmailService } from '../email/email.service';
+import { IEmailService } from '../email/email.service';
 
 @Injectable()
 export class OtpService {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    private readonly emailService: EmailService,
+    private readonly emailService: IEmailService,
   ) {}
 
   async sendOTP(email: string) {

@@ -6,7 +6,7 @@ import {
 import { UsersRepository } from './users.repository';
 import { User } from './entities/user.schema';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
-import { EmailService } from '../utilities/email/email.service';
+import { IEmailService } from '../utilities/email/email.service';
 import { OtpService } from '../utilities/otp/otp.service';
 import { CryptService } from '../utilities/crypt/crypt.service';
 import { AddUserDTO } from './dtos/add-user.dto';
@@ -15,7 +15,7 @@ import { AddUserDTO } from './dtos/add-user.dto';
 export class UsersService {
   constructor(
     private readonly userRepository: UsersRepository,
-    private readonly emailService: EmailService,
+    private readonly emailService: IEmailService,
     private readonly otpService: OtpService,
     private readonly cryptService: CryptService,
   ) {}
