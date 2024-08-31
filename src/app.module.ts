@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserModule } from './user/user.module';
+import { UsersModule } from './users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { ProjectsModule } from './projects/projects.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
-import { OTPModule } from './utilities/otp/otp.module';
 import { FormsModule } from './forms/forms.module';
 import { ResponsesModule } from './responses/responses.module';
 
@@ -15,26 +14,31 @@ const uri = process.env.MONGODB_URI;
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     MongooseModule.forRootAsync({
-      imports: [ConfigModule.forRoot()],
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
-        uri: config.get<string>('MONGODB_URI'), // Loaded from .ENV
-        dbName: 'rdcp_db'
-      })
+        uri: config.get<string>('MONGODB_URI'), // Loaded from .env
+        dbName: 'rdcp_db',
+      }),
     }),
-    CacheModule.register({
+    CacheModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        isGlobal: true, // Global cache configuration
+        store: redisStore,
+        host: configService.get<string>('REDIS_HOST'), // Loaded from .env
+        port: configService.get<number>('REDIS_PORT') || 6379, // Default to 6379 if not set
+      }),
       isGlobal: true,
-      store: redisStore,
-      host: 'localhost',
-      port: 6379,
     }),
-    OTPModule,
-    UserModule,
+    UsersModule,
     AuthModule,
     ProjectsModule,
     FormsModule,
     ResponsesModule
   ]
 })
-export class AppModule { }
+export class AppModule {}

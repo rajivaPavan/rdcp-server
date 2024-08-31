@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mongo
+      - redis
+    environment:
+      # The following environment variables take precedence over the .env file
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MONGODB_URI=mongodb://mongo:27017/rdcp_db
+    env_file:
+      - .env

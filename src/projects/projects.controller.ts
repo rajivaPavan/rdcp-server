@@ -1,77 +1,100 @@
-import { Body, Controller, Delete, Get, Logger, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Logger,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ProjectsService } from './projects.service';
-import { CollaboratorDTO, ProjectDTO, AddCollaboratorsDTO } from './projects.dtos';
+import { ProjectDTO } from './dtos/project.dtos';
 import { AuthGuard } from '../auth/auth.guard';
+import { CreateProjectDto } from './dtos/create-project.dto';
+import { AddCollaboratorsDto } from './dtos/add-collaborators.dto';
+import { CollaboratorDto } from './dtos/collaborator.dto';
+import { User } from '../users/decorators/user.decorator';
+import { AuthenticatedUser } from '../auth/entities/authenticated-user';
 
 @UseGuards(AuthGuard)
 @Controller('projects')
 export class ProjectsController {
-    constructor(private readonly projectsService: ProjectsService) { }
-    private readonly logger = new Logger('ProjectsController');
+  constructor(private readonly projectsService: ProjectsService) {}
 
-    // This endpoint will create a new project
-    @Post()
-    async createProject(@Body() project: ProjectDTO,
-        @Req() req): Promise<ProjectDTO> {
-        const userId = req.user.id;
-        return await this.projectsService.create(project, userId);
-    }
+  private readonly logger = new Logger('ProjectsController');
 
-    // This endpoint will return all projects where the user is a collaborator
-    @Get()
-    async getProjects(@Req() req): Promise<ProjectDTO[]> {
-        this.logger.debug(`Getting projects of user ${req.user.id}`);
-        const userId = req.user.id;
-        return await this.projectsService.getProjectsOfUser(userId);
-    }
+  // This endpoint will create a new project
+  @Post()
+  async createProject(
+    @Body() project: CreateProjectDto,
+    @User() user,
+  ): Promise<ProjectDTO> {
+    return await this.projectsService.create(project, user.id);
+  }
 
-    // This endpoint will return a specific project
-    @Get("/:id")
-    async getProject(@Param('id') id: string,
-        // withForms is a string because it is a query parameter
-        @Query('forms') withForms: string | undefined,
-        @Req() req): Promise<ProjectDTO> {
+  // This endpoint will return all projects where the user is a collaborator
+  @Get()
+  async getProjects(@User() user): Promise<ProjectDTO[]> {
+    this.logger.debug(`Getting projects of user ${user.id}`);
+    return await this.projectsService.getProjectsOfUser(user.id);
+  }
 
-        this.logger.debug(`Getting project with id ${id}`);
+  // This endpoint will return a specific project
+  @Get('/:id')
+  async getProject(
+    @Param('id') id: string,
+    // withForms is a string because it is a query parameter
+    @Query('forms') withForms: string | undefined,
+    @User() user: AuthenticatedUser,
+  ): Promise<ProjectDTO> {
+    this.logger.debug(`Getting project with id ${id}`);
 
-        const userId = req.user.id;
-        // If withForms is not provided, it will be true by default
-        // If withForms is provided and is 'false', it will be false
-        // if withForms is provide and it not 'false', it will be true
-        const _withForms = withForms === undefined ? true : withForms !== 'false';
-        return await this.projectsService.getProject(id, userId, _withForms);
-    }
+    // If withForms is not provided, it will be true by default
+    // If withForms is provided and is 'false', it will be false
+    // if withForms is provide and it not 'false', it will be true
+    const _withForms = withForms === undefined ? true : withForms !== 'false';
+    return await this.projectsService.getProject(id, user.id, _withForms);
+  }
 
-    // This endpoint will return all collaborators of a project
-    @Get("/collaborators/:projectId")
-    async getCollaborators(@Param('projectId') projectId: string, @Req() req): Promise<CollaboratorDTO[]> {
-        const userId = req.user.id;
-        return await this.projectsService.getCollaborators(projectId, userId);
-    }
+  // This endpoint will return all collaborators of a project
+  @Get('/collaborators/:projectId')
+  async getCollaborators(
+    @Param('projectId') projectId: string,
+    @User() user: AuthenticatedUser
+  ): Promise<CollaboratorDto[]> {
+    return await this.projectsService.getCollaborators(projectId, user.id);
+  }
 
-    // This endpoint will add collaborators to a project
-    @Post("/collaborators")
-    async addCollaborators(@Body() collaboratorsDTO: AddCollaboratorsDTO, @Req() req): Promise<any> {
-        const userId = req.user.id;
-        await this.projectsService.addCollaborators(collaboratorsDTO, userId);
-        return { message: "Collaborators added successfully", success: true };
-    }
+  // This endpoint will add collaborators to a project
+  @Post('/collaborators')
+  async addCollaborators(
+    @Body() collaboratorsDTO: AddCollaboratorsDto,
+    @User() user: AuthenticatedUser
+  ): Promise<any> {
+    await this.projectsService.addCollaborators(collaboratorsDTO, user.id);
+    return { message: 'Collaborators added successfully', success: true };
+  }
 
-    /// Update endpoint for project
-    @Patch()
-    async updateProject(@Body() project: ProjectDTO, @Req() req): Promise<any> {
-        const userId = req.user.id;
-        await this.projectsService.updateProject(project, userId);
-        return { message: "Project updated successfully", success: true };
-    }
+  /// Update endpoint for project
+  @Patch()
+  async updateProject(
+    @Body() project: ProjectDTO,
+    @User() user: AuthenticatedUser,
+  ): Promise<any> {
+    await this.projectsService.updateProject(project, user.id);
+    return { message: 'Project updated successfully', success: true };
+  }
 
-
-    @Delete("/:projectId")
-    async deleteProject(@Param('projectId') projectId: string, @Req() req): Promise<any> {
-        const userId = req.user.id;
-        console.log("projectId", projectId);
-        await this.projectsService.deleteProject(projectId, userId);
-        return { message: "Project deleted successfully", success: true };
-    }
-
+  @Delete('/:projectId')
+  async deleteProject(
+    @Param('projectId') projectId: string,
+    @User() user: AuthenticatedUser,
+  ): Promise<any> {
+    console.log('projectId', projectId);
+    await this.projectsService.deleteProject(projectId, user.id);
+    return { message: 'Project deleted successfully', success: true };
+  }
 }
