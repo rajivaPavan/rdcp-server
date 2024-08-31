@@ -15,6 +15,6 @@ services:
       # The following environment variables take precedence over the .env file
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - MONGO_URI=mongodb://mongo:27017/rdcp_db
+      - MONGODB_URI=mongodb://mongo:27017/rdcp_db
     env_file:
       - .env
