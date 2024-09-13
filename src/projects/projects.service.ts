@@ -11,7 +11,7 @@ import { CollaboratorsRepository } from './collaborators.repository';
 import { FormsService } from '../forms/forms.service';
 import { CreateProjectDto } from './dtos/create-project.dto';
 import { ProjectRoleEnum } from './entities/project-role.enum';
-import { AddCollaboratorsDto } from "./dtos/add-collaborators.dto";
+import { AddCollaboratorsDto } from './dtos/add-collaborators.dto';
 
 @Injectable()
 export class ProjectsService {

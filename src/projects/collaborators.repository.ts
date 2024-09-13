@@ -1,7 +1,7 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
-import { Collaborator } from "./entities/collaborator.schema";
+import { Collaborator } from './entities/collaborator.schema';
 
 @Injectable()
 export class CollaboratorsRepository {
