@@ -6,6 +6,7 @@ import { Project, ProjectSchema } from './entities/project.schema';
 import { ProjectRepository } from './projects.repository';
 import { ConfigModule } from '@nestjs/config';
 import { CollaboratorsRepository } from './collaborators.repository';
+import { UsersModule } from 'src/users/users.module';
 import { jwtModule } from '../auth/auth.module';
 import { FormsModule } from '../forms/forms.module';
 import {
@@ -22,6 +23,7 @@ import {
     ]),
     jwtModule,
     FormsModule,
+    UsersModule,
   ],
   controllers: [ProjectsController],
   providers: [ProjectsService, ProjectRepository, CollaboratorsRepository],
