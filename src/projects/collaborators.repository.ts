@@ -25,4 +25,16 @@ export class CollaboratorsRepository {
   async createMany(collaborators: Collaborator[]): Promise<Collaborator[]> {
     return this.collaboratorModel.insertMany(collaborators);
   }
+
+  /*async updateOne(collaborator: Collaborator): Promise<any> {
+    return this.collaboratorModel.updateOne(collaborator).exec();
+  }*/
+
+  async updateOne(filter: any, update: any): Promise<any> {
+    return this.collaboratorModel.updateOne(filter, update).exec();
+  }
+
+  async deleteOne(options: any): Promise<any> {
+    return this.collaboratorModel.deleteOne(options).exec();
+  }
 }

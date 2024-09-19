@@ -15,9 +15,10 @@ import { ProjectDTO } from './dtos/project.dtos';
 import { AuthGuard } from '../auth/auth.guard';
 import { CreateProjectDto } from './dtos/create-project.dto';
 import { AddCollaboratorsDto } from './dtos/add-collaborators.dto';
-import { CollaboratorDto } from './dtos/collaborator.dto';
+//import { CollaboratorDto } from './dtos/collaborator.dto';
 import { User } from '../users/decorators/user.decorator';
 import { AuthenticatedUser } from '../auth/entities/authenticated-user';
+import { ProjectRoleEnum } from './entities/project-role.enum';
 
 @UseGuards(AuthGuard)
 @Controller('projects')
@@ -60,22 +61,61 @@ export class ProjectsController {
   }
 
   // This endpoint will return all collaborators of a project
-  @Get('/collaborators/:projectId')
+  /*@Get('/collaborators/:projectId')
   async getCollaborators(
     @Param('projectId') projectId: string,
     @User() user: AuthenticatedUser,
   ): Promise<CollaboratorDto[]> {
     return await this.projectsService.getCollaborators(projectId, user.id);
-  }
+  }*/
 
-  // This endpoint will add collaborators to a project
-  @Post('/collaborators')
+  // Add collaborators to a project by email
+  @Post('/:projectId/invite')
   async addCollaborators(
+    @Param('projectId') projectId: string,
     @Body() collaboratorsDTO: AddCollaboratorsDto,
     @User() user: AuthenticatedUser,
   ): Promise<any> {
-    await this.projectsService.addCollaborators(collaboratorsDTO, user.id);
+    await this.projectsService.addCollaboratorsByEmail(
+      projectId,
+      collaboratorsDTO,
+      user.id,
+    );
     return { message: 'Collaborators added successfully', success: true };
+  }
+
+  // Update collaborator roles
+  @Patch('/:projectId/collaborators/:collaboratorId/roles')
+  async updateCollaboratorRoles(
+    @Param('projectId') projectId: string,
+    @Param('collaboratorId') collaboratorId: string,
+    @Body('roles') roles: ProjectRoleEnum[],
+    @User() user: AuthenticatedUser,
+  ): Promise<any> {
+    await this.projectsService.updateCollaboratorRoles(
+      projectId,
+      collaboratorId,
+      roles,
+      user.id,
+    );
+    return {
+      message: 'Collaborator roles updated successfully',
+      success: true,
+    };
+  }
+  // Remove a collaborator from a project
+  @Delete('/:projectId/collaborators/:collaboratorId')
+  async removeCollaborator(
+    @Param('projectId') projectId: string,
+    @Param('collaboratorId') collaboratorId: string,
+    @User() user: AuthenticatedUser,
+  ): Promise<any> {
+    await this.projectsService.removeCollaborator(
+      projectId,
+      collaboratorId,
+      user.id,
+    );
+    return { message: 'Collaborator removed successfully', success: true };
   }
 
   /// Update endpoint for project
