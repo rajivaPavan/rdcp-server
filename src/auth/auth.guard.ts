@@ -22,9 +22,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: this.config.get<string>('JWT_SECRET'),
-      });
+      const payload = await this.jwtService.verifyAsync(token);
 
       // TODO: Payload should be sessionId
       // and user data should be fetched from the session store
