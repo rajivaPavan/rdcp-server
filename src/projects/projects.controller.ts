@@ -63,7 +63,7 @@ export class ProjectsController {
   @Get('/collaborators/:projectId')
   async getCollaborators(
     @Param('projectId') projectId: string,
-    @User() user: AuthenticatedUser
+    @User() user: AuthenticatedUser,
   ): Promise<CollaboratorDto[]> {
     return await this.projectsService.getCollaborators(projectId, user.id);
   }
@@ -72,7 +72,7 @@ export class ProjectsController {
   @Post('/collaborators')
   async addCollaborators(
     @Body() collaboratorsDTO: AddCollaboratorsDto,
-    @User() user: AuthenticatedUser
+    @User() user: AuthenticatedUser,
   ): Promise<any> {
     await this.projectsService.addCollaborators(collaboratorsDTO, user.id);
     return { message: 'Collaborators added successfully', success: true };
