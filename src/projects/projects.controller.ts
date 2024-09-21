@@ -15,7 +15,6 @@ import { ProjectDTO } from './dtos/project.dtos';
 import { AuthGuard } from '../auth/auth.guard';
 import { CreateProjectDto } from './dtos/create-project.dto';
 import { AddCollaboratorsDto } from './dtos/add-collaborators.dto';
-//import { CollaboratorDto } from './dtos/collaborator.dto';
 import { User } from '../users/decorators/user.decorator';
 import { AuthenticatedUser } from '../auth/entities/authenticated-user';
 import { ProjectRoleEnum } from './entities/project-role.enum';
@@ -61,16 +60,16 @@ export class ProjectsController {
   }
 
   // This endpoint will return all collaborators of a project
-  /*@Get('/collaborators/:projectId')
+  @Get('/:projectId/settings')
   async getCollaborators(
     @Param('projectId') projectId: string,
     @User() user: AuthenticatedUser,
-  ): Promise<CollaboratorDto[]> {
-    return await this.projectsService.getCollaborators(projectId, user.id);
-  }*/
+  ): Promise<AddCollaboratorsDto[]> {
+    return await this.projectsService.getCollaborators(projectId);
+  }
 
   // Add collaborators to a project by email
-  @Post('/:projectId/invite')
+  @Post('/:projectId/settings')
   async addCollaborators(
     @Param('projectId') projectId: string,
     @Body() collaboratorsDTO: AddCollaboratorsDto,
@@ -85,7 +84,7 @@ export class ProjectsController {
   }
 
   // Update collaborator roles
-  @Patch('/:projectId/collaborators/:collaboratorId/roles')
+  @Patch('/:projectId/settings/:collaboratorId')
   async updateCollaboratorRoles(
     @Param('projectId') projectId: string,
     @Param('collaboratorId') collaboratorId: string,
@@ -104,7 +103,7 @@ export class ProjectsController {
     };
   }
   // Remove a collaborator from a project
-  @Delete('/:projectId/collaborators/:collaboratorId')
+  @Delete('/:projectId/settings/:collaboratorId')
   async removeCollaborator(
     @Param('projectId') projectId: string,
     @Param('collaboratorId') collaboratorId: string,

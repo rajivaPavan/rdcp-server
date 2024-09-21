@@ -184,7 +184,7 @@ export class ProjectsService {
   }
 
   // Get the collaborators of a project
-  /*async getCollaborators(projectId: string, userId: string): Promise<any> {
+  async getCollaborators(projectId: string): Promise<any> {
     const projects = await this.projectRepository.find({
       _id: new Types.ObjectId(projectId),
     });
@@ -202,7 +202,7 @@ export class ProjectsService {
       userId: collaborator.user.toString(),
       roles: collaborator.roles,
     }));
-  }*/
+  }
 
   async addCollaboratorsByEmail(
     projectId: string,
