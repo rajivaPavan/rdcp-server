@@ -28,6 +28,8 @@ import { JwtModule } from '@nestjs/jwt';
         store: redisStore,
         host: configService.get<string>('REDIS_HOST'), // Loaded from .env
         port: configService.get<number>('REDIS_PORT') || 6379, // Default to 6379 if not set
+        password: configService.get<string>('REDIS_PASSWORD'), // Loaded from .env
+        tls: configService.get<boolean>('REDIS_TLS') || false, // Default to false if not set
       }),
       isGlobal: true,
     }),
