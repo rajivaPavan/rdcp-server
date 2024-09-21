@@ -38,6 +38,13 @@ export class AuthenticationController {
     return await this.authService.loginV2(user, loginDto.password);
   }
 
+  // endpoint to refresh the accessToken
+  @Post('refresh')
+  async refresh(@Body('refreshToken') refreshToken: string){
+    this.logger.debug('Refresh request');
+    return await this.authService.refresh(refreshToken);
+  }
+
   @Post('logout')
   async logout(@Req() req): Promise<any> {
     const token = req.headers.authorization.split(' ')[1];
