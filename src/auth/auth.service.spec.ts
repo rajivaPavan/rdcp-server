@@ -9,11 +9,10 @@ import { UserRoleEnum } from '../users/entities/user-role.enum';
 
 describe('AuthenticationService', () => {
   let service: AuthenticationService;
-  let userService: UsersService;
   let jwtService: JwtService;
   let cryptService: CryptService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthenticationService,
@@ -38,10 +37,9 @@ describe('AuthenticationService', () => {
       ],
     }).compile();
 
-    service = module.get<AuthenticationService>(AuthenticationService);
-    userService = module.get<UsersService>(UsersService);
-    jwtService = module.get<JwtService>(JwtService);
-    cryptService = module.get<CryptService>(CryptService);
+    service = module.get(AuthenticationService);
+    jwtService = module.get(JwtService);
+    cryptService = module.get(CryptService);
   });
 
   it('should be defined', () => {
@@ -49,10 +47,9 @@ describe('AuthenticationService', () => {
   });
 
   it('should return access token for valid credentials', async () => {
-    const email = 'valid@rdcp.com';
     const password = 'testpassword';
     const user = {
-      email: email,
+      email: 'valid@rdcp.com',
       name: 'Valid User',
       role: UserRoleEnum.USER,
       password: password,
@@ -60,11 +57,10 @@ describe('AuthenticationService', () => {
     };
     const token = 'testtoken';
 
-    jest.spyOn(userService, 'findUserByEmail').mockResolvedValue(user);
     jest.spyOn(jwtService, 'sign').mockReturnValue(token);
     jest.spyOn(cryptService, 'comparePassword').mockResolvedValue(true);
 
-    const result = await service.login(email, password);
+    const result = await service.login(user, password);
 
     expect(result).toEqual({
       email: user.email,
@@ -74,31 +70,25 @@ describe('AuthenticationService', () => {
   });
 
   it('should throw InvalidCredentialsException for valid email, invalid password', async () => {
-    const email = 'valid@rdcp.com';
     const password = 'wrongpassword';
     const user = {
-      email: email,
+      email: 'valid@rdcp.com',
       name: 'Valid User',
       role: UserRoleEnum.USER,
       password: 'hashedpassword',
       _id: new Types.ObjectId(),
     };
 
-    jest.spyOn(userService, 'findUserByEmail').mockResolvedValue(user);
     jest.spyOn(cryptService, 'comparePassword').mockResolvedValue(false); // Password mismatch
 
-    await expect(service.login(email, password)).rejects.toThrow(
+    await expect(service.login(user, password)).rejects.toThrow(
       InvalidCredentialsException,
     );
   });
 
   it('should throw InvalidCredentialsException for non-existent user', async () => {
-    const email = 'nonexistent@rdcp.com';
     const password = 'somepassword';
-
-    jest.spyOn(userService, 'findUserByEmail').mockResolvedValue(null);
-
-    await expect(service.login(email, password)).rejects.toThrow(
+    await expect(service.login(null, password)).rejects.toThrow(
       InvalidCredentialsException,
     );
   });
