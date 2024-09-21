@@ -23,7 +23,7 @@ export class AuthenticationService {
   ) { }
 
   // accessToken expiration
-  private readonly accessTokenExpiration = '5s';
+  private readonly accessTokenExpiration = '15m';
   // refreshToken expiration
   private readonly refreshTokenExpiration = '7d';
 
