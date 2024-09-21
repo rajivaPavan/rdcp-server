@@ -46,7 +46,6 @@ export class AuthenticationService {
         accessToken: newAccessToken,
       };
     } catch (error) {
-      console.error(error);
       throw new InvalidRefreshTokenException();
     };
   }
