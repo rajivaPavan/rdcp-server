@@ -1,4 +1,3 @@
-import { Injectable } from "@nestjs/common";
 import * as ejs from 'ejs';
 import { readFileSync } from "fs";
 import { join } from "path";
