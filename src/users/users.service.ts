@@ -6,19 +6,18 @@ import {
 import { UsersRepository } from './users.repository';
 import { User } from './entities/user.schema';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
-import { IEmailService } from '../email/email.service';
 import { OtpService } from '../utilities/otp/otp.service';
 import { CryptService } from '../utilities/crypt/crypt.service';
 import { AddUserDTO } from './dtos/add-user.dto';
-import { NodeMailerService } from 'src/email/nodemailer-email.service';
+import { TypedEventEmitter } from 'src/event-emitter/typed-event-emitter.class';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly userRepository: UsersRepository,
-    private readonly emailService: NodeMailerService,
     private readonly otpService: OtpService,
     private readonly cryptService: CryptService,
+    private readonly eventEmitter: TypedEventEmitter,
   ) {}
 
   async findAllUsers(): Promise<User[]> {
@@ -43,11 +42,10 @@ export class UsersService {
     await this.userRepository.create(user);
 
     // send email to user
-    this.emailService.sendEmail(
-      user.email,
-      'Welcome',
-      'Welcome to our platform, you can now register',
-    );
+    this.eventEmitter.emit('user.account-creation', {
+      email: user.email,
+      name: user.name,
+    });
   }
 
   async forgotPassword(email: string) {
@@ -77,11 +75,11 @@ export class UsersService {
 
     await this.userRepository.update(user);
 
-    this.emailService.sendEmail(
-      user.email,
-      'Password Reset',
-      'Your password has been reset, you can now login with your new password',
-    );
+    this.eventEmitter.emit('user.password-reset', {
+      email: user.email,
+      name: user.name,
+      link: 'https://example.com/login'
+    });
   }
 
   private async sendOTP(email: string) {
