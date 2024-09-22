@@ -10,12 +10,13 @@ import { IEmailService } from '../email/email.service';
 import { OtpService } from '../utilities/otp/otp.service';
 import { CryptService } from '../utilities/crypt/crypt.service';
 import { AddUserDTO } from './dtos/add-user.dto';
+import { NodeMailerService } from 'src/email/nodemailer-email.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly userRepository: UsersRepository,
-    private readonly emailService: IEmailService,
+    private readonly emailService: NodeMailerService,
     private readonly otpService: OtpService,
     private readonly cryptService: CryptService,
   ) {}
