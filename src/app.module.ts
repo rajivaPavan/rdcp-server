@@ -8,13 +8,15 @@ import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
 import { FormsModule } from './forms/forms.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { TypedEventEmitterModule } from './event-emitter/type-event-emitter.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    EventEmitterModule.forRoot(),  
+    EventEmitterModule.forRoot(),
+    TypedEventEmitterModule,
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
@@ -38,4 +40,4 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     FormsModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { IEmailService } from './email.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 export class NodeMailerService extends IEmailService {
-
-  constructor(private readonly mailerService: MailerService) {
+  private readonly logger = new Logger(NodeMailerService.name);
+  constructor(private readonly mailerService: MailerService,
+  ) {
     super();
   }
 
@@ -16,6 +17,7 @@ export class NodeMailerService extends IEmailService {
 
   @OnEvent('user.account-creation')
   async handleUserAccountCreationEvent(event: { email: string; name: string }) {
+    this.logger.log(`Sending account creation email to ${event.email}`);
     const { email, name } = event;
     await this.mailerService.sendMail({
       to: email,
@@ -29,6 +31,7 @@ export class NodeMailerService extends IEmailService {
 
   @OnEvent('user.password-reset')
   async handleUserPasswordResetEvent(event: { email: string; name: string; link: string }) {
+    this.logger.log(`Sending password reset email to ${event.email}`);
     const { email, name, link } = event;
     await this.mailerService.sendMail({
       to: email,

@@ -51,9 +51,9 @@ export class UsersService {
   async forgotPassword(email: string) {
     // check if user with email exists
     const user = await this.findUserByEmail(email);
-    if (!user) {
-      return;
-    }
+    // if (!user) {
+    //   return;
+    // }
 
     // Send OTP to user
     this.sendOTP(email);
