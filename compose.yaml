@@ -8,12 +8,21 @@ services:
       - '27017:27017'
     volumes:
       - mongo_data:/data/db
+    networks:
+      - rdcp_network
 
   redis:
     image: redis:6
     container_name: redis
     ports:
       - '6379:6379'
+    networks:
+      - rdcp_network
 
 volumes:
   mongo_data:
+
+networks:
+  rdcp_network:
+    
+

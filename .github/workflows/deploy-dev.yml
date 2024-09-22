@@ -1,0 +1,49 @@
+name: Trigger auto deployment for rdcp-server
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ dev ]
+    paths:
+    - '**'
+    - '.github/workflows/deploy-dev.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.RDCPSERVER_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.RDCPSERVER_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.RDCPSERVER_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          dockerfilePath: Dockerfile.prod
+          registryUrl: rdcpregistry.azurecr.io
+          registryUsername: ${{ secrets.RDCPSERVER_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.RDCPSERVER_REGISTRY_PASSWORD }}
+          containerAppName: rdcp-server
+          resourceGroup: sep-pid1-rdcp
+          imageToBuild: rdcpregistry.azurecr.io/rdcp-server:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+

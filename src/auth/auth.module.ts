@@ -1,25 +1,11 @@
 import { Module } from '@nestjs/common';
+import { CryptModule } from 'src/utilities/crypt/crypt.module';
+import { UsersModule } from '../users/users.module';
 import { AuthenticationController } from './auth.controller';
 import { AuthenticationService } from './auth.service';
-import { UsersModule } from '../users/users.module';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CryptModule } from 'src/utilities/crypt/crypt.module';
-
-export const jwtModule = JwtModule.registerAsync({
-  imports: [ConfigModule],
-  inject: [ConfigService],
-  useFactory: async (config: ConfigService) => ({
-    global: true,
-    secret: config.get('JWT_SECRET'),
-    signOptions: {
-      expiresIn: '1d',
-    },
-  }),
-});
 
 @Module({
-  imports: [ConfigModule, jwtModule, UsersModule, CryptModule],
+  imports: [UsersModule, CryptModule],
   controllers: [AuthenticationController],
   providers: [AuthenticationService],
 })

@@ -9,6 +9,7 @@ import * as redisStore from 'cache-manager-redis-store';
 import { FormsModule } from './forms/forms.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypedEventEmitterModule } from './event-emitter/type-event-emitter.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -31,8 +32,20 @@ import { TypedEventEmitterModule } from './event-emitter/type-event-emitter.modu
         store: redisStore,
         host: configService.get<string>('REDIS_HOST'), // Loaded from .env
         port: configService.get<number>('REDIS_PORT') || 6379, // Default to 6379 if not set
+        password: configService.get<string>('REDIS_PASSWORD'), // Loaded from .env
+        tls: configService.get<boolean>('REDIS_TLS') || false, // Default to false if not set
       }),
       isGlobal: true,
+    }),
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      global: true,
+      useFactory: async (config: ConfigService) => ({
+        secret: config.get('JWT_SECRET'),
+        signOptions: {
+          expiresIn: '1d',
+        },
+      }),
     }),
     UsersModule,
     AuthModule,
