@@ -16,7 +16,6 @@ export class OtpService {
     // save otp to the cache
     await this.saveOTPToCache(email, otp);
 
-    // this.emailService.sendEmail(email, 'OTP', `Your OTP is ${otp}`);
     this.eventEmitter.emit('user.password-reset', { email, name:otp.toString(), link:otp.toString() });
   }
 

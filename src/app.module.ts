@@ -10,6 +10,7 @@ import { FormsModule } from './forms/forms.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypedEventEmitterModule } from './event-emitter/type-event-emitter.module';
 import { JwtModule } from '@nestjs/jwt';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { JwtModule } from '@nestjs/jwt';
         },
       }),
     }),
+    EmailModule,
     UsersModule,
     AuthModule,
     ProjectsModule,
