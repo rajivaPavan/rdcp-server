@@ -7,6 +7,8 @@ import { ProjectsModule } from './projects/projects.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
 import { FormsModule } from './forms/forms.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { TypedEventEmitterModule } from './event-emitter/type-event-emitter.module';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
@@ -14,6 +16,8 @@ import { JwtModule } from '@nestjs/jwt';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    EventEmitterModule.forRoot(),
+    TypedEventEmitterModule,
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
@@ -49,4 +53,4 @@ import { JwtModule } from '@nestjs/jwt';
     FormsModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }
