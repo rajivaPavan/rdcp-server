@@ -1,13 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { EmailService } from '../email/email.service';
+import { TypedEventEmitter } from '../../event-emitter/typed-event-emitter.class';
 
 @Injectable()
 export class OtpService {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    private readonly emailService: EmailService,
+    private readonly eventEmitter: TypedEventEmitter,
   ) {}
 
   async sendOTP(email: string) {
@@ -16,7 +16,7 @@ export class OtpService {
     // save otp to the cache
     await this.saveOTPToCache(email, otp);
 
-    this.emailService.sendEmail(email, 'OTP', `Your OTP is ${otp}`);
+    this.eventEmitter.emit('user.password-reset', { email, name:otp.toString(), link:otp.toString() });
   }
 
   private generateOTP() {
