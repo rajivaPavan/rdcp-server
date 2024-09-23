@@ -5,12 +5,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { ProjectsModule } from './projects/projects.module';
 import { CacheModule } from '@nestjs/cache-manager';
-import * as redisStore from 'cache-manager-redis-store';
 import { FormsModule } from './forms/forms.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypedEventEmitterModule } from './event-emitter/type-event-emitter.module';
 import { JwtModule } from '@nestjs/jwt';
 import { EmailModule } from './email/email.module';
+import { createCacheConfig } from './config/cache.config';
 
 @Module({
   imports: [
@@ -28,14 +28,7 @@ import { EmailModule } from './email/email.module';
     }),
     CacheModule.registerAsync({
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        isGlobal: true, // Global cache configuration
-        store: redisStore,
-        host: configService.get<string>('REDIS_HOST'), // Loaded from .env
-        port: configService.get<number>('REDIS_PORT') || 6379, // Default to 6379 if not set
-        password: configService.get<string>('REDIS_PASSWORD'), // Loaded from .env
-        tls: configService.get<boolean>('REDIS_TLS') || false, // Default to false if not set
-      }),
+      useFactory: createCacheConfig,
       isGlobal: true,
     }),
     JwtModule.registerAsync({
