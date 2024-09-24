@@ -9,6 +9,7 @@ import { FormsModule } from './forms/forms.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { TypedEventEmitterModule } from './event-emitter/type-event-emitter.module';
 import { JwtModule } from '@nestjs/jwt';
+import { ResponsesModule } from './responses/responses.module';
 import { EmailModule } from './email/email.module';
 import { createCacheConfig } from './config/cache.config';
 
@@ -46,6 +47,7 @@ import { createCacheConfig } from './config/cache.config';
     AuthModule,
     ProjectsModule,
     FormsModule,
-  ],
+    ResponsesModule
+  ]
 })
 export class AppModule { }
