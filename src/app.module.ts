@@ -11,7 +11,8 @@ import { TypedEventEmitterModule } from './event-emitter/type-event-emitter.modu
 import { JwtModule } from '@nestjs/jwt';
 import { ResponsesModule } from './responses/responses.module';
 import { EmailModule } from './email/email.module';
-import { createCacheConfig } from './config/cache.config';
+import { createCacheConfig } from './redis/cache.config';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -27,11 +28,7 @@ import { createCacheConfig } from './config/cache.config';
         dbName: 'rdcp_db',
       }),
     }),
-    CacheModule.registerAsync({
-      inject: [ConfigService],
-      useFactory: createCacheConfig,
-      isGlobal: true,
-    }),
+    RedisModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       global: true,
