@@ -16,7 +16,6 @@ import { AddCollaboratorsDto } from './dtos/add-collaborators.dto';
 @Injectable()
 export class ProjectsService {
   constructor(
-    private readonly formService: FormsService,
     private readonly projectRepository: ProjectRepository,
     private readonly collaboratorRepository: CollaboratorsRepository,
   ) {}
@@ -46,7 +45,6 @@ export class ProjectsService {
   async getProject(
     projectId: string,
     userId: string,
-    withForms?: boolean,
   ): Promise<ProjectDTO> {
     const project = await this.findProjectOrFail(projectId);
 
@@ -55,16 +53,11 @@ export class ProjectsService {
       user: new Types.ObjectId(userId),
     });
 
-    const forms = withForms
-      ? await this.formService.getForms(projectId, userId)
-      : undefined;
-
     return {
       id: project._id.toString(),
       name: project.name,
       description: project.description,
       roles: collaborator?.roles || [],
-      forms,
     };
   }
 
