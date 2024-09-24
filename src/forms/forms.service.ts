@@ -6,7 +6,7 @@ import { Types } from 'mongoose';
 
 @Injectable()
 export class FormsService {
-  constructor(private readonly formRepository: FormsRepository) {}
+  constructor(private readonly formRepository: FormsRepository) { }
 
   async createForm(formDto: FormDTO, userId: any): Promise<FormDTO> {
     // check if user is authorized to create form
@@ -55,7 +55,8 @@ export class FormsService {
 
   async updateForm(formId: string, formDto: FormDTO) {
     // remove prop projectId from formDto
-    const { projectId, ...form } = formDto;
+    let { projectId, ...form } = formDto;
+  
     const updatedForm = await this.formRepository.update(formId, form);
 
     return {
@@ -65,7 +66,27 @@ export class FormsService {
     };
   }
 
+  async publishForm(formId: string) {
+    // existing schema
+    const form = await this.formRepository.findById(formId);
+
+    if (!form.draft || form.draft.length === 0 ) {
+      throw new Error('Form schema is missing');
+    }
+
+    return this.formRepository.update(formId, {
+      isPublished: true,
+      schema: form.draft,
+    });
+  }
+
   async deleteForm(formId: string) {
     return this.formRepository.delete(formId);
+  }
+
+  async saveFormSchema(formId: string, schema: any) {
+    return this.formRepository.update(formId, {
+      draft: schema,
+    });
   }
 }

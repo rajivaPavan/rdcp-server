@@ -14,13 +14,16 @@ import { FormDTO } from './dtos/form.dto';
 import { FormsService } from './forms.service';
 import { AuthenticatedUser } from '../auth/entities/authenticated-user';
 import { User } from '../users/decorators/user.decorator';
+import { FormsEditingService } from './form-editing.service';
 
 @UseGuards(AuthGuard)
 @Controller('forms')
 export class FormsController {
   private readonly logger = new Logger(FormsController.name);
 
-  constructor(private readonly formsService: FormsService) {}
+  constructor(private readonly formsService: FormsService,
+    private readonly formEditingService: FormsEditingService
+  ) { }
 
   // TODO: Add Guard to check if user is authorized to create form
   @Post()
@@ -57,5 +60,30 @@ export class FormsController {
   async updateForm(@Param('formId') formId: string, @Body() formDto: FormDTO) {
     this.logger.debug(`Updating form with id: ${formId}`);
     return await this.formsService.updateForm(formId, formDto);
+  }
+
+  @Patch(':formId/publish')
+  async publishForm(@Param('formId') formId: string) {
+    return await this.formsService.publishForm(formId);
+  }
+
+
+  @Post('keep-alive')
+  async keepAlive(@Body() body) {
+    const { formId, userId } = body;
+    return this.formEditingService.keepAlive(formId, userId);
+  }
+
+  @Post('release-lock')
+  async releaseLock(@Body() body) {
+    const { formId, userId } = body;
+    return this.formEditingService.releaseLock(formId, userId);
+  }
+
+  @Post('save-form')
+  async saveForm(@Body() body) {
+    const { formId, data } = body;
+    await this.formsService.saveFormSchema(formId, data);
+    return { success: true };
   }
 }

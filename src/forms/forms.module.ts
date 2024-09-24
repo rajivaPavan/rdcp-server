@@ -5,6 +5,7 @@ import { FormsRepository } from './forms.repository';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Form, FormSchema } from './entities/form.schema';
 import { ConfigModule } from '@nestjs/config';
+import { FormsEditingService } from './form-editing.service';
 
 @Module({
   imports: [
@@ -12,7 +13,9 @@ import { ConfigModule } from '@nestjs/config';
     MongooseModule.forFeature([{ name: Form.name, schema: FormSchema }]),
   ],
   controllers: [FormsController],
-  providers: [FormsService, FormsRepository],
+  providers: [FormsService,
+    FormsEditingService,
+    FormsRepository],
   exports: [FormsService],
 })
-export class FormsModule {}
+export class FormsModule { }
