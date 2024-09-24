@@ -15,6 +15,9 @@ import { FormsService } from './forms.service';
 import { AuthenticatedUser } from '../auth/entities/authenticated-user';
 import { User } from '../users/decorators/user.decorator';
 import { FormsEditingService } from './form-editing.service';
+import { FormReqDto } from './decorators/form.decorator';
+import { FormAuthorizationGuard } from './forms.guard';
+import { FormActionMeta } from './decorators/form-action.decorator';
 
 @UseGuards(AuthGuard)
 @Controller('forms')
@@ -25,7 +28,7 @@ export class FormsController {
     private readonly formEditingService: FormsEditingService
   ) { }
 
-  // TODO: Add Guard to check if user is authorized to create form
+  @FormActionMeta('create')
   @Post()
   async createForm(
     @Body() formDto: FormDTO,
@@ -35,7 +38,8 @@ export class FormsController {
     return await this.formsService.createForm(formDto, user.id);
   }
 
-  // TODO: Add Guard to check if user is authorized to delete form
+  @UseGuards(FormAuthorizationGuard)
+  @FormActionMeta('delete')
   @Delete('/:formId')
   async deleteForm(
     @Param('formId') formId: string,
@@ -49,38 +53,48 @@ export class FormsController {
     };
   }
 
-  //TODO: Add Guard to check if user is authorized to get forms
+  @UseGuards(FormAuthorizationGuard)
+  @FormActionMeta('view_properties')
   @Get('/:formId')
-  async getForm(@Param('formId') formId: string): Promise<FormDTO> {
+  async getForm(@Param('formId') formId: string, @FormReqDto() form): Promise<FormDTO> {
     this.logger.debug(`Getting form with id: ${formId}`);
-    return await this.formsService.getForm(formId);
+    return form;
   }
 
+  @UseGuards(FormAuthorizationGuard)
+  @FormActionMeta('edit_properties')
   @Patch('/:formId')
   async updateForm(@Param('formId') formId: string, @Body() formDto: FormDTO) {
     this.logger.debug(`Updating form with id: ${formId}`);
     return await this.formsService.updateForm(formId, formDto);
   }
 
+  @UseGuards(FormAuthorizationGuard)
+  @FormActionMeta('edit_properties')
   @Patch(':formId/publish')
   async publishForm(@Param('formId') formId: string) {
     return await this.formsService.publishForm(formId);
   }
 
-
-  @Post('keep-alive')
+  @UseGuards(FormAuthorizationGuard)
+  @FormActionMeta('edit_schema')
+  @Post(':formId/keep-alive')
   async keepAlive(@Body() body) {
     const { formId, userId } = body;
     return this.formEditingService.keepAlive(formId, userId);
   }
 
-  @Post('release-lock')
+  @UseGuards(FormAuthorizationGuard)
+  @FormActionMeta('edit_schema')
+  @Post(':formId/release-lock')
   async releaseLock(@Body() body) {
     const { formId, userId } = body;
     return this.formEditingService.releaseLock(formId, userId);
   }
 
-  @Post('save-form')
+  @UseGuards(FormAuthorizationGuard)
+  @FormActionMeta('edit_schema')
+  @Post(':formId/save-form')
   async saveForm(@Body() body) {
     const { formId, data } = body;
     await this.formsService.saveFormSchema(formId, data);

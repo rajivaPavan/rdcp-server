@@ -16,5 +16,6 @@ import { createCacheConfig } from './cache.config';
     providers: [
         RedisService,
     ],
+    exports: [RedisService],
 })
 export class RedisModule { }

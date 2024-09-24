@@ -31,7 +31,7 @@ export class FormsService {
     };
   }
 
-  async getForms(projectId: string, userId: string) {
+  async getForms(projectId: string, userId: string) : Promise<FormDTO[]> {
     const forms = await this.formRepository.find({
       projectId: new Types.ObjectId(projectId),
     });
@@ -43,7 +43,7 @@ export class FormsService {
     }));
   }
 
-  async getForm(formId: string) {
+  async getForm(formId: string) : Promise<FormDTO> {
     const form = await this.formRepository.findById(formId);
 
     return {
@@ -53,7 +53,7 @@ export class FormsService {
     };
   }
 
-  async updateForm(formId: string, formDto: FormDTO) {
+  async updateForm(formId: string, formDto: FormDTO) : Promise<FormDTO> {
     // remove prop projectId from formDto
     let { projectId, ...form } = formDto;
   

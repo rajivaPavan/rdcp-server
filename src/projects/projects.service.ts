@@ -8,7 +8,6 @@ import { Project } from './entities/project.schema';
 import { Types } from 'mongoose';
 import { ProjectDTO } from './dtos/project.dtos';
 import { CollaboratorsRepository } from './collaborators.repository';
-import { FormsService } from '../forms/forms.service';
 import { CreateProjectDto } from './dtos/create-project.dto';
 import { ProjectRoleEnum } from './entities/project-role.enum';
 import { AddCollaboratorsDto } from './dtos/add-collaborators.dto';
@@ -191,6 +190,16 @@ export class ProjectsService {
       userId: collaborator.user.toString(),
       roles: collaborator.roles,
     }));
+  }
+
+
+  async getUserProjectRoles(userId: string, projectId: string) {
+    const collaborator = await this.collaboratorRepository.findOne({
+      project: new Types.ObjectId(projectId),
+      user: new Types.ObjectId(userId),
+    });
+
+    return collaborator?.roles || [];
   }
 }
 

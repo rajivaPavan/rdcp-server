@@ -11,7 +11,6 @@ import { TypedEventEmitterModule } from './event-emitter/type-event-emitter.modu
 import { JwtModule } from '@nestjs/jwt';
 import { ResponsesModule } from './responses/responses.module';
 import { EmailModule } from './email/email.module';
-import { createCacheConfig } from './redis/cache.config';
 import { RedisModule } from './redis/redis.module';
 
 @Module({
