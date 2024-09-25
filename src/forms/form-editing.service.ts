@@ -10,7 +10,7 @@ export class FormsEditingService {
     const lockKey = `form-lock:${formId}`;
     const currentUser = await this.redisService.get(lockKey) as { id: string, email: string };
 
-    if (currentUser) {
+    if (currentUser && currentUser.id !== user.id) {
       return {
         success: false,
         user: currentUser.email,
