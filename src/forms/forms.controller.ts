@@ -78,6 +78,14 @@ export class FormsController {
 
   @UseGuards(FormAuthorizationGuard)
   @FormActionMeta('edit_schema')
+  @Post(':formId/lock')
+  async lockForm(@FormId() formId: string, @User() user: AuthenticatedUser) {
+    this.logger.debug(`Locking form with id: ${formId}`);
+    return this.formEditingService.lockForm(formId, user);
+  }
+
+  @UseGuards(FormAuthorizationGuard)
+  @FormActionMeta('edit_schema')
   @Post(':formId/keep-alive')
   async keepAlive(@FormId() formId: string, @User() user: AuthenticatedUser) {
     this.logger.debug(`Keep alive for form with id: ${formId}`);

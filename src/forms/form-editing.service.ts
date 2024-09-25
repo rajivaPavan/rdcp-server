@@ -3,27 +3,30 @@ import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class FormsEditingService {
-  constructor(private redisService: RedisService) {}
+  constructor(private redisService: RedisService) { }
 
   // Lock the form for a user with TTL
-  async lockForm(formId: string, userId: string) {
+  async lockForm(formId: string, user: { id: string, email: string }) {
     const lockKey = `form-lock:${formId}`;
-    const isLocked = await this.redisService.get(lockKey);
+    const currentUser = await this.redisService.get(lockKey) as { id: string, email: string };
 
-    if (isLocked) {
-      throw new Error('Form is already being edited.');
+    if (currentUser) {
+      return {
+        success: false,
+        user: currentUser.email,
+      };
     }
 
-    await this.redisService.set(lockKey, userId, 300); // 5-minute TTL
+    await this.redisService.set(lockKey, user, 300); // 5-minute TTL
     return { success: true };
   }
 
   // Extend the lock with heartbeat
   async keepAlive(formId: string, userId: string) {
     const lockKey = `form-lock:${formId}`;
-    const currentEditor = await this.redisService.get(lockKey);
+    const currentEditor = await this.redisService.get(lockKey) as { id: string, email: string };
 
-    if (currentEditor === userId) {
+    if (currentEditor.id === userId) {
       await this.redisService.updateTTL(lockKey, 300); // Extend by 5 minutes
       return { success: true };
     }
