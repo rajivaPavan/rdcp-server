@@ -79,19 +79,17 @@ export class FormsController {
   @UseGuards(FormAuthorizationGuard)
   @FormActionMeta('edit_schema')
   @Post(':formId/keep-alive')
-  async keepAlive(@FormId() formId: string, @Body() body) {
-    this.logger.debug(`Keep alive for form with id: ${body.formId}`);
-    const { userId } = body;
-    return this.formEditingService.keepAlive(formId, userId);
+  async keepAlive(@FormId() formId: string, @User() user: AuthenticatedUser) {
+    this.logger.debug(`Keep alive for form with id: ${formId}`);
+    return this.formEditingService.keepAlive(formId, user.id);
   }
 
   @UseGuards(FormAuthorizationGuard)
   @FormActionMeta('edit_schema')
   @Post(':formId/release-lock')
-  async releaseLock(@FormId() formId: string, @Body() body) {
-    this.logger.debug(`Releasing lock for form with id: ${body.formId}`);
-    const { userId } = body;
-    return this.formEditingService.releaseLock(formId, userId);
+  async releaseLock(@FormId() formId: string, @User() user: AuthenticatedUser) {
+    this.logger.debug(`Releasing lock for form with id: ${formId}`);
+    return this.formEditingService.releaseLock(formId, user.id);
   }
 
   @UseGuards(FormAuthorizationGuard)
