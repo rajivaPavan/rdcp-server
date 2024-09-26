@@ -36,9 +36,9 @@ export class FormsEditingService {
   // Release the lock
   async releaseLock(formId: string, userId: string) {
     const lockKey = `form-lock:${formId}`;
-    const currentEditor = await this.redisService.get(lockKey);
+    const currentEditor = await this.redisService.get(lockKey) as { id: string, email: string };
 
-    if (currentEditor === userId) {
+    if (currentEditor.id === userId) {
       await this.redisService.del(lockKey);
       return { success: true };
     }
