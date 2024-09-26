@@ -7,6 +7,7 @@ export const formActions = {
     create: [ProjectRoleEnum.MANAGER],
     update: [ProjectRoleEnum.MANAGER],
     delete: [ProjectRoleEnum.MANAGER],
+    view_form:[ProjectRoleEnum.MANAGER, ProjectRoleEnum.EDITOR, ProjectRoleEnum.ANALYST, ProjectRoleEnum.ANALYST_VIEW_ONLY],
     view_properties: [ProjectRoleEnum.MANAGER],
     edit_properties: [ProjectRoleEnum.MANAGER],
     edit_schema: [ProjectRoleEnum.MANAGER, ProjectRoleEnum.EDITOR],

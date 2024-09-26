@@ -6,6 +6,7 @@ import {
   Logger,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
@@ -54,13 +55,24 @@ export class FormsController {
   }
 
   @UseGuards(FormAuthorizationGuard)
-  @FormActionMeta('view_properties')
+  @FormActionMeta('view_form')
   @Get('/:formId')
-  async getForm(@FormId() formId: string, @FormReqDto() form): Promise<FormDTO> {
+  async getForm(@FormId() formId: string, @FormReqDto() form,
+    @Query("schema") schema: boolean = false
+  ): Promise<FormDTO> {
+    
     this.logger.debug(`Getting form with id: ${formId}`);
+
+    if (!schema) {
+      // Remove schema from form object
+      delete form.draft,
+      delete form.schema;
+    }
+
     return form;
   }
 
+  /// Update form properties
   @UseGuards(FormAuthorizationGuard)
   @FormActionMeta('edit_properties')
   @Patch('/:formId')
@@ -69,6 +81,19 @@ export class FormsController {
     return await this.formsService.updateForm(formId, formDto);
   }
 
+
+  /// Save form schema changes
+  @UseGuards(FormAuthorizationGuard)
+  @FormActionMeta('edit_schema')
+  @Post(':formId/save-form')
+  async saveForm(@FormId() formId: string, @Body() body) {
+    this.logger.debug(`Saving form schema with id: ${formId}`);
+    const { data: schema } = body;
+    await this.formsService.saveFormSchema(formId, schema);
+    return { success: true };
+  }
+
+  /// Publish form changes to the public
   @UseGuards(FormAuthorizationGuard)
   @FormActionMeta('edit_properties')
   @Patch(':formId/publish')
@@ -76,6 +101,7 @@ export class FormsController {
     return await this.formsService.publishForm(formId);
   }
 
+  /// Lock form for editing
   @UseGuards(FormAuthorizationGuard)
   @FormActionMeta('edit_schema')
   @Post(':formId/lock')
@@ -84,6 +110,7 @@ export class FormsController {
     return this.formEditingService.lockForm(formId, user);
   }
 
+  /// Keep form alive
   @UseGuards(FormAuthorizationGuard)
   @FormActionMeta('edit_schema')
   @Post(':formId/keep-alive')
@@ -92,6 +119,7 @@ export class FormsController {
     return this.formEditingService.keepAlive(formId, user.id);
   }
 
+  /// Release form lock
   @UseGuards(FormAuthorizationGuard)
   @FormActionMeta('edit_schema')
   @Post(':formId/release-lock')
@@ -100,14 +128,6 @@ export class FormsController {
     return this.formEditingService.releaseLock(formId, user.id);
   }
 
-  @UseGuards(FormAuthorizationGuard)
-  @FormActionMeta('edit_schema')
-  @Post(':formId/save-form')
-  async saveForm(@FormId() formId: string, @Body() body) {
-    const { data } = body;
-    await this.formsService.saveFormSchema(formId, data);
-    return { success: true };
-  }
 }
 
 
