@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
-import { FormDTO } from './dtos/form.dto';
+import { CreateFormDTO, FormDTO } from './dtos/form.dto';
 import { FormsService } from './forms.service';
 import { AuthenticatedUser } from '../auth/entities/authenticated-user';
 import { User } from '../users/decorators/user.decorator';
@@ -32,7 +32,7 @@ export class FormsController {
   @FormActionMeta('create')
   @Post()
   async createForm(
-    @Body() formDto: FormDTO,
+    @Body() formDto: CreateFormDTO,
     @User() user: AuthenticatedUser,
   ): Promise<FormDTO> {
     this.logger.debug(`Creating form with name: ${formDto.name} by ${user.id}`);

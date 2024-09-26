@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { FormDTO } from './dtos/form.dto';
+import { CreateFormDTO, FormDTO } from './dtos/form.dto';
 import { FormsRepository } from './forms.repository';
 import { Form } from './entities/form.schema';
 import { Types } from 'mongoose';
@@ -8,7 +8,7 @@ import { Types } from 'mongoose';
 export class FormsService {
   constructor(private readonly formRepository: FormsRepository) { }
 
-  async createForm(formDto: FormDTO, userId: any): Promise<FormDTO> {
+  async createForm(formDto: CreateFormDTO, userId: any): Promise<FormDTO> {
     // check if user is authorized to create form
     // ie. user is a owner or manager of the project
 
