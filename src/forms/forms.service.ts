@@ -6,7 +6,7 @@ import { Types } from 'mongoose';
 
 @Injectable()
 export class FormsService {
-  constructor(private readonly formRepository: FormsRepository) { }
+  constructor(private readonly formRepository: FormsRepository) {}
 
   async createForm(formDto: CreateFormDTO, userId: any): Promise<FormDTO> {
     // check if user is authorized to create form
@@ -31,7 +31,7 @@ export class FormsService {
     };
   }
 
-  async getForms(projectId: string, userId: string) : Promise<FormDTO[]> {
+  async getForms(projectId: string, userId: string): Promise<FormDTO[]> {
     const forms = await this.formRepository.find({
       projectId: new Types.ObjectId(projectId),
     });
@@ -43,7 +43,7 @@ export class FormsService {
     }));
   }
 
-  async getForm(formId: string) : Promise<FormDTO> {
+  async getForm(formId: string): Promise<FormDTO> {
     const form = await this.formRepository.findById(formId);
 
     return {
@@ -53,10 +53,10 @@ export class FormsService {
     };
   }
 
-  async updateForm(formId: string, formDto: FormDTO) : Promise<FormDTO> {
+  async updateForm(formId: string, formDto: FormDTO): Promise<FormDTO> {
     // remove prop projectId from formDto
     let { projectId, ...form } = formDto;
-  
+
     const updatedForm = await this.formRepository.update(formId, form);
 
     return {
@@ -70,12 +70,13 @@ export class FormsService {
     // existing schema
     const form = await this.formRepository.findById(formId);
 
-    if (!form.draft || form.draft.length === 0 ) {
+    if (!form.draft || form.draft.length === 0) {
       throw new Error('Form schema is missing');
     }
 
     return this.formRepository.update(formId, {
       isPublished: true,
+      hasChanges: false,
       schema: form.draft,
     });
   }
@@ -87,6 +88,7 @@ export class FormsService {
   async saveFormSchema(formId: string, schema: any) {
     return this.formRepository.update(formId, {
       draft: schema,
+      hasChanges: true,
     });
   }
 }

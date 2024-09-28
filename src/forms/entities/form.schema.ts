@@ -33,6 +33,9 @@ export class Form {
   @Prop({ default: false })
   isPublished: boolean;
 
+  @Prop({ default: false })
+  hasChanges: boolean;
+
   @Prop({ default: true })
   multipleResponses: boolean;
 
