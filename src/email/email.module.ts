@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 import { join } from 'path';
 import { EmailController } from './email.controller';
 import { NodeMailerService } from './nodemailer-email.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 @Module({
   imports: [
@@ -26,18 +26,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         preview: true,
         template: {
           dir: join(__dirname, 'templates'),
-          adapter: new EjsAdapter(),
+          adapter: new HandlebarsAdapter(),
           options: {
             strict: true,
           },
         },
       }),
-    })
+    }),
   ],
-  providers: [
-    NodeMailerService
-  ],
+  providers: [NodeMailerService],
   controllers: [EmailController],
-  exports: [NodeMailerService]
+  exports: [NodeMailerService],
 })
-export class EmailModule { }
+export class EmailModule {}

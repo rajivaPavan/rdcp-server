@@ -1,4 +1,16 @@
+export interface UserAccountCreationEvent {
+  email: string;
+  name: string;
+}
+
+export interface UserPasswordResetEvent {
+  email: string;
+  name: string;
+  otp: string;
+  otpExpiry: number;
+}
+
 export interface EventPayloads {
-  'user.account-creation': { name: string; email: string };
-  'user.password-reset': { name: string; email: string; link: string };
+  'user.account-creation': UserAccountCreationEvent;
+  'user.password-reset': UserPasswordResetEvent;
 }
