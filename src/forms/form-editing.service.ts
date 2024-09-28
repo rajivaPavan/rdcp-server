@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class FormsEditingService {
   constructor(private redisService: RedisService) {}
+
+  private readonly lockTTL = 300;
 
   // Lock the form for a user with TTL
   async lockForm(formId: string, user: { id: string; email: string }) {
@@ -16,7 +18,7 @@ export class FormsEditingService {
     }
 
     const lockKey = this.makeLockKey(formId);
-    await this.redisService.set(lockKey, user, 300); // 5-minute TTL
+    await this.redisService.set(lockKey, user, this.lockTTL); // 5-minute TTL
     return { success: true };
   }
 
@@ -25,10 +27,10 @@ export class FormsEditingService {
     const currentEditor = await this.getCurrentEditor(formId);
     if (currentEditor.id === userId) {
       const lockKey = this.makeLockKey(formId);
-      await this.redisService.updateTTL(lockKey, 300); // Extend by 5 minutes
+      await this.redisService.updateTTL(lockKey, this.lockTTL); // Extend by 5 minutes
       return { success: true };
     }
-    throw new Error('Cannot extend lock, no ownership.');
+    throw new NoLockOwnerhsipException();
   }
 
   // Release the lock
@@ -38,7 +40,7 @@ export class FormsEditingService {
       await this.removeCurrentEditor(formId);
       return { success: true };
     }
-    throw new Error('Cannot release lock, no ownership.');
+    throw new NoLockOwnerhsipException();
   }
 
   private async removeCurrentEditor(formId: string) {
@@ -60,5 +62,11 @@ export class FormsEditingService {
 
   private makeLockKey(formId: string) {
     return `form-lock:${formId}`;
+  }
+}
+
+class NoLockOwnerhsipException extends ConflictException {
+  constructor() {
+    super('Cannot extend lock, no ownership.');
   }
 }
