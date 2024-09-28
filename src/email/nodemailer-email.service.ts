@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IEmailService } from './email.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { OnEvent } from '@nestjs/event-emitter';
@@ -6,12 +6,21 @@ import {
   UserAccountCreationEvent,
   UserPasswordResetEvent,
 } from 'src/interface/event-types.interface';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class NodeMailerService extends IEmailService {
+  private webClient: string;
   private readonly logger = new Logger(NodeMailerService.name);
-  constructor(private readonly mailerService: MailerService) {
+  constructor(
+    private readonly mailerService: MailerService,
+    @Inject(ConfigService) private readonly configService: ConfigService,
+  ) {
     super();
+  }
+
+  onModuleInit() {
+    this.webClient = this.configService.get('WEB_CLIENT');
   }
 
   async sendEmail(
@@ -38,7 +47,7 @@ export class NodeMailerService extends IEmailService {
     const { email, name } = event;
     this.sendEmail(email, 'Account Created', 'account-creation', {
       name,
-      accountCreationLink: 'http://localhost:5173/register',
+      accountCreationLink: `${this.webClient}/register`,
     });
   }
 
