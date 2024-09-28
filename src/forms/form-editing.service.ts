@@ -65,8 +65,8 @@ export class FormsEditingService {
   }
 }
 
-class NoLockOwnerhsipException extends ConflictException {
+export class NoLockOwnerhsipException extends ConflictException {
   constructor() {
-    super('Cannot extend lock, no ownership.');
+    super('Cannot update lock, no ownership.');
   }
 }

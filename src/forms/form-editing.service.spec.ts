@@ -1,5 +1,8 @@
 import { RedisService } from 'src/redis/redis.service';
-import { FormsEditingService } from './form-editing.service';
+import {
+  FormsEditingService,
+  NoLockOwnerhsipException,
+} from './form-editing.service';
 
 describe('FormsEditingService', () => {
   let formsEditingService: FormsEditingService;
@@ -76,7 +79,7 @@ describe('FormsEditingService', () => {
 
       await expect(
         formsEditingService.keepAlive('form1', 'user1'),
-      ).rejects.toThrow('Cannot extend lock, no ownership.');
+      ).rejects.toThrow(NoLockOwnerhsipException);
     });
   });
 
@@ -103,7 +106,7 @@ describe('FormsEditingService', () => {
 
       await expect(
         formsEditingService.releaseLock('form1', 'user1'),
-      ).rejects.toThrow('Cannot release lock, no ownership.');
+      ).rejects.toThrow(NoLockOwnerhsipException);
     });
   });
 
