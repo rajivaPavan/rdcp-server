@@ -39,7 +39,7 @@ export class UsersService {
       throw new UserExistsException();
     }
 
-    await this.userRepository.create(user);
+    // await this.userRepository.create(user);
 
     // send email to user
     this.eventEmitter.emit('user.account-creation', {
@@ -81,7 +81,7 @@ export class UsersService {
     this.eventEmitter.emit('user.password-reset', {
       email: user.email,
       name: user.name,
-      link: 'https://example.com/login'
+      link: 'https://example.com/login',
     });
   }
 

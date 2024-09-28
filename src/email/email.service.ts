@@ -1,9 +1,14 @@
 import * as ejs from 'ejs';
-import { readFileSync } from "fs";
-import { join } from "path";
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 export abstract class IEmailService {
-  abstract sendEmail(to: string, subject: string, body: string): Promise<void>;
+  abstract sendEmail(
+    to: string,
+    subject: string,
+    body: string,
+    context?: any,
+  ): Promise<void>;
 
   // Method to render and return the email template for preview
   async previewTemplate(templateName: string, data: any): Promise<string> {
