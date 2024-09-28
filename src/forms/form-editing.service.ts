@@ -3,13 +3,11 @@ import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class FormsEditingService {
-  constructor(private redisService: RedisService) { }
+  constructor(private redisService: RedisService) {}
 
   // Lock the form for a user with TTL
-  async lockForm(formId: string, user: { id: string, email: string }) {
-    const lockKey = `form-lock:${formId}`;
-    const currentUser = await this.redisService.get(lockKey) as { id: string, email: string };
-
+  async lockForm(formId: string, user: { id: string; email: string }) {
+    const currentUser = await this.getCurrentEditor(formId);
     if (currentUser && currentUser.id !== user.id) {
       return {
         success: false,
@@ -17,16 +15,16 @@ export class FormsEditingService {
       };
     }
 
+    const lockKey = this.makeLockKey(formId);
     await this.redisService.set(lockKey, user, 300); // 5-minute TTL
     return { success: true };
   }
 
   // Extend the lock with heartbeat
   async keepAlive(formId: string, userId: string) {
-    const lockKey = `form-lock:${formId}`;
-    const currentEditor = await this.redisService.get(lockKey) as { id: string, email: string };
-
+    const currentEditor = await this.getCurrentEditor(formId);
     if (currentEditor.id === userId) {
+      const lockKey = this.makeLockKey(formId);
       await this.redisService.updateTTL(lockKey, 300); // Extend by 5 minutes
       return { success: true };
     }
@@ -35,20 +33,32 @@ export class FormsEditingService {
 
   // Release the lock
   async releaseLock(formId: string, userId: string) {
-    const lockKey = `form-lock:${formId}`;
-    const currentEditor = await this.redisService.get(lockKey) as { id: string, email: string };
-
+    const currentEditor = await this.getCurrentEditor(formId);
     if (currentEditor.id === userId) {
-      await this.redisService.del(lockKey);
+      await this.removeCurrentEditor(formId);
       return { success: true };
     }
     throw new Error('Cannot release lock, no ownership.');
   }
 
+  private async removeCurrentEditor(formId: string) {
+    const lockKey = this.makeLockKey(formId);
+    await this.redisService.del(lockKey);
+  }
+
   // Get current lock status
-  async getLockStatus(formId: string) {
-    const lockKey = `form-lock:${formId}`;
-    const currentEditor = await this.redisService.get(lockKey);
+  async getCurrentEditor(
+    formId: string,
+  ): Promise<{ id: string; email: string }> {
+    const lockKey = this.makeLockKey(formId);
+    const currentEditor = (await this.redisService.get(lockKey)) as {
+      id: string;
+      email: string;
+    };
     return currentEditor;
+  }
+
+  private makeLockKey(formId: string) {
+    return `form-lock:${formId}`;
   }
 }
