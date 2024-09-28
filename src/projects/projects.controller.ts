@@ -18,11 +18,15 @@ import { AddCollaboratorsDto } from './dtos/add-collaborators.dto';
 import { User } from '../users/decorators/user.decorator';
 import { AuthenticatedUser } from '../auth/entities/authenticated-user';
 import { ProjectRoleEnum } from './entities/project-role.enum';
+import { FormsService } from 'src/forms/forms.service';
 
 @UseGuards(AuthGuard)
 @Controller('projects')
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(
+    private readonly projectsService: ProjectsService,
+    private readonly formsService: FormsService
+  ) { }
 
   private readonly logger = new Logger('ProjectsController');
 
@@ -56,7 +60,19 @@ export class ProjectsController {
     // If withForms is provided and is 'false', it will be false
     // if withForms is provide and it not 'false', it will be true
     const _withForms = withForms === undefined ? true : withForms !== 'false';
-    return await this.projectsService.getProject(id, user.id, _withForms);
+    let project = await this.projectsService.getProject(id, user.id);
+
+    if (!_withForms)
+      return project;
+
+    const forms = withForms
+      ? await this.formsService.getForms(project.id, user.id)
+      : undefined;
+
+    return {
+      ...project,
+      forms
+    }
   }
 
   // This endpoint will return all collaborators of a project

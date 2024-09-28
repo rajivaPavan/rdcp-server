@@ -8,7 +8,6 @@ import { Project } from './entities/project.schema';
 import { Types } from 'mongoose';
 import { ProjectDTO } from './dtos/project.dtos';
 import { CollaboratorsRepository } from './collaborators.repository';
-import { FormsService } from '../forms/forms.service';
 import { CreateProjectDto } from './dtos/create-project.dto';
 import { ProjectRoleEnum } from './entities/project-role.enum';
 import { AddCollaboratorsDto } from './dtos/add-collaborators.dto';
@@ -16,7 +15,6 @@ import { AddCollaboratorsDto } from './dtos/add-collaborators.dto';
 @Injectable()
 export class ProjectsService {
   constructor(
-    private readonly formService: FormsService,
     private readonly projectRepository: ProjectRepository,
     private readonly collaboratorRepository: CollaboratorsRepository,
   ) {}
@@ -46,7 +44,6 @@ export class ProjectsService {
   async getProject(
     projectId: string,
     userId: string,
-    withForms?: boolean,
   ): Promise<ProjectDTO> {
     const project = await this.findProjectOrFail(projectId);
 
@@ -55,16 +52,11 @@ export class ProjectsService {
       user: new Types.ObjectId(userId),
     });
 
-    const forms = withForms
-      ? await this.formService.getForms(projectId, userId)
-      : undefined;
-
     return {
       id: project._id.toString(),
       name: project.name,
       description: project.description,
       roles: collaborator?.roles || [],
-      forms,
     };
   }
 
@@ -248,6 +240,16 @@ export class ProjectsService {
     }
 
     return { message: 'Collaborator removed successfully', success: true };
+  }
+
+
+  async getUserProjectRoles(userId: string, projectId: string) {
+    const collaborator = await this.collaboratorRepository.findOne({
+      project: new Types.ObjectId(projectId),
+      user: new Types.ObjectId(userId),
+    });
+
+    return collaborator?.roles || [];
   }
 }
 

@@ -20,20 +20,27 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/cache-manager": "^2.2.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.3",
     "@nestjs/core": "^10.0.0",
+    "@nestjs/event-emitter": "^2.0.4",
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/mongoose": "^10.0.10",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/swagger": "^7.4.2",
     "@types/bcrypt": "^5.0.2",
     "@types/cache-manager-redis-store": "^2.0.4",
+    "@types/multer": "^1.4.12",
     "@types/redis": "^4.0.11",
+    "aws-sdk": "^2.1691.0",
     "bcrypt": "^5.1.1",
     "cache-manager": "^5.7.6",
     "cache-manager-redis-store": "2",
     "class-validator": "^0.14.1",
+    "ejs": "^3.1.10",
+    "handlebars": "^4.7.8",
     "mongoose": "^8.5.3",
     "passport-jwt": "^4.0.1",
     "redis": "^3.1.2",
@@ -71,13 +78,14 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": "./",
+    "modulePaths": ["<rootDir>"],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "src/**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"

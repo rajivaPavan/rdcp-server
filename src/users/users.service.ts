@@ -6,18 +6,18 @@ import {
 import { UsersRepository } from './users.repository';
 import { User } from './entities/user.schema';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
-import { EmailService } from '../utilities/email/email.service';
 import { OtpService } from '../utilities/otp/otp.service';
 import { CryptService } from '../utilities/crypt/crypt.service';
 import { AddUserDTO } from './dtos/add-user.dto';
+import { TypedEventEmitter } from '../event-emitter/typed-event-emitter.class';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly userRepository: UsersRepository,
-    private readonly emailService: EmailService,
     private readonly otpService: OtpService,
     private readonly cryptService: CryptService,
+    private readonly eventEmitter: TypedEventEmitter,
   ) {}
 
   async findAllUsers(): Promise<User[]> {
@@ -42,49 +42,46 @@ export class UsersService {
     await this.userRepository.create(user);
 
     // send email to user
-    this.emailService.sendEmail(
-      user.email,
-      'Welcome',
-      'Welcome to our platform, you can now register',
-    );
+    this.eventEmitter.emit('user.account-creation', {
+      email: user.email,
+      name: user.name,
+    });
   }
 
   async forgotPassword(email: string) {
     // check if user with email exists
     const user = await this.findUserByEmail(email);
+    // If user does not exist, do nothing - Error should not be thrown here
+    // This is to prevent user enumeration attacks
     if (!user) {
       return;
     }
 
     // Send OTP to user
-    this.sendOTP(email);
+    this.sendOTP(user);
   }
 
-  async resetPassword(resetPassword: ResetPasswordDto) {
+  async resetPassword(resetDto: ResetPasswordDto) {
     // Verify OTP
-    const res = await this.verifyOTP(resetPassword.email, resetPassword.otp);
+    const res = await this.verifyOTP(resetDto.email, resetDto.otp);
 
     if (!res) {
       throw new InvalidOtpException();
     }
 
     // Reset Password
-    const user = await this.findUserByEmail(resetPassword.email);
-    user.password = await this.cryptService.hashPassword(
-      resetPassword.password,
-    );
+    const user = await this.findUserByEmail(resetDto.email);
+    user.password = await this.cryptService.hashPassword(resetDto.password);
 
     await this.userRepository.update(user);
 
-    this.emailService.sendEmail(
-      user.email,
-      'Password Reset',
-      'Your password has been reset, you can now login with your new password',
-    );
+    return {
+      success: true,
+    };
   }
 
-  private async sendOTP(email: string) {
-    await this.otpService.sendOTP(email);
+  private async sendOTP(user: User) {
+    await this.otpService.sendOTP(user);
   }
 
   private async verifyOTP(email: string, otp: string) {

@@ -6,6 +6,7 @@ import {
   Post,
   Query,
   Req,
+  Version,
 } from '@nestjs/common';
 import AuthenticationService from './auth.service';
 import { UsersService } from '../users/users.service';
@@ -27,6 +28,21 @@ export class AuthenticationController {
     this.logger.debug(`Login request for ${loginDto.email}`);
     const user = await this.userService.findUserByEmail(loginDto.email);
     return await this.authService.login(user, loginDto.password);
+  }
+
+  @Version('2')
+  @Post('login')
+  async loginV2(@Body() loginDto: LoginDto): Promise<LoginV2ResponseDto>{
+    this.logger.debug(`Login request for ${loginDto.email}`);
+    const user = await this.userService.findUserByEmail(loginDto.email);
+    return await this.authService.loginV2(user, loginDto.password);
+  }
+
+  // endpoint to refresh the accessToken
+  @Post('refresh')
+  async refresh(@Body('refreshToken') refreshToken: string){
+    this.logger.debug('Refresh request');
+    return await this.authService.refresh(refreshToken);
   }
 
   @Post('logout')
