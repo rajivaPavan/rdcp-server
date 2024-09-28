@@ -75,11 +75,7 @@ export class ProjectsController {
     @Body() collaboratorsDTO: AddCollaboratorsDto,
     @User() user: AuthenticatedUser,
   ): Promise<any> {
-    await this.projectsService.addCollaboratorsByEmail(
-      projectId,
-      collaboratorsDTO,
-      user.id,
-    );
+    await this.projectsService.addCollaborators(collaboratorsDTO, user.id);
     return { message: 'Collaborators added successfully', success: true };
   }
 

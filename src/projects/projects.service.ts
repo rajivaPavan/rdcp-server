@@ -7,7 +7,6 @@ import { ProjectRepository } from './projects.repository';
 import { Project } from './entities/project.schema';
 import { Types } from 'mongoose';
 import { ProjectDTO } from './dtos/project.dtos';
-import { UsersRepository } from '../users/users.repository';
 import { CollaboratorsRepository } from './collaborators.repository';
 import { FormsService } from '../forms/forms.service';
 import { CreateProjectDto } from './dtos/create-project.dto';
@@ -20,7 +19,6 @@ export class ProjectsService {
     private readonly formService: FormsService,
     private readonly projectRepository: ProjectRepository,
     private readonly collaboratorRepository: CollaboratorsRepository,
-    private readonly usersRepository: UsersRepository,
   ) {}
 
   private async findProjectOrFail(projectId: string): Promise<Project> {
@@ -170,13 +168,15 @@ export class ProjectsService {
     }
 
     // Add the new collaborators
-    const newCollaborators = collaboratorsDTO.userIds.map((userId) => {
-      return {
-        project: project._id,
-        user: new Types.ObjectId(userId),
-        roles: collaboratorsDTO.roles,
-      };
-    });
+    const newCollaborators = await Promise.all(
+      collaboratorsDTO.userIds.map(async (userId) => {
+        return {
+          project: project._id,
+          user: new Types.ObjectId(userId),
+          roles: collaboratorsDTO.roles,
+        };
+      }),
+    );
 
     await this.collaboratorRepository.createMany(newCollaborators);
 
@@ -202,28 +202,6 @@ export class ProjectsService {
       userId: collaborator.user.toString(),
       roles: collaborator.roles,
     }));
-  }
-
-  async addCollaboratorsByEmail(
-    projectId: string,
-    collaboratorsDTO: AddCollaboratorsDto,
-    userId: string,
-  ): Promise<void> {
-    const project = await this.findProjectOrFail(projectId);
-
-    // Check if the user is authorized to add collaborators
-    await this.authorizeUser(projectId, userId, ProjectRoleEnum.OWNER);
-
-    const users = await this.usersRepository.findByEmails(
-      collaboratorsDTO.emails,
-    );
-    const newCollaborators = users.map((user) => ({
-      project: project._id,
-      user: user._id,
-      roles: collaboratorsDTO.roles,
-    }));
-
-    await this.collaboratorRepository.createMany(newCollaborators);
   }
 
   async updateCollaboratorRoles(
