@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { FormDTO } from './dtos/form.dto';
+import { CreateFormDTO, FormDTO } from './dtos/form.dto';
 import { FormsRepository } from './forms.repository';
 import { Form } from './entities/form.schema';
 import { Types } from 'mongoose';
@@ -8,7 +8,7 @@ import { Types } from 'mongoose';
 export class FormsService {
   constructor(private readonly formRepository: FormsRepository) {}
 
-  async createForm(formDto: FormDTO, userId: any): Promise<FormDTO> {
+  async createForm(formDto: CreateFormDTO, userId: any): Promise<FormDTO> {
     // check if user is authorized to create form
     // ie. user is a owner or manager of the project
 
@@ -31,7 +31,7 @@ export class FormsService {
     };
   }
 
-  async getForms(projectId: string, userId: string) {
+  async getForms(projectId: string, userId: string): Promise<FormDTO[]> {
     const forms = await this.formRepository.find({
       projectId: new Types.ObjectId(projectId),
     });
@@ -43,7 +43,7 @@ export class FormsService {
     }));
   }
 
-  async getForm(formId: string) {
+  async getForm(formId: string): Promise<FormDTO> {
     const form = await this.formRepository.findById(formId);
 
     return {
@@ -53,9 +53,10 @@ export class FormsService {
     };
   }
 
-  async updateForm(formId: string, formDto: FormDTO) {
+  async updateForm(formId: string, formDto: FormDTO): Promise<FormDTO> {
     // remove prop projectId from formDto
-    const { projectId, ...form } = formDto;
+    let { projectId, ...form } = formDto;
+
     const updatedForm = await this.formRepository.update(formId, form);
 
     return {
@@ -65,7 +66,29 @@ export class FormsService {
     };
   }
 
+  async publishForm(formId: string) {
+    // existing schema
+    const form = await this.formRepository.findById(formId);
+
+    if (!form.draft || form.draft.length === 0) {
+      throw new Error('Form schema is missing');
+    }
+
+    return this.formRepository.update(formId, {
+      isPublished: true,
+      hasChanges: false,
+      schema: form.draft,
+    });
+  }
+
   async deleteForm(formId: string) {
     return this.formRepository.delete(formId);
+  }
+
+  async saveFormSchema(formId: string, schema: any) {
+    return this.formRepository.update(formId, {
+      draft: schema,
+      hasChanges: true,
+    });
   }
 }
