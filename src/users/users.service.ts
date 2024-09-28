@@ -39,7 +39,7 @@ export class UsersService {
       throw new UserExistsException();
     }
 
-    // await this.userRepository.create(user);
+    await this.userRepository.create(user);
 
     // send email to user
     this.eventEmitter.emit('user.account-creation', {
@@ -51,7 +51,6 @@ export class UsersService {
   async forgotPassword(email: string) {
     // check if user with email exists
     const user = await this.findUserByEmail(email);
-
     // If user does not exist, do nothing - Error should not be thrown here
     // This is to prevent user enumeration attacks
     if (!user) {
@@ -59,34 +58,30 @@ export class UsersService {
     }
 
     // Send OTP to user
-    this.sendOTP(email);
+    this.sendOTP(user);
   }
 
-  async resetPassword(resetPassword: ResetPasswordDto) {
+  async resetPassword(resetDto: ResetPasswordDto) {
     // Verify OTP
-    const res = await this.verifyOTP(resetPassword.email, resetPassword.otp);
+    const res = await this.verifyOTP(resetDto.email, resetDto.otp);
 
     if (!res) {
       throw new InvalidOtpException();
     }
 
     // Reset Password
-    const user = await this.findUserByEmail(resetPassword.email);
-    user.password = await this.cryptService.hashPassword(
-      resetPassword.password,
-    );
+    const user = await this.findUserByEmail(resetDto.email);
+    user.password = await this.cryptService.hashPassword(resetDto.password);
 
     await this.userRepository.update(user);
 
-    this.eventEmitter.emit('user.password-reset', {
-      email: user.email,
-      name: user.name,
-      link: 'https://example.com/login',
-    });
+    return {
+      success: true,
+    };
   }
 
-  private async sendOTP(email: string) {
-    await this.otpService.sendOTP(email);
+  private async sendOTP(user: User) {
+    await this.otpService.sendOTP(user);
   }
 
   private async verifyOTP(email: string, otp: string) {

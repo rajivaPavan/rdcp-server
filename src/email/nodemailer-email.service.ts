@@ -2,6 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { IEmailService } from './email.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { OnEvent } from '@nestjs/event-emitter';
+import {
+  UserAccountCreationEvent,
+  UserPasswordResetEvent,
+} from 'src/interface/event-types.interface';
 
 @Injectable()
 export class NodeMailerService extends IEmailService {
@@ -16,7 +20,6 @@ export class NodeMailerService extends IEmailService {
     template: string,
     context: any,
   ): Promise<void> {
-    console.log('Sending email to', context);
     try {
       await this.mailerService.sendMail({
         to: to,
@@ -30,7 +33,7 @@ export class NodeMailerService extends IEmailService {
   }
 
   @OnEvent('user.account-creation')
-  async handleUserAccountCreationEvent(event: { email: string; name: string }) {
+  async handleUserAccountCreationEvent(event: UserAccountCreationEvent) {
     this.logger.log(`Sending account creation email to ${event.email}`);
     const { email, name } = event;
     this.sendEmail(email, 'Account Created', 'account-creation', {
@@ -40,21 +43,14 @@ export class NodeMailerService extends IEmailService {
   }
 
   @OnEvent('user.password-reset')
-  async handleUserPasswordResetEvent(event: {
-    email: string;
-    name: string;
-    link: string;
-  }) {
+  async handleUserPasswordResetEvent(event: UserPasswordResetEvent) {
     this.logger.log(`Sending password reset email to ${event.email}`);
-    const { email, name, link } = event;
+    const { email, ...context } = event;
     await this.mailerService.sendMail({
       to: email,
       subject: 'Password Reset',
       template: 'password-reset',
-      context: {
-        name,
-        link,
-      },
+      context: context,
     });
   }
 }

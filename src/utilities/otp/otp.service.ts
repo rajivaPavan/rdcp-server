@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { TypedEventEmitter } from '../../event-emitter/typed-event-emitter.class';
+import { User } from 'src/users/entities/user.schema';
 
 @Injectable()
 export class OtpService {
@@ -10,23 +11,31 @@ export class OtpService {
     private readonly eventEmitter: TypedEventEmitter,
   ) {}
 
-  async sendOTP(email: string) {
+  private readonly otpTtlInSeconds = 300; // 5 minutes
+  private getOTPTTLInMinutes() {
+    return this.otpTtlInSeconds / 60;
+  }
+
+  async sendOTP(user: User) {
     const otp = this.generateOTP();
-
     // save otp to the cache
-    await this.saveOTPToCache(email, otp);
+    await this.saveOTPToCache(user.email, otp);
 
-    this.eventEmitter.emit('user.password-reset', { email, name:otp.toString(), link:otp.toString() });
+    this.eventEmitter.emit('user.password-reset', {
+      email: user.email,
+      name: user.name,
+      otp: otp.toString(),
+      otpExpiry: this.getOTPTTLInMinutes(),
+    });
   }
 
   private generateOTP() {
-    return Math.floor(1000 + Math.random() * 9000);
+    return Math.floor(100000 + Math.random() * 900000);
   }
 
   private async saveOTPToCache(email: string, otp: number) {
     // save otp to the cache
-    const ttl = 60 * 5; // 5 minutes
-    await this.cacheManager.set(email, otp.toString(), ttl);
+    await this.cacheManager.set(email, otp.toString(), this.otpTtlInSeconds);
   }
 
   async verifyOTP(email: string, otp: string) {
