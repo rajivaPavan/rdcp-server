@@ -33,8 +33,18 @@ export class Form {
   @Prop({ default: false })
   isPublished: boolean;
 
+  @Prop({ default: false })
+  hasChanges: boolean;
+
   @Prop({ default: true })
   multipleResponses: boolean;
-}
 
+  // published Schema
+  @Prop({ type: Array, required: false, default: [] })
+  schema: Record<string, any>[];
+
+  // draft Schema
+  @Prop({ type: Array, required: false, default: [] })
+  draft: Record<string, any>[];
+}
 export const FormSchema = SchemaFactory.createForClass(Form);
