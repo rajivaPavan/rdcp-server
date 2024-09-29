@@ -176,7 +176,7 @@ export class ProjectsService {
   }
 
   // Get the collaborators of a project
-  async getCollaborators(projectId: string): Promise<any> {
+  async getCollaborators(projectId: string): Promise<{userId: string, roles: ProjectRoleEnum[]}[]> {
     const projects = await this.projectRepository.find({
       _id: new Types.ObjectId(projectId),
     });
@@ -253,13 +253,13 @@ export class ProjectsService {
   }
 }
 
-class ProjectNotFoundException extends NotFoundException {
+export class ProjectNotFoundException extends NotFoundException {
   constructor() {
     super('Project not found');
   }
 }
 
-class UnauthorizedProjectAccessException extends UnauthorizedException {
+export class UnauthorizedProjectAccessException extends UnauthorizedException {
   constructor() {
     super(
       'User does not have necesary permission to do this action in the project',

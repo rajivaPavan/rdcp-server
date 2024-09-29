@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Logger,
   Param,
   Patch,
@@ -19,13 +20,16 @@ import { User } from '../users/decorators/user.decorator';
 import { AuthenticatedUser } from '../auth/entities/authenticated-user';
 import { ProjectRoleEnum } from './entities/project-role.enum';
 import { FormsService } from 'src/forms/forms.service';
+import { UsersService } from 'src/users/users.service';
+import { CollaboratorDocument } from './dtos/collaborator.dto';
 
 @UseGuards(AuthGuard)
 @Controller('projects')
 export class ProjectsController {
   constructor(
     private readonly projectsService: ProjectsService,
-    private readonly formsService: FormsService
+    private readonly formsService: FormsService,
+    private readonly usersService: UsersService,
   ) { }
 
   private readonly logger = new Logger('ProjectsController');
@@ -78,10 +82,19 @@ export class ProjectsController {
   // This endpoint will return all collaborators of a project
   @Get('/:projectId/settings')
   async getCollaborators(
-    @Param('projectId') projectId: string,
+    @Param('projectId') projectId: string, 
     @User() user: AuthenticatedUser,
-  ): Promise<AddCollaboratorsDto[]> {
-    return await this.projectsService.getCollaborators(projectId);
+  ): Promise<CollaboratorDocument[]> {
+    let collaborators = await this.projectsService.getCollaborators(projectId);
+    const collaboratorDetails = await Promise.all(collaborators.map(async collaborator => {
+      let user = await this.usersService.findUser(collaborator.userId);
+      return {
+        id: collaborator.userId,
+        email: user,
+        roles: collaborator.roles
+      }
+    }));
+    return collaboratorDetails;
   }
 
   // Add collaborators to a project by email

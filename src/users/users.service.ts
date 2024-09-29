@@ -28,6 +28,14 @@ export class UsersService {
     return await this.userRepository.findByEmail(email);
   }
 
+  async findUser(userId: string): Promise<string> {
+    const user = await this.userRepository.findById(userId);
+    if(!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return user.email;
+  }
+
   async addUser(dto: AddUserDTO) {
     // add user to database
     const user = new User(dto);
