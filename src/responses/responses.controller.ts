@@ -9,7 +9,6 @@ export class ResponsesController {
 
     constructor(
         private readonly responsesService: ResponsesService,
-        private readonly s3ObjectStorageService: S3ObjectStorageService
     ) { }
 
     @Post(':formId/submit')
@@ -21,10 +20,6 @@ export class ResponsesController {
         @UploadedFiles() files: Array<Express.Multer.File>,
         @Body() body: any) {
 
-        await this.responsesService.submit(body, files);
-        files.forEach(async file => {
-            let name = await this.s3ObjectStorageService.uploadFile(file);
-            console.log(name);
-        });
+        await this.responsesService.submit("66c4d6676bbcc50e089f75fa",formId, body, files);
     }
 }
