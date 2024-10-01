@@ -19,7 +19,20 @@ export class ResponsesController {
         @FormId() formId: string,
         @UploadedFiles() files: Array<Express.Multer.File>,
         @Body() body: any) {
+        // JSON parse every field in the body
+        const records = this.parseBody(body);
+        console.log("records,", records);
+        await this.responsesService.submit("66c4d6676bbcc50e089f75fa",formId, records, files);
+    }
 
-        await this.responsesService.submit("66c4d6676bbcc50e089f75fa",formId, body, files);
+    private parseBody(body: any) {
+        for (const key in body) {
+            try {
+                body[key] = JSON.parse(body[key]);
+            } catch (e) {
+                // Do nothing
+            }
+        }
+        return body;
     }
 }
