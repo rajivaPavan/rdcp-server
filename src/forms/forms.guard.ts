@@ -1,13 +1,13 @@
 import { CanActivate, ExecutionContext, Injectable, ForbiddenException } from '@nestjs/common';
 import { FormsService } from '../forms/forms.service';
 import { Reflector } from '@nestjs/core';
-import { FormAction, FormsAuthorization } from '../authorization/forms.authorization';
+import { ProjectAction, ProjectAuthorization } from '../authorization/forms.authorization';
 
 @Injectable()
 export class FormAuthorizationGuard implements CanActivate {
   constructor(
     private readonly formsService: FormsService,
-    private readonly formsAuthorization: FormsAuthorization,
+    private readonly projectsAuthorization: ProjectAuthorization,
     private readonly reflector: Reflector,
   ) { }
 
@@ -28,13 +28,13 @@ export class FormAuthorizationGuard implements CanActivate {
     }
 
     // Extract the action from reflector
-    const action = this.reflector.get<FormAction>('form-action', context.getHandler());
+    const action = this.reflector.get<ProjectAction>('form-action', context.getHandler());
 
     if (!action) {
       throw new ForbiddenException('Invalid action');
     }
 
-    const isAuthorized = await this.formsAuthorization.isAuthorized(user.id, form.projectId, action);
+    const isAuthorized = await this.projectsAuthorization.isAuthorized(user.id, form.projectId, action);
 
     // attach the form to the request object
     request.form = form;

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { FormsAuthorization } from './forms.authorization';
+import { ProjectAuthorization } from './forms.authorization';
 import { ProjectsService } from 'src/projects/projects.service';
 import { ProjectRepository } from 'src/projects/projects.repository';
 import { CollaboratorsRepository } from 'src/projects/collaborators.repository';
@@ -14,10 +14,10 @@ import { Collaborator, CollaboratorSchema } from 'src/projects/entities/collabor
     ],
     providers: [
         CollaboratorsRepository,
-        FormsAuthorization
+        ProjectAuthorization
     ],
     exports: [
-        FormsAuthorization
+        ProjectAuthorization
     ]
 })
 export class AuthorizationModule { }

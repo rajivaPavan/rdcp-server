@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FormsAuthorization, formActions, FormAction } from './forms.authorization';
+import { ProjectAuthorization, projectActions, ProjectAction } from './forms.authorization';
 import { CollaboratorsRepository } from 'src/projects/collaborators.repository';
 import { ProjectRoleEnum } from 'src/projects/entities/project-role.enum';
 import { Types } from 'mongoose';
 
 describe('FormsAuthorization', () => {
-    let service: FormsAuthorization;
+    let service: ProjectAuthorization;
     let collaboratorsRepository: CollaboratorsRepository;
     const project = new Types.ObjectId();
     const user = new Types.ObjectId();
@@ -13,7 +13,7 @@ describe('FormsAuthorization', () => {
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
-                FormsAuthorization,
+                ProjectAuthorization,
                 {
                     provide: CollaboratorsRepository,
                     useValue: {
@@ -23,7 +23,7 @@ describe('FormsAuthorization', () => {
             ],
         }).compile();
 
-        service = module.get<FormsAuthorization>(FormsAuthorization);
+        service = module.get<ProjectAuthorization>(ProjectAuthorization);
         collaboratorsRepository = module.get<CollaboratorsRepository>(CollaboratorsRepository);
     });
 
