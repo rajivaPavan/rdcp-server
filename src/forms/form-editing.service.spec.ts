@@ -1,7 +1,7 @@
 import { RedisService } from 'src/redis/redis.service';
 import {
   FormsEditingService,
-  NoLockOwnerhsipException,
+  NoLockOwnershipException,
 } from './form-editing.service';
 
 describe('FormsEditingService', () => {
@@ -32,7 +32,7 @@ describe('FormsEditingService', () => {
       expect(redisService.set).toHaveBeenCalledWith(
         'form-lock:form1',
         { id: 'user1', email: 'user1@example.com' },
-        300,
+        formsEditingService.getTTL(),
       );
       expect(result).toEqual({ success: true });
     });
@@ -66,7 +66,7 @@ describe('FormsEditingService', () => {
       expect(redisService.get).toHaveBeenCalledWith('form-lock:form1');
       expect(redisService.updateTTL).toHaveBeenCalledWith(
         'form-lock:form1',
-        300,
+        formsEditingService.getTTL(),
       );
       expect(result).toEqual({ success: true });
     });
@@ -79,7 +79,7 @@ describe('FormsEditingService', () => {
 
       await expect(
         formsEditingService.keepAlive('form1', 'user1'),
-      ).rejects.toThrow(NoLockOwnerhsipException);
+      ).rejects.toThrow(NoLockOwnershipException);
     });
   });
 
@@ -106,7 +106,7 @@ describe('FormsEditingService', () => {
 
       await expect(
         formsEditingService.releaseLock('form1', 'user1'),
-      ).rejects.toThrow(NoLockOwnerhsipException);
+      ).rejects.toThrow(NoLockOwnershipException);
     });
   });
 
