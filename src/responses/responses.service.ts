@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { S3ObjectStorageService } from './files.service';
-import * as crypto from 'crypto';
+import { FileHashService, S3ObjectStorageService } from './files.service';
 
 @Injectable()
 export class ResponsesService {
@@ -43,11 +42,10 @@ export class ResponsesService {
         const urls = await Promise.all(files.map(async (file, index) => {
             // change originalname to hash name with base prefix and extension
             const key = `${basePrefix}${res[index].name}${file.originalname.slice(file.originalname.lastIndexOf('.'))}`;
-            file.originalname = key;
-            const url = await this.s3ObjectStorageService.uploadFile(file);
+            await this.s3ObjectStorageService.uploadFile(key, file);
             return {
                 field: file.fieldname,
-                url: url,
+                url: key,
             }
         }));
 
@@ -55,12 +53,3 @@ export class ResponsesService {
     }
 }
 
-
-export class FileHashService {
-
-    generateHash(file: Express.Multer.File): string {
-        const hash = crypto.createHash('sha256');
-        hash.update(file.buffer);
-        return hash.digest('hex');
-    }
-}

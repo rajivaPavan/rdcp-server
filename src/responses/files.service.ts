@@ -2,7 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as AWS from 'aws-sdk';
 import { S3 } from 'aws-sdk';
 import { ConfigService } from '@nestjs/config';
-import { get } from 'http';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class S3ObjectStorageService {
@@ -47,7 +47,10 @@ export class S3ObjectStorageService {
   }
 
   // Upload file to S3 or MinIO
-  async uploadFile(file: Express.Multer.File): Promise<string> {
+  async uploadFile(
+    fileKey: string,
+    file: Express.Multer.File
+  ): Promise<string> {
     const params = {
       Bucket: this.bucketName,
       Key: file.originalname,
@@ -76,5 +79,14 @@ export class S3ObjectStorageService {
     } catch (error) {
       throw new InternalServerErrorException('File retrieval failed');
     }
+  }
+}
+
+export class FileHashService {
+
+  generateHash(file: Express.Multer.File): string {
+      const hash = crypto.createHash('sha256');
+      hash.update(file.buffer);
+      return hash.digest('hex');
   }
 }
