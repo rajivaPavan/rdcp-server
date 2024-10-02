@@ -9,13 +9,16 @@ export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
   @Get()
-  async getUsers(
-    @Query('email') email?: string,
-  ): Promise<User[]> {
-    if (email) {
-      return await this.userService.searchByEmail(email);
-    }
+  async getUsers(): Promise<User[]> {
     return await this.userService.getAllUsers();
+  }
+
+  @Get('search')
+  async searchByEmail(@Query('email') email: string): Promise<User[]> {
+    if(!email) {
+      return [];
+    }
+    return await this.userService.searchByEmail(email);
   }
 
   // TODO: Add Admin Guard
