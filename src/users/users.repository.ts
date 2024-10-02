@@ -24,8 +24,8 @@ export class UsersRepository {
     return this.userModel.findOne({ email: email }).exec();
   }
 
-  async findByEmail(email: string): Promise<User[]>{
-    return this.userModel.find({ email: email }).lean().exec();
+  async findByEmail(email: string, limit=5): Promise<User[]>{
+    return this.userModel.find({ email: email }).limit(limit).lean().exec();
   }
 
   async findById(userId: string): Promise<User> {
