@@ -12,6 +12,7 @@ import {
   Collaborator,
   CollaboratorSchema,
 } from './entities/collaborator.schema';
+import { CollaboratorsController } from './collaborators.controller';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import {
     FormsModule,
     UsersModule,
   ],
-  controllers: [ProjectsController],
+  controllers: [ProjectsController, CollaboratorsController],
   providers: [ProjectsService, ProjectRepository, CollaboratorsRepository],
 })
 export class ProjectsModule {}

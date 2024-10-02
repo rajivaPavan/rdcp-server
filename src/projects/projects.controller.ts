@@ -79,69 +79,6 @@ export class ProjectsController {
     }
   }
 
-  // This endpoint will return all collaborators of a project
-  @Get('/:projectId/collaborators')
-  async getCollaborators(
-    @Param('projectId') projectId: string, 
-    @User() user: AuthenticatedUser,
-  ): Promise<CollaboratorDto[]> {
-    let collaborators = await this.projectsService.getCollaborators(projectId);
-    const collaboratorDetails = await Promise.all(collaborators.map(async collaborator => {
-      let user = await this.usersService.findUser(collaborator.userId);
-      return {
-        userId: collaborator.userId,
-        email: user,
-        roles: collaborator.roles
-      }
-    }));
-    return collaboratorDetails;
-  }
-
-  // Add collaborators to a project by email
-  @Post('/:projectId/collaborators')
-  async addCollaborators(
-    @Param('projectId') projectId: string,
-    @Body() collaboratorsDTO: AddCollaboratorsDto,
-    @User() user: AuthenticatedUser,
-  ): Promise<any> {
-    await this.projectsService.addCollaborators(collaboratorsDTO, user.id);
-    return { message: 'Collaborators added successfully', success: true };
-  }
-
-  // Update collaborator roles
-  @Patch('/:projectId/collaborators/:collaboratorId')
-  async updateCollaboratorRoles(
-    @Param('projectId') projectId: string,
-    @Param('collaboratorId') collaboratorId: string,
-    @Body('roles') roles: ProjectRoleEnum[],
-    @User() user: AuthenticatedUser,
-  ): Promise<any> {
-    await this.projectsService.updateCollaboratorRoles(
-      projectId,
-      collaboratorId,
-      roles,
-      user.id,
-    );
-    return {
-      message: 'Collaborator roles updated successfully',
-      success: true,
-    };
-  }
-  // Remove a collaborator from a project
-  @Delete('/:projectId/collaborators/:collaboratorId')
-  async removeCollaborator(
-    @Param('projectId') projectId: string,
-    @Param('collaboratorId') collaboratorId: string,
-    @User() user: AuthenticatedUser,
-  ): Promise<any> {
-    await this.projectsService.removeCollaborator(
-      projectId,
-      collaboratorId,
-      user.id,
-    );
-    return { message: 'Collaborator removed successfully', success: true };
-  }
-
   /// Update endpoint for project
   @Patch()
   async updateProject(
