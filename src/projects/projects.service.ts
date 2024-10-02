@@ -132,7 +132,6 @@ export class ProjectsService {
   async deleteProject(id: string, userId: string): Promise<void> {
     await this.findProjectOrFail(id);
     await this.authorizeUser(id, userId, ProjectRoleEnum.OWNER);
-
     await this.projectRepository.delete(id);
   }
 
@@ -155,6 +154,7 @@ export class ProjectsService {
       project: project._id,
       user: new Types.ObjectId(userId),
     });
+
     if (!collaborator || !collaborator.roles.includes(ProjectRoleEnum.OWNER)) {
       throw new UnauthorizedProjectAccessException();
     }
@@ -191,6 +191,7 @@ export class ProjectsService {
     });
 
     return collaborators.map((collaborator) => ({
+      id: collaborator._id.toString(),
       userId: collaborator.user.toString(),
       roles: collaborator.roles,
     }));

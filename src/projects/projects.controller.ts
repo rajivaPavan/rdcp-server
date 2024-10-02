@@ -21,7 +21,7 @@ import { AuthenticatedUser } from '../auth/entities/authenticated-user';
 import { ProjectRoleEnum } from './entities/project-role.enum';
 import { FormsService } from 'src/forms/forms.service';
 import { UsersService } from 'src/users/users.service';
-import { CollaboratorDocument } from './dtos/collaborator.dto';
+import { CollaboratorDto } from './dtos/collaborator.dto';
 
 @UseGuards(AuthGuard)
 @Controller('projects')
@@ -84,12 +84,12 @@ export class ProjectsController {
   async getCollaborators(
     @Param('projectId') projectId: string, 
     @User() user: AuthenticatedUser,
-  ): Promise<CollaboratorDocument[]> {
+  ): Promise<CollaboratorDto[]> {
     let collaborators = await this.projectsService.getCollaborators(projectId);
     const collaboratorDetails = await Promise.all(collaborators.map(async collaborator => {
       let user = await this.usersService.findUser(collaborator.userId);
       return {
-        id: collaborator.userId,
+        userId: collaborator.userId,
         email: user,
         roles: collaborator.roles
       }
