@@ -2,17 +2,17 @@ import { Body, ConflictException, Controller, NotFoundException, Post, Req, Unau
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ResponsesService } from './responses.service';
 import { FormId } from 'src/forms/decorators/form-id.decorator';
-import { FormsService } from 'src/forms/forms.service';
 import AuthenticationService from 'src/auth/auth.service';
+import { FormAuthorization } from 'src/authorization/forms.authorization';
 import { Form } from 'src/forms/entities/form.schema';
-import { FormDTO } from 'src/forms/dtos/form.dto';
 
 @Controller('responses')
 export class ResponsesController {
 
     constructor(
         private readonly responsesService: ResponsesService,
-        private readonly authService: AuthenticationService
+        private readonly authService: AuthenticationService,
+        private readonly formAuth: FormAuthorization
     ) { }
 
     @Post(':formId/submit')
@@ -27,11 +27,11 @@ export class ResponsesController {
         const records = this.parseBody(body);
 
         // get the form 
-        const form = await this.formService.getForm(formId);
+        const form = await this.formAuth.getForm(formId);
 
         const { authorized } = this.publicSubmissionAuth(form);
 
-        const projectId = form.projectId;
+        const projectId = form.projectId.toString();
 
         if (authorized) {
             // public forms do not require authentication
@@ -67,7 +67,7 @@ export class ResponsesController {
     ) {
         try {
             // Ensure user has the right to submit to this form (private submission authorization)
-            await this.formService.privateSubmissionAuth(form, userId);
+            await this.formAuth.privateSubmissionAuth(form, userId);
 
             // Submit the response with the user's ID in the background
             await this.responsesService.submit(projectId, formId, records, files, userId);
@@ -87,7 +87,7 @@ export class ResponsesController {
    * - `projectId`: The ID of the project associated with the form.
    * @throws NotFoundException if the form is not found or not published.
    */
-    private publicSubmissionAuth(form: Partial<FormDTO>): {
+    private publicSubmissionAuth(form: Partial<Form>): {
         authorized: boolean;
         message?: string;
     } {
