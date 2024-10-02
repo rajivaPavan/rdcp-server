@@ -45,13 +45,6 @@ export class AuthenticationController {
     return await this.authService.refresh(refreshToken);
   }
 
-  @Post('logout')
-  async logout(@Req() req): Promise<any> {
-    const token = req.headers.authorization.split(' ')[1];
-    const userId = req.user.id;
-    return await this.authService.logout(token, userId);
-  }
-
   @Get('reset-password')
   async forgotPassword(@Query('email') email: string) {
     this.logger.debug(`Forgot password request for ${email}`);
