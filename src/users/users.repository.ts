@@ -20,12 +20,12 @@ export class UsersRepository {
     return this.userModel.find().exec();
   }
 
-  async findByEmail(email: string): Promise<User> {
+  async findUserByEmail(email: string): Promise<User> {
     return this.userModel.findOne({ email: email }).exec();
   }
 
-  async findByEmails(emails: string[]): Promise<User[]> {
-    return this.userModel.find({ email: { $in: emails } }).exec();
+  async findByEmail(email: string): Promise<User[]>{
+    return this.userModel.find({ email: email }).lean().exec();
   }
 
   async findById(userId: string): Promise<User> {

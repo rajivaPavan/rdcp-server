@@ -20,11 +20,15 @@ export class UsersService {
     private readonly eventEmitter: TypedEventEmitter,
   ) {}
 
-  async findAllUsers(): Promise<User[]> {
+  async getAllUsers(): Promise<User[]> {
     return await this.userRepository.findAll();
   }
 
   async findUserByEmail(email: string): Promise<User> {
+    return await this.userRepository.findUserByEmail(email);
+  }
+
+  async searchByEmail(email: string): Promise<User[]> {
     return await this.userRepository.findByEmail(email);
   }
 
