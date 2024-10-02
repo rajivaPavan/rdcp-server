@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFormDTO, FormDTO } from './dtos/form.dto';
 import { FormsRepository } from './forms.repository';
 import { Form } from './entities/form.schema';
@@ -6,7 +6,7 @@ import { Types } from 'mongoose';
 
 @Injectable()
 export class FormsService {
-  constructor(private readonly formRepository: FormsRepository) {}
+  constructor(private readonly formRepository: FormsRepository) { }
 
   async createForm(formDto: CreateFormDTO, userId: any): Promise<FormDTO> {
     // check if user is authorized to create form
@@ -90,5 +90,41 @@ export class FormsService {
       draft: schema,
       hasChanges: true,
     });
+  }
+
+  /**
+   * Checks if a public submission is authorized for the given form.
+   *
+   * @param formId - The ID of the form to check.
+   * @returns A promise that resolves to an object containing:
+   * - `authorized`: A boolean indicating if the submission is authorized.
+   * - `message`: An optional message providing additional information.
+   * - `projectId`: The ID of the project associated with the form.
+   * @throws NotFoundException if the form is not found or not published.
+   */
+  async publicSubmissionAuth(form: Partial<FormDTO>): Promise<{
+    authorized: boolean;
+    message?: string;
+  }> {
+
+    if (!form.isPublished) {
+      throw new NotFoundException('Form is not found');
+    }
+
+    // if form is not private then anyone can submit a response
+    if (!form.isPrivate)
+      return { authorized: true };
+
+    return {
+      authorized: false,
+    }
+  }
+
+  async privateSubmissionAuth(form: Partial<FormDTO>, userId: string) {
+
+    // check if user is authorized to submit a response
+    // ie. user is a owner or manager of the project
+
+    return true;
   }
 }

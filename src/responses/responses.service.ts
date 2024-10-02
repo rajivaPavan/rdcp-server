@@ -15,7 +15,8 @@ export class ResponsesService {
         projectId: string,
         formId: string,
         body: Record<string, any>,
-        files: Array<Express.Multer.File>
+        files: Array<Express.Multer.File>,
+        userId?: string
     ) {
         console.log(body);
         console.log(files);

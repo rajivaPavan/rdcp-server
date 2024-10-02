@@ -4,13 +4,15 @@ import { ResponsesController } from './responses.controller';
 import { S3ObjectStorageService } from './files.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Response, ResponseSchema } from './entities/response.schema';
-import { AuthorizationModule } from 'src/authorization/authorization.module';
 import { ResponsesRepository } from './responses.repository';
+import { FormsModule } from 'src/forms/forms.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Response.name, schema: ResponseSchema }]),
-    AuthorizationModule
+    AuthModule,
+    FormsModule
   ],
   providers: [
     ResponsesService,
