@@ -138,12 +138,13 @@ export class ProjectsService {
   /// The following methods are for managing collaborators
 
   async addCollaborators(
+    projectId: string,
     collaboratorsDTO: AddCollaboratorsDto,
     userId: string,
   ): Promise<any> {
     // get the project
     const project = await this.projectRepository.findById(
-      collaboratorsDTO.projectId,
+      projectId,
     );
 
     if (!project) {

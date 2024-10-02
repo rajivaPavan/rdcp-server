@@ -36,14 +36,14 @@ export class CollaboratorsController {
         return collaboratorDetails;
     }
 
-    // Add collaborators to a project by email
     @Post()
     async addCollaborators(
         @Param('projectId') projectId: string,
         @Body() collaboratorsDTO: AddCollaboratorsDto,
         @User() user: AuthenticatedUser,
     ): Promise<any> {
-        await this.projectsService.addCollaborators(collaboratorsDTO, user.id);
+        await this.projectsService.addCollaborators(projectId,
+            collaboratorsDTO, user.id);
         return { message: 'Collaborators added successfully', success: true };
     }
 
