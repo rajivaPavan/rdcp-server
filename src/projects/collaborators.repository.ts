@@ -33,11 +33,19 @@ export class CollaboratorsRepository {
     return this.collaboratorModel.insertMany(collaboratorsWithIds);
   }
 
+  async update(id:string, update: Partial<Collaborator>): Promise<Collaborator> {
+    return this.collaboratorModel.findByIdAndUpdate(id, update).exec();
+  }
+
   async updateOne(filter: any, update: any): Promise<any> {
     return this.collaboratorModel.updateOne(filter, update).exec();
   }
 
   async deleteOne(options: any): Promise<any> {
     return this.collaboratorModel.deleteOne(options).exec();
+  }
+
+  async delete(id: string): Promise<any> {
+    return this.collaboratorModel.findByIdAndDelete(id).exec();
   }
 }

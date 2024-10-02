@@ -17,7 +17,7 @@ export class ProjectsService {
   constructor(
     private readonly projectRepository: ProjectRepository,
     private readonly collaboratorRepository: CollaboratorsRepository,
-  ) {}
+  ) { }
 
   private async findProjectOrFail(projectId: string): Promise<Project> {
     const project = await this.projectRepository.findById(projectId);
@@ -135,7 +135,8 @@ export class ProjectsService {
     await this.projectRepository.delete(id);
   }
 
-  // Add collaborators to a project
+  /// The following methods are for managing collaborators
+
   async addCollaborators(
     collaboratorsDTO: AddCollaboratorsDto,
     userId: string,
@@ -175,8 +176,7 @@ export class ProjectsService {
     return { message: 'Collaborators added successfully', success: true };
   }
 
-  // Get the collaborators of a project
-  async getCollaborators(projectId: string): Promise<{userId: string, roles: ProjectRoleEnum[]}[]> {
+  async getCollaborators(projectId: string): Promise<{ userId: string, roles: ProjectRoleEnum[] }[]> {
     const projects = await this.projectRepository.find({
       _id: new Types.ObjectId(projectId),
     });
@@ -202,21 +202,20 @@ export class ProjectsService {
     collaboratorId: string,
     roles: ProjectRoleEnum[],
     userId: string,
-  ): Promise<void> {
+  ) {
     await this.findProjectOrFail(projectId);
     await this.authorizeUser(projectId, userId, ProjectRoleEnum.OWNER);
     // Update the collaborator's roles directly in the database
-    const result = await this.collaboratorRepository.updateOne(
-      {
-        project: new Types.ObjectId(projectId),
-        user: new Types.ObjectId(collaboratorId),
-      },
+    const result = await this.collaboratorRepository.update(
+      collaboratorId, // The collaborator to update
       { roles: roles }, // The new roles to be assigned
     );
 
-    if (result.matchedCount === 0) {
+    if (!result) {
       throw new NotFoundException('Collaborator not found');
     }
+
+    return { success: true };
   }
 
   async removeCollaborator(
@@ -231,18 +230,14 @@ export class ProjectsService {
     await this.authorizeUser(projectId, userId, ProjectRoleEnum.OWNER);
 
     // Remove the collaborator
-    const result = await this.collaboratorRepository.deleteOne({
-      project: new Types.ObjectId(projectId),
-      user: new Types.ObjectId(collaboratorId),
-    });
+    const result = await this.collaboratorRepository.delete(collaboratorId);
 
     if (!result) {
       throw new NotFoundException('Collaborator not found');
     }
 
-    return { message: 'Collaborator removed successfully', success: true };
+    return { success: true };
   }
-
 
   async getUserProjectRoles(userId: string, projectId: string) {
     const collaborator = await this.collaboratorRepository.findOne({
