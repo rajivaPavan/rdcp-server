@@ -80,7 +80,7 @@ export class ProjectsController {
   }
 
   // This endpoint will return all collaborators of a project
-  @Get('/:projectId/settings')
+  @Get('/:projectId/collaborators')
   async getCollaborators(
     @Param('projectId') projectId: string, 
     @User() user: AuthenticatedUser,
@@ -98,7 +98,7 @@ export class ProjectsController {
   }
 
   // Add collaborators to a project by email
-  @Post('/:projectId/settings')
+  @Post('/:projectId/collaborators')
   async addCollaborators(
     @Param('projectId') projectId: string,
     @Body() collaboratorsDTO: AddCollaboratorsDto,
@@ -109,7 +109,7 @@ export class ProjectsController {
   }
 
   // Update collaborator roles
-  @Patch('/:projectId/settings/:collaboratorId')
+  @Patch('/:projectId/collaborators/:collaboratorId')
   async updateCollaboratorRoles(
     @Param('projectId') projectId: string,
     @Param('collaboratorId') collaboratorId: string,
@@ -128,7 +128,7 @@ export class ProjectsController {
     };
   }
   // Remove a collaborator from a project
-  @Delete('/:projectId/settings/:collaboratorId')
+  @Delete('/:projectId/collaborators/:collaboratorId')
   async removeCollaborator(
     @Param('projectId') projectId: string,
     @Param('collaboratorId') collaboratorId: string,
