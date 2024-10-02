@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ProjectAuthorization } from './forms.authorization';
+import { ProjectAuthorization } from './projects.authorization';
 import { ProjectsService } from 'src/projects/projects.service';
 import { ProjectRepository } from 'src/projects/projects.repository';
 import { CollaboratorsRepository } from 'src/projects/collaborators.repository';

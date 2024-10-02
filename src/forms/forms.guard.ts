@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, ForbiddenException } from '@nestjs/common';
 import { FormsService } from '../forms/forms.service';
 import { Reflector } from '@nestjs/core';
-import { ProjectAction, ProjectAuthorization } from '../authorization/forms.authorization';
+import { ProjectAction, ProjectAuthorization } from '../authorization/projects.authorization';
 
 @Injectable()
 export class FormAuthorizationGuard implements CanActivate {
