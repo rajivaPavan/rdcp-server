@@ -8,9 +8,10 @@ import {
   Post,
   Query,
   UseGuards,
+  Param,
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
-import { CreateFormDTO, FormDTO } from './dtos/form.dto';
+import { CreateFormDTO, FormDTO, ParticipantsDTO } from './dtos/form.dto';
 import { FormsService } from './forms.service';
 import { AuthenticatedUser } from '../auth/entities/authenticated-user';
 import { User } from '../users/decorators/user.decorator';
@@ -126,6 +127,39 @@ export class FormsController {
   async releaseLock(@FormId() formId: string, @User() user: AuthenticatedUser) {
     this.logger.debug(`Releasing lock for form with id: ${formId}`);
     return this.formEditingService.releaseLock(formId, user.id);
+  }
+
+  @UseGuards(FormAuthorizationGuard)
+  @Get(':formId/settings')
+  async fetchParticipants(
+    @Param('projectId') projectId: string,
+    @Param('formId') formId: string,
+  ): Promise<ParticipantsDTO[]> {
+    this.logger.debug(`Fetching participants for form with id: ${formId}`);
+    return await this.formsService.fetchParticipants(projectId, formId);
+  }
+
+  @UseGuards(FormAuthorizationGuard)
+  @Post(':formId/settings')
+  async addParticipants(
+    @Param('projectId') projectId: string,
+    @Param('formId') formId: string,
+    @Body('emails') emails: string[],
+  ): Promise<ParticipantsDTO[]> {
+    this.logger.debug(`Adding participants to form with id: ${formId}`);
+    return await this.formsService.addParticipants(projectId, formId, emails);
+  }
+
+  @UseGuards(FormAuthorizationGuard)
+  @Delete(':formId/settings/:participantId')
+  async removeParticipant(
+    @Param('projectId') projectId: string,
+    @Param('formId') formId: string,
+    @Param('participantId') participantId: string,
+  ): Promise<{ message: string }> {
+    this.logger.debug(`Removing participant with id: ${participantId} from form with id: ${formId}`);
+    await this.formsService.removeParticipant(projectId, formId, participantId);
+    return { message: 'Participant removed successfully' };
   }
 
 }
