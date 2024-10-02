@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ProjectAuthorization, projectActions, ProjectAction } from './forms.authorization';
+import { ProjectAuthorization, projectActions, ProjectAction } from './projects.authorization';
 import { CollaboratorsRepository } from 'src/projects/collaborators.repository';
 import { ProjectRoleEnum } from 'src/projects/entities/project-role.enum';
 import { Types } from 'mongoose';
@@ -34,7 +34,7 @@ describe('FormsAuthorization', () => {
     it('should return false if collaborator is not found', async () => {
         jest.spyOn(collaboratorsRepository, 'findOne').mockResolvedValue(null);
 
-        const result = await service.isAuthorized(user.toString(), project.toString(), 'create');
+        const result = await service.isAuthorized(user.toString(), project.toString(), 'create_form');
         expect(result).toBe(false);
     });
 
@@ -44,7 +44,7 @@ describe('FormsAuthorization', () => {
             roles: [ProjectRoleEnum.OWNER],
         });
 
-        const result = await service.isAuthorized(user.toString(), project.toString(), 'create');
+        const result = await service.isAuthorized(user.toString(), project.toString(), 'create_form');
         expect(result).toBe(true);
     });
 
@@ -54,7 +54,7 @@ describe('FormsAuthorization', () => {
             roles: [ProjectRoleEnum.MANAGER],
         });
 
-        const result = await service.isAuthorized(user.toString(), project.toString(), 'create');
+        const result = await service.isAuthorized(user.toString(), project.toString(), 'create_form');
         expect(result).toBe(true);
     });
 
@@ -64,7 +64,7 @@ describe('FormsAuthorization', () => {
             roles: [ProjectRoleEnum.EDITOR],
         });
 
-        const result = await service.isAuthorized(user.toString(), project.toString(),'create');
+        const result = await service.isAuthorized(user.toString(), project.toString(),'create_form');
         expect(result).toBe(false);
     });
 
@@ -74,7 +74,7 @@ describe('FormsAuthorization', () => {
             roles: [ProjectRoleEnum.ANALYST],
         });
 
-        const result = await service.isAuthorized(user.toString(), project.toString(), 'view_responses');
+        const result = await service.isAuthorized(user.toString(), project.toString(), 'view_form_responses');
         expect(result).toBe(true);
     });
 });
