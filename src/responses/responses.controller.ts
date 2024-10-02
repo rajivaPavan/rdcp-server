@@ -1,17 +1,17 @@
-import { Body, ConflictException, Controller, Post, Req, UnauthorizedException, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ConflictException, Controller, NotFoundException, Post, Req, UnauthorizedException, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ResponsesService } from './responses.service';
 import { FormId } from 'src/forms/decorators/form-id.decorator';
 import { FormsService } from 'src/forms/forms.service';
 import AuthenticationService from 'src/auth/auth.service';
 import { Form } from 'src/forms/entities/form.schema';
+import { FormDTO } from 'src/forms/dtos/form.dto';
 
 @Controller('responses')
 export class ResponsesController {
 
     constructor(
         private readonly responsesService: ResponsesService,
-        private readonly formService: FormsService,
         private readonly authService: AuthenticationService
     ) { }
 
@@ -29,7 +29,7 @@ export class ResponsesController {
         // get the form 
         const form = await this.formService.getForm(formId);
 
-        const { authorized } = await this.formService.publicSubmissionAuth(form);
+        const { authorized } = this.publicSubmissionAuth(form);
 
         const projectId = form.projectId;
 
@@ -74,6 +74,34 @@ export class ResponsesController {
         } catch (error) {
             // Handle or log the error
             console.error(`Error processing private submission for user ${userId}:`, error);
+        }
+    }
+
+    /**
+   * Checks if a public submission is authorized for the given form.
+   *
+   * @param formId - The ID of the form to check.
+   * @returns A promise that resolves to an object containing:
+   * - `authorized`: A boolean indicating if the submission is authorized.
+   * - `message`: An optional message providing additional information.
+   * - `projectId`: The ID of the project associated with the form.
+   * @throws NotFoundException if the form is not found or not published.
+   */
+    private publicSubmissionAuth(form: Partial<FormDTO>): {
+        authorized: boolean;
+        message?: string;
+    } {
+
+        if (!form.isPublished) {
+            throw new NotFoundException('Form is not found');
+        }
+
+        // if form is not private then anyone can submit a response
+        if (!form.isPrivate)
+            return { authorized: true };
+
+        return {
+            authorized: false,
         }
     }
 
