@@ -4,10 +4,9 @@ import { ResponsesService } from './responses.service';
 import { FormId } from 'src/forms/decorators/form-id.decorator';
 import AuthenticationService from 'src/auth/auth.service';
 import { FormAuthorization } from 'src/authorization/forms.authorization';
-import { Form } from 'src/forms/entities/form.schema';
 import { FormDTO } from 'src/forms/dtos/form.dto';
 
-@Controller('responses')
+@Controller('submissions')
 export class ResponsesController {
 
     constructor(
@@ -16,19 +15,17 @@ export class ResponsesController {
         private readonly formAuth: FormAuthorization
     ) { }
 
-    @Get(":formId")
+    @Get("form/:formId")
     async viewForm(
         @FormId() formId: string,
         @Req() req: Request
     ): Promise<FormDTO> {
         const form = await this.formAuth.getForm(formId);
 
-        const { authorized } = this.publicSubmissionAuth(form);
-
-        const projectId = form.projectId.toString();
+        const { authorized } = this.formAuth.publicSubmissionAuth(form);
 
         if (authorized)
-            return this.prepareFormDto(form);
+            return FormDTO.fromEntity(form);    
 
         // check if user is authenticated
         // if user is authenticated, check if user has access to the form
@@ -41,22 +38,10 @@ export class ResponsesController {
 
         await this.formAuth.privateSubmissionAuth(form, user.id);
 
-        return {
-            ...form,
-            id: form._id.toString(),
-            projectId: form.projectId.toString(),
-        }
+        return FormDTO.fromEntity(form);
     }
 
-    private prepareFormDto(form: Form): FormDTO {
-        return {
-            ...form,
-            id: form._id.toString(),
-            projectId: form.projectId.toString(),
-        }
-    }
-
-    @Post(':formId/submit')
+    @Post('form/:formId')
     @UseInterceptors(AnyFilesInterceptor({}))
     async submitForm(
         @FormId() formId: string,
@@ -70,7 +55,7 @@ export class ResponsesController {
         // get the form 
         const form = await this.formAuth.getForm(formId);
 
-        const { authorized } = this.publicSubmissionAuth(form);
+        const { authorized } = this.formAuth.publicSubmissionAuth(form);
 
         const projectId = form.projectId.toString();
 
@@ -115,34 +100,6 @@ export class ResponsesController {
         } catch (error) {
             // Handle or log the error
             console.error(`Error processing private submission for user ${userId}:`, error);
-        }
-    }
-
-    /**
-   * Checks if a public submission is authorized for the given form.
-   *
-   * @param formId - The ID of the form to check.
-   * @returns A promise that resolves to an object containing:
-   * - `authorized`: A boolean indicating if the submission is authorized.
-   * - `message`: An optional message providing additional information.
-   * - `projectId`: The ID of the project associated with the form.
-   * @throws NotFoundException if the form is not found or not published.
-   */
-    private publicSubmissionAuth(form: Partial<Form>): {
-        authorized: boolean;
-        message?: string;
-    } {
-
-        if (!form.isPublished) {
-            throw new NotFoundException('Form is not found');
-        }
-
-        // if form is not private then anyone can submit a response
-        if (!form.isPrivate)
-            return { authorized: true };
-
-        return {
-            authorized: false,
         }
     }
 
