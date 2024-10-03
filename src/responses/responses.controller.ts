@@ -1,10 +1,11 @@
-import { Body, ConflictException, Controller, NotFoundException, Post, Req, UnauthorizedException, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ConflictException, Controller, Get, NotFoundException, Post, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ResponsesService } from './responses.service';
 import { FormId } from 'src/forms/decorators/form-id.decorator';
 import AuthenticationService from 'src/auth/auth.service';
 import { FormAuthorization } from 'src/authorization/forms.authorization';
 import { Form } from 'src/forms/entities/form.schema';
+import { FormDTO } from 'src/forms/dtos/form.dto';
 
 @Controller('responses')
 export class ResponsesController {
@@ -15,9 +16,49 @@ export class ResponsesController {
         private readonly formAuth: FormAuthorization
     ) { }
 
+    @Get(":formId")
+    async viewForm(
+        @FormId() formId: string,
+        @Req() req: Request
+    ): Promise<FormDTO> {
+        const form = await this.formAuth.getForm(formId);
+
+        const { authorized } = this.publicSubmissionAuth(form);
+
+        const projectId = form.projectId.toString();
+
+        if (authorized)
+            return this.prepareFormDto(form);
+
+        // check if user is authenticated
+        // if user is authenticated, check if user has access to the form
+        let user = null;
+        try {
+            user = await this.authService.extractUserFromRequest(req);
+        } catch (error) {
+            throw new NoFormAccessException();
+        }
+
+        await this.formAuth.privateSubmissionAuth(form, user.id);
+
+        return {
+            ...form,
+            id: form._id.toString(),
+            projectId: form.projectId.toString(),
+        }
+    }
+
+    private prepareFormDto(form: Form): FormDTO {
+        return {
+            ...form,
+            id: form._id.toString(),
+            projectId: form.projectId.toString(),
+        }
+    }
+
     @Post(':formId/submit')
     @UseInterceptors(AnyFilesInterceptor({}))
-    async uploadFile(
+    async submitForm(
         @FormId() formId: string,
         @UploadedFiles() files: Array<Express.Multer.File>,
         @Body() body: any,
@@ -42,7 +83,7 @@ export class ResponsesController {
             const user = await this.authService.extractUserFromRequest(req);
 
             if (!user)
-                throw new ConflictException('User not authenticated');
+                throw new NoFormAccessException();
 
             // submit the response with the user's ID
             this.handlePrivateSubmission(form, projectId, formId, records, files, user.id);
@@ -114,5 +155,12 @@ export class ResponsesController {
             }
         }
         return body;
+    }
+}
+
+
+export class NoFormAccessException extends ConflictException {
+    constructor(message?: string) {
+        super(message || 'User does not have access to the form');
     }
 }

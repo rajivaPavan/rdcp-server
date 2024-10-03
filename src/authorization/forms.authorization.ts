@@ -4,7 +4,6 @@ import { FormsRepository } from "src/forms/forms.repository";
 @Injectable()
 export class FormAuthorization{
 
-
     constructor(
         private readonly formsRepository: FormsRepository
     ) {}
