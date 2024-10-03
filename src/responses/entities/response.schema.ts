@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 
-export type ResponseDocument = HydratedDocument<Response>;
+export type ResponseDocument = HydratedDocument<FormResponse>;
 
 @Schema({ timestamps: true })
-export class Response {
-  constructor(response: Partial<Response>) {
+export class FormResponse {
+  constructor(response: Partial<FormResponse>) {
     Object.assign(this, response);
   }
 
@@ -17,6 +17,9 @@ export class Response {
   @Prop({ type: Types.ObjectId, required: true })
   projectId: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId })
+  userId?: Types.ObjectId;
+
 //   @Prop({ default: Date.now })
   createdAt?: Date;
 
@@ -24,4 +27,4 @@ export class Response {
   record: Record<string, any>;
 }
 
-export const ResponseSchema = SchemaFactory.createForClass(Response);
+export const ResponseSchema = SchemaFactory.createForClass(FormResponse);

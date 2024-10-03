@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { FileHashService, S3ObjectStorageService } from './files.service';
 import { ResponsesRepository } from './responses.repository';
 import { Types } from 'mongoose';
+import { FormsRepository } from 'src/forms/forms.repository';
 
 @Injectable()
 export class ResponsesService {
@@ -9,6 +10,7 @@ export class ResponsesService {
     constructor(
         private readonly s3ObjectStorageService: S3ObjectStorageService,
         private readonly responsesRepository: ResponsesRepository,
+        private readonly formRepository: FormsRepository
     ) { }
 
     async submit(
@@ -23,15 +25,33 @@ export class ResponsesService {
 
         const res = await this.uploadFiles(projectId, formId, files);
 
+        const form = await this.formRepository.findById(formId);
+        const schema = form.schema;
+
+        // // check if all required fields are present
+        // const requiredFields = schema.filter(field => field.extraAttributes.required);
+
+        // const missingFields = requiredFields.filter(field => !body[field.name]);
+
+        // if (missingFields.length > 0) {
+        //     throw new Error(`Missing required fields: ${missingFields.map(field => field.name).join(', ')}`);
+        // }
+
         // save in db
         const response = await this.responsesRepository.create({
             _id: new Types.ObjectId(),
             projectId: new Types.ObjectId(projectId),
             formId: new Types.ObjectId(formId),
+            userId: userId ? new Types.ObjectId(userId) : null,
             record: {
                 ...body,
                 ...res.reduce((acc, curr) => {
-                    acc[curr.field] = curr.key;
+                    const q = schema.find(field => field.id === curr.field);
+                    acc[curr.field] = {
+                        value : curr.key,
+                        type: q.type,
+                        label: q.extraAttributes.label,
+                    };
                     return acc;
                 }, {}),
             },
@@ -71,6 +91,12 @@ export class ResponsesService {
         }));
 
         return uploadResponse;
+    }
+
+    async getResponses(formId: string) {
+        return await this.responsesRepository.find({
+            formId: new Types.ObjectId(formId),
+        });
     }
 }
 

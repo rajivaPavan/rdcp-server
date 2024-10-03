@@ -5,6 +5,12 @@ import { FormId } from 'src/forms/decorators/form-id.decorator';
 import AuthenticationService from 'src/auth/auth.service';
 import { FormAuthorization } from 'src/authorization/forms.authorization';
 import { FormDTO } from 'src/forms/dtos/form.dto';
+import { FormsService } from 'src/forms/forms.service';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { FormAuthorizationGuard } from 'src/forms/forms.guard';
+import { FormActionMeta } from 'src/forms/decorators/form-action.decorator';
+import { FormReqDto } from 'src/forms/decorators/form.decorator';
+import { Form } from 'src/forms/entities/form.schema';
 
 @Controller('submissions')
 export class ResponsesController {
@@ -12,7 +18,7 @@ export class ResponsesController {
     constructor(
         private readonly responsesService: ResponsesService,
         private readonly authService: AuthenticationService,
-        private readonly formAuth: FormAuthorization
+        private readonly formAuth: FormAuthorization,
     ) { }
 
     @Get("form/:formId")
@@ -25,7 +31,7 @@ export class ResponsesController {
         const { authorized } = this.formAuth.publicSubmissionAuth(form);
 
         if (authorized)
-            return FormDTO.fromEntity(form);    
+            return FormDTO.fromEntity(form);
 
         // check if user is authenticated
         // if user is authenticated, check if user has access to the form
@@ -112,6 +118,21 @@ export class ResponsesController {
             }
         }
         return body;
+    }
+
+    @UseGuards(AuthGuard)
+    @UseGuards(FormAuthorizationGuard)
+    @FormActionMeta('view_form_responses')
+    @Get(':formId')
+    async getResponses(
+        @FormId() formId: string,
+        @FormReqDto() form : Form
+    ) {
+        const responses = this.responsesService.getResponses(formId);
+        return {
+            responses,
+            form: FormDTO.fromEntity(form)
+        }
     }
 }
 
