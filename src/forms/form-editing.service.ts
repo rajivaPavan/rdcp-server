@@ -5,7 +5,9 @@ import { RedisService } from '../redis/redis.service';
 export class FormsEditingService {
   constructor(private redisService: RedisService) {}
 
-  private readonly lockTTL = 300;
+  private readonly lockTTL = 600; // 10 minutes
+
+  public getTTL = () => this.lockTTL;
 
   // Lock the form for a user with TTL
   async lockForm(formId: string, user: { id: string; email: string }) {
@@ -18,7 +20,7 @@ export class FormsEditingService {
     }
 
     const lockKey = this.makeLockKey(formId);
-    await this.redisService.set(lockKey, user, this.lockTTL); // 5-minute TTL
+    await this.redisService.set(lockKey, user, this.lockTTL);
     return { success: true };
   }
 
@@ -27,10 +29,10 @@ export class FormsEditingService {
     const currentEditor = await this.getCurrentEditor(formId);
     if (currentEditor.id === userId) {
       const lockKey = this.makeLockKey(formId);
-      await this.redisService.updateTTL(lockKey, this.lockTTL); // Extend by 5 minutes
+      await this.redisService.updateTTL(lockKey, this.lockTTL);
       return { success: true };
     }
-    throw new NoLockOwnerhsipException();
+    throw new NoLockOwnershipException();
   }
 
   // Release the lock
@@ -40,7 +42,7 @@ export class FormsEditingService {
       await this.removeCurrentEditor(formId);
       return { success: true };
     }
-    throw new NoLockOwnerhsipException();
+    throw new NoLockOwnershipException();
   }
 
   private async removeCurrentEditor(formId: string) {
@@ -65,7 +67,7 @@ export class FormsEditingService {
   }
 }
 
-export class NoLockOwnerhsipException extends ConflictException {
+export class NoLockOwnershipException extends ConflictException {
   constructor() {
     super('Cannot update lock, no ownership.');
   }

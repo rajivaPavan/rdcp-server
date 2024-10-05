@@ -30,7 +30,7 @@ export class FormsController {
     private readonly formEditingService: FormsEditingService
   ) { }
 
-  @FormActionMeta('create')
+  @FormActionMeta('create_form')
   @Post()
   async createForm(
     @Body() formDto: CreateFormDTO,
@@ -41,7 +41,7 @@ export class FormsController {
   }
 
   @UseGuards(FormAuthorizationGuard)
-  @FormActionMeta('delete')
+  @FormActionMeta('delete_form')
   @Delete('/:formId')
   async deleteForm(
     @FormId() formId: string,
@@ -75,7 +75,7 @@ export class FormsController {
 
   /// Update form properties
   @UseGuards(FormAuthorizationGuard)
-  @FormActionMeta('edit_properties')
+  @FormActionMeta('edit_form_properties')
   @Patch('/:formId')
   async updateForm(@FormId() formId: string, @Body() formDto: FormDTO) {
     this.logger.debug(`Updating form with id: ${formId}`);
@@ -85,7 +85,7 @@ export class FormsController {
 
   /// Save form schema changes
   @UseGuards(FormAuthorizationGuard)
-  @FormActionMeta('edit_schema')
+  @FormActionMeta('edit_form_schema')
   @Post(':formId/save-form')
   async saveForm(@FormId() formId: string, @Body() body) {
     this.logger.debug(`Saving form schema with id: ${formId}`);
@@ -96,7 +96,7 @@ export class FormsController {
 
   /// Publish form changes to the public
   @UseGuards(FormAuthorizationGuard)
-  @FormActionMeta('edit_properties')
+  @FormActionMeta('edit_form_properties')
   @Patch(':formId/publish')
   async publishForm(@FormId() formId: string) {
     return await this.formsService.publishForm(formId);
@@ -104,7 +104,7 @@ export class FormsController {
 
   /// Lock form for editing
   @UseGuards(FormAuthorizationGuard)
-  @FormActionMeta('edit_schema')
+  @FormActionMeta('edit_form_schema')
   @Post(':formId/lock')
   async lockForm(@FormId() formId: string, @User() user: AuthenticatedUser) {
     this.logger.debug(`Locking form with id: ${formId}`);
@@ -113,7 +113,7 @@ export class FormsController {
 
   /// Keep form alive
   @UseGuards(FormAuthorizationGuard)
-  @FormActionMeta('edit_schema')
+  @FormActionMeta('edit_form_schema')
   @Post(':formId/keep-alive')
   async keepAlive(@FormId() formId: string, @User() user: AuthenticatedUser) {
     this.logger.debug(`Keep alive for form with id: ${formId}`);
@@ -122,7 +122,7 @@ export class FormsController {
 
   /// Release form lock
   @UseGuards(FormAuthorizationGuard)
-  @FormActionMeta('edit_schema')
+  @FormActionMeta('edit_form_schema')
   @Post(':formId/release-lock')
   async releaseLock(@FormId() formId: string, @User() user: AuthenticatedUser) {
     this.logger.debug(`Releasing lock for form with id: ${formId}`);
