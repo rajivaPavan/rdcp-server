@@ -7,4 +7,6 @@ export class ProjectDTO {
   description: string;
   roles: ProjectRoleEnum[];
   forms?: FormDTO[];
+  createdAt: Date;
+  updatedAt?: Date;
 }

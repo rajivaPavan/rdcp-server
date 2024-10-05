@@ -53,9 +53,11 @@ export class ProjectsService {
     });
 
     return {
+      ...project,
       id: project._id.toString(),
       name: project.name,
       description: project.description,
+      createdAt: project.createdAt,
       roles: collaborator?.roles || [],
     };
   }
@@ -78,6 +80,9 @@ export class ProjectsService {
     return {
       ...createdProject,
       id: createdProject._id.toString(),
+      name: createdProject.name,
+      description: createdProject.description,
+      createdAt: createdProject.createdAt,
       roles,
     };
   }
@@ -122,9 +127,8 @@ export class ProjectsService {
     });
 
     return {
+      ...updatedProject,
       id: updatedProject._id.toString(),
-      name: updatedProject.name,
-      description: updatedProject.description,
       roles: collaborator?.roles || [],
     };
   }
