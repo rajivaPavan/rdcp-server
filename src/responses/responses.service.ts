@@ -4,6 +4,7 @@ import { ResponsesRepository } from './responses.repository';
 import { Types } from 'mongoose';
 import { FormsRepository } from 'src/forms/forms.repository';
 
+
 @Injectable()
 export class ResponsesService {
 
@@ -13,6 +14,8 @@ export class ResponsesService {
         private readonly formRepository: FormsRepository
     ) { }
 
+    private readonly fileUploadFieldType = 'FileUploadField';
+
     async submit(
         projectId: string,
         formId: string,
@@ -20,22 +23,39 @@ export class ResponsesService {
         files: Array<Express.Multer.File>,
         userId?: string
     ) {
-        console.log(body);
-        console.log(files);
 
         const res = await this.uploadFiles(projectId, formId, files);
-
         const form = await this.formRepository.findById(formId);
         const schema = form.schema;
 
-        // // check if all required fields are present
-        // const requiredFields = schema.filter(field => field.extraAttributes.required);
+        // TODO: check if all required fields are present
+        // this.validateRequiredFields(schema, body, files);
 
-        // const missingFields = requiredFields.filter(field => !body[field.name]);
+        // create an array in the order of the schema from the body with labels added 
+        // and files replaced with their s3 keys
+        const preparedRecord = schema.map(field => {
+            const _record = {
+                type: field.type,
+                label: field.extraAttributes.label,
+            };
+            if (field.type === this.fileUploadFieldType) {
+                const file = res.find(r => r.field === field.id);
+                console.log("File", file);
+                return {
+                    id: file.field,
+                    value: file.key,
+                    ..._record,
+                }
+            }
+            return {
+                field: field.id,
+                value: body[field.id],
+                ..._record,
+            }
+        });
 
-        // if (missingFields.length > 0) {
-        //     throw new Error(`Missing required fields: ${missingFields.map(field => field.name).join(', ')}`);
-        // }
+        console.log(preparedRecord);
+
 
         // save in db
         const response = await this.responsesRepository.create({
@@ -43,22 +63,29 @@ export class ResponsesService {
             projectId: new Types.ObjectId(projectId),
             formId: new Types.ObjectId(formId),
             userId: userId ? new Types.ObjectId(userId) : null,
-            record: {
-                ...body,
-                ...res.reduce((acc, curr) => {
-                    const q = schema.find(field => field.id === curr.field);
-                    acc[curr.field] = {
-                        value : curr.key,
-                        type: q.type,
-                        label: q.extraAttributes.label,
-                    };
-                    return acc;
-                }, {}),
-            },
+            record: preparedRecord,
         });
 
-        console.log(response);
         return response;
+    }
+
+    private validateRequiredFields(schema: Record<string, any>[], body: Record<string, any>, files: Express.Multer.File[]) {
+        // TODO: check the accuracy of  this method
+        const requiredFields = schema.filter(field => field.extraAttributes.required);
+
+        if (requiredFields.length > 0) {
+            // check for missing fields in body
+            const missingFields = requiredFields.filter(field => !body[field.id]);
+
+            // check for missing fields in files
+            const missingFiles = requiredFields.filter(field => !files.find(file => file.fieldname === field.id));
+
+            if (missingFields.length > 0 || missingFiles.length > 0) {
+                const missingFieldNames = missingFields.map(field => field.extraAttributes.label);
+                const missingFileNames = missingFiles.map(field => field.extraAttributes.label);
+                throw new Error(`Missing required fields: ${[...missingFieldNames, ...missingFileNames].join(', ')}`);
+            }
+        }
     }
 
     private async uploadFiles(
