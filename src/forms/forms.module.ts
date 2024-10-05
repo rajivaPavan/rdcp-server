@@ -23,6 +23,6 @@ import { AuthorizationModule } from 'src/authorization/authorization.module';
     FormsEditingService,
     FormAuthorizationGuard,
     FormsRepository],
-  exports: [FormsService],
+  exports: [FormsService, FormsRepository],
 })
 export class FormsModule { }
