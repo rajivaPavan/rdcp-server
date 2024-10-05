@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Logger,
   Param,
   Patch,
@@ -15,17 +16,20 @@ import { ProjectDTO } from './dtos/project.dtos';
 import { AuthGuard } from '../auth/auth.guard';
 import { CreateProjectDto } from './dtos/create-project.dto';
 import { AddCollaboratorsDto } from './dtos/add-collaborators.dto';
-import { CollaboratorDto } from './dtos/collaborator.dto';
 import { User } from '../users/decorators/user.decorator';
 import { AuthenticatedUser } from '../auth/entities/authenticated-user';
+import { ProjectRoleEnum } from './entities/project-role.enum';
 import { FormsService } from 'src/forms/forms.service';
+import { UsersService } from 'src/users/users.service';
+import { CollaboratorDto } from './dtos/collaborator.dto';
 
 @UseGuards(AuthGuard)
 @Controller('projects')
 export class ProjectsController {
   constructor(
     private readonly projectsService: ProjectsService,
-    private readonly formsService: FormsService
+    private readonly formsService: FormsService,
+    private readonly usersService: UsersService,
   ) { }
 
   private readonly logger = new Logger('ProjectsController');
@@ -73,25 +77,6 @@ export class ProjectsController {
       ...project,
       forms
     }
-  }
-
-  // This endpoint will return all collaborators of a project
-  @Get('/collaborators/:projectId')
-  async getCollaborators(
-    @Param('projectId') projectId: string,
-    @User() user: AuthenticatedUser,
-  ): Promise<CollaboratorDto[]> {
-    return await this.projectsService.getCollaborators(projectId, user.id);
-  }
-
-  // This endpoint will add collaborators to a project
-  @Post('/collaborators')
-  async addCollaborators(
-    @Body() collaboratorsDTO: AddCollaboratorsDto,
-    @User() user: AuthenticatedUser,
-  ): Promise<any> {
-    await this.projectsService.addCollaborators(collaboratorsDTO, user.id);
-    return { message: 'Collaborators added successfully', success: true };
   }
 
   /// Update endpoint for project

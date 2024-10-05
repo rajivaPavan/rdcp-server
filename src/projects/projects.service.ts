@@ -17,7 +17,7 @@ export class ProjectsService {
   constructor(
     private readonly projectRepository: ProjectRepository,
     private readonly collaboratorRepository: CollaboratorsRepository,
-  ) {}
+  ) { }
 
   private async findProjectOrFail(projectId: string): Promise<Project> {
     const project = await this.projectRepository.findById(projectId);
@@ -132,18 +132,19 @@ export class ProjectsService {
   async deleteProject(id: string, userId: string): Promise<void> {
     await this.findProjectOrFail(id);
     await this.authorizeUser(id, userId, ProjectRoleEnum.OWNER);
-
     await this.projectRepository.delete(id);
   }
 
-  // TODO:
+  /// The following methods are for managing collaborators
+
   async addCollaborators(
+    projectId: string,
     collaboratorsDTO: AddCollaboratorsDto,
     userId: string,
   ): Promise<any> {
     // get the project
     const project = await this.projectRepository.findById(
-      collaboratorsDTO.projectId,
+      projectId,
     );
 
     if (!project) {
@@ -155,24 +156,28 @@ export class ProjectsService {
       project: project._id,
       user: new Types.ObjectId(userId),
     });
+
     if (!collaborator || !collaborator.roles.includes(ProjectRoleEnum.OWNER)) {
       throw new UnauthorizedProjectAccessException();
     }
 
     // Add the new collaborators
-    const newCollaborators = collaboratorsDTO.userIds.map((userId) => {
-      return {
-        project: project._id,
-        user: new Types.ObjectId(userId),
-        roles: collaboratorsDTO.roles,
-      };
-    });
+    const newCollaborators = await Promise.all(
+      collaboratorsDTO.userIds.map(async (userId) => {
+        return {
+          project: project._id,
+          user: new Types.ObjectId(userId),
+          roles: collaboratorsDTO.roles,
+        };
+      }),
+    );
 
     await this.collaboratorRepository.createMany(newCollaborators);
+
+    return { message: 'Collaborators added successfully', success: true };
   }
 
-  // TODO:
-  async getCollaborators(projectId: string, userId: string): Promise<any> {
+  async getCollaborators(projectId: string): Promise<{ userId: string, roles: ProjectRoleEnum[] }[]> {
     const projects = await this.projectRepository.find({
       _id: new Types.ObjectId(projectId),
     });
@@ -187,11 +192,53 @@ export class ProjectsService {
     });
 
     return collaborators.map((collaborator) => ({
+      id: collaborator._id.toString(),
       userId: collaborator.user.toString(),
       roles: collaborator.roles,
     }));
   }
 
+  async updateCollaboratorRoles(
+    projectId: string,
+    collaboratorId: string,
+    roles: ProjectRoleEnum[],
+    userId: string,
+  ) {
+    await this.findProjectOrFail(projectId);
+    await this.authorizeUser(projectId, userId, ProjectRoleEnum.OWNER);
+    // Update the collaborator's roles directly in the database
+    const result = await this.collaboratorRepository.update(
+      collaboratorId, // The collaborator to update
+      { roles: roles }, // The new roles to be assigned
+    );
+
+    if (!result) {
+      throw new NotFoundException('Collaborator not found');
+    }
+
+    return { success: true };
+  }
+
+  async removeCollaborator(
+    projectId: string,
+    collaboratorId: string,
+    userId: string,
+  ): Promise<any> {
+    // Check if the project exists
+    await this.findProjectOrFail(projectId);
+
+    // Authorize the user to ensure they have the OWNER role
+    await this.authorizeUser(projectId, userId, ProjectRoleEnum.OWNER);
+
+    // Remove the collaborator
+    const result = await this.collaboratorRepository.delete(collaboratorId);
+
+    if (!result) {
+      throw new NotFoundException('Collaborator not found');
+    }
+
+    return { success: true };
+  }
 
   async getUserProjectRoles(userId: string, projectId: string) {
     const collaborator = await this.collaboratorRepository.findOne({
@@ -203,13 +250,13 @@ export class ProjectsService {
   }
 }
 
-class ProjectNotFoundException extends NotFoundException {
+export class ProjectNotFoundException extends NotFoundException {
   constructor() {
     super('Project not found');
   }
 }
 
-class UnauthorizedProjectAccessException extends UnauthorizedException {
+export class UnauthorizedProjectAccessException extends UnauthorizedException {
   constructor() {
     super(
       'User does not have necesary permission to do this action in the project',

@@ -15,7 +15,8 @@ import { AuthorizationModule } from 'src/authorization/authorization.module';
   imports: [
     ConfigModule,
     MongooseModule.forFeature([{ name: Form.name, schema: FormSchema }]),
-    AuthorizationModule
+    AuthorizationModule,
+    forwardRef(() => ProjectsModule),
   ],
   controllers: [FormsController],
   providers: [

@@ -46,5 +46,8 @@ export class Form {
   // draft Schema
   @Prop({ type: Array, required: false, default: [] })
   draft: Record<string, any>[];
+
+  @Prop({ type: [{ email: String, id: String }], default: [] })
+  participants: { email: string; id: string }[];
 }
 export const FormSchema = SchemaFactory.createForClass(Form);

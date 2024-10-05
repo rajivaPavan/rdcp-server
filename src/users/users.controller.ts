@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './entities/user.schema';
 
@@ -9,8 +9,16 @@ export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
   @Get()
-  async getAllUsers(): Promise<User[]> {
-    return await this.userService.findAllUsers();
+  async getUsers(): Promise<User[]> {
+    return await this.userService.getAllUsers();
+  }
+
+  @Get('search')
+  async searchByEmail(@Query('email') email: string): Promise<User[]> {
+    if(!email) {
+      return [];
+    }
+    return await this.userService.searchByEmail(email);
   }
 
   // TODO: Add Admin Guard

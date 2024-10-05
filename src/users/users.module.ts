@@ -15,6 +15,6 @@ import { CryptModule } from 'src/utilities/crypt/crypt.module';
   ],
   controllers: [UsersController],
   providers: [UsersService, UsersRepository],
-  exports: [UsersService],
+  exports: [UsersService, UsersRepository],
 })
 export class UsersModule {}

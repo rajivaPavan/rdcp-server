@@ -1,5 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateFormDTO, FormDTO } from './dtos/form.dto';
+import { CreateFormDTO, FormDTO, ParticipantsDTO } from './dtos/form.dto';
 import { FormsRepository } from './forms.repository';
 import { Form } from './entities/form.schema';
 import { Types } from 'mongoose';
@@ -90,5 +90,35 @@ export class FormsService {
       draft: schema,
       hasChanges: true,
     });
+  }
+  async fetchParticipants(projectId: string, formId: string): Promise<ParticipantsDTO[]> {
+    const form = await this.formRepository.findById(formId);
+    if (!form) {
+      throw new Error('Form not found');
+    }
+    return form.participants;
+  }
+
+  async addParticipants(projectId: string, formId: string, emails: string[]): Promise<ParticipantsDTO[]> {
+    const form = await this.formRepository.findById(formId);
+    if (!form) {
+      throw new Error('Form not found');
+    }
+    const newParticipants = emails.map(email => ({
+      email,
+      id: new Types.ObjectId().toString(),
+    }));
+    form.participants.push(...newParticipants);
+    await this.formRepository.update(formId, form);
+    return form.participants;
+  }
+
+  async removeParticipant(projectId: string, formId: string, participantId: string): Promise<void> {
+    const form = await this.formRepository.findById(formId);
+    if (!form) {
+      throw new Error('Form not found');
+    }
+    form.participants = form.participants.filter(p => p.id !== participantId);
+    await this.formRepository.update(formId, form);
   }
 }

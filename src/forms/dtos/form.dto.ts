@@ -32,3 +32,8 @@ export interface UpdateFormDTO {
   isPublished?: boolean;
   multipleResponses?: boolean;
 }
+
+export interface ParticipantsDTO {
+  email: string;
+  id: string;
+}

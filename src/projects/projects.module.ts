@@ -6,11 +6,13 @@ import { Project, ProjectSchema } from './entities/project.schema';
 import { ProjectRepository } from './projects.repository';
 import { ConfigModule } from '@nestjs/config';
 import { CollaboratorsRepository } from './collaborators.repository';
+import { UsersModule } from 'src/users/users.module';
 import { FormsModule } from '../forms/forms.module';
 import {
   Collaborator,
   CollaboratorSchema,
 } from './entities/collaborator.schema';
+import { CollaboratorsController } from './collaborators.controller';
 
 @Module({
   imports: [
@@ -20,8 +22,9 @@ import {
       { name: Collaborator.name, schema: CollaboratorSchema },
     ]),
     FormsModule,
+    UsersModule,
   ],
-  controllers: [ProjectsController],
+  controllers: [ProjectsController, CollaboratorsController],
   providers: [ProjectsService, ProjectRepository, CollaboratorsRepository],
 })
 export class ProjectsModule {}

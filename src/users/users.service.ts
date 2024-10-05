@@ -20,12 +20,24 @@ export class UsersService {
     private readonly eventEmitter: TypedEventEmitter,
   ) {}
 
-  async findAllUsers(): Promise<User[]> {
+  async getAllUsers(): Promise<User[]> {
     return await this.userRepository.findAll();
   }
 
   async findUserByEmail(email: string): Promise<User> {
+    return await this.userRepository.findUserByEmail(email);
+  }
+
+  async searchByEmail(email: string): Promise<User[]> {
     return await this.userRepository.findByEmail(email);
+  }
+
+  async findUser(userId: string): Promise<string> {
+    const user = await this.userRepository.findById(userId);
+    if(!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return user.email;
   }
 
   async addUser(dto: AddUserDTO) {

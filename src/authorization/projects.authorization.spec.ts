@@ -40,6 +40,7 @@ describe('FormsAuthorization', () => {
 
     it('should return true if user is an owner', async () => {
         jest.spyOn(collaboratorsRepository, 'findOne').mockResolvedValue({
+            _id: new Types.ObjectId(),
             project, user,
             roles: [ProjectRoleEnum.OWNER],
         });
@@ -50,6 +51,7 @@ describe('FormsAuthorization', () => {
 
     it('should return true if user has required role', async () => {
         jest.spyOn(collaboratorsRepository, 'findOne').mockResolvedValue({
+            _id: new Types.ObjectId(),
             project, user,
             roles: [ProjectRoleEnum.MANAGER],
         });
@@ -60,6 +62,7 @@ describe('FormsAuthorization', () => {
 
     it('should return false if user does not have required role', async () => {
         jest.spyOn(collaboratorsRepository, 'findOne').mockResolvedValue({
+            _id: new Types.ObjectId(),
             project, user,
             roles: [ProjectRoleEnum.EDITOR],
         });
@@ -70,6 +73,7 @@ describe('FormsAuthorization', () => {
 
     it('should return true if user has one of the required roles', async () => {
         jest.spyOn(collaboratorsRepository, 'findOne').mockResolvedValue({
+            _id: new Types.ObjectId(),
             project, user,
             roles: [ProjectRoleEnum.ANALYST],
         });
