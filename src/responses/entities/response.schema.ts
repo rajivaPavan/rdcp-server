@@ -23,8 +23,8 @@ export class FormResponse {
 //   @Prop({ default: Date.now })
   createdAt?: Date;
 
-  @Prop({ type: Types.Map, required: true })
-  record: Record<string, any>;
+  @Prop({ type: Types.Array, required: true })
+  record: Array<Record<string, any>>;
 }
 
 export const ResponseSchema = SchemaFactory.createForClass(FormResponse);
