@@ -11,6 +11,7 @@ import { CollaboratorsRepository } from './collaborators.repository';
 import { CreateProjectDto } from './dtos/create-project.dto';
 import { ProjectRoleEnum } from './entities/project-role.enum';
 import { AddCollaboratorsDto } from './dtos/add-collaborators.dto';
+import { AuthenticatedUser } from 'src/auth/entities/authenticated-user';
 
 @Injectable()
 export class ProjectsService {
@@ -64,7 +65,7 @@ export class ProjectsService {
 
   async create(
     projectDTO: CreateProjectDto,
-    userId: string,
+    user: AuthenticatedUser
   ): Promise<ProjectDTO> {
     const project = new Project({ ...projectDTO, _id: new Types.ObjectId() });
     const createdProject = await this.projectRepository.create(project);
@@ -73,7 +74,8 @@ export class ProjectsService {
 
     await this.collaboratorRepository.create({
       project: createdProject._id,
-      user: new Types.ObjectId(userId),
+      user: new Types.ObjectId(user.id),
+      email: user.email,
       roles: roles,
     });
 
@@ -167,10 +169,11 @@ export class ProjectsService {
 
     // Add the new collaborators
     const newCollaborators = await Promise.all(
-      collaboratorsDTO.userIds.map(async (userId) => {
+      collaboratorsDTO.users.map(async (user) => {
         return {
           project: project._id,
-          user: new Types.ObjectId(userId),
+          user: new Types.ObjectId(user.id),
+          email: user.email,
           roles: collaboratorsDTO.roles,
         };
       }),
