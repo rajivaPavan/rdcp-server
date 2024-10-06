@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, ForbiddenException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, ForbiddenException, ConflictException } from '@nestjs/common';
 import { FormsService } from '../forms/forms.service';
 import { Reflector } from '@nestjs/core';
 import { ProjectAction, ProjectAuthorization } from '../authorization/projects.authorization';
@@ -17,7 +17,7 @@ export class FormAuthorizationGuard implements CanActivate {
     const formId = request.params.formId; // Extract formId from params
 
     if (!formId || !user) {
-      throw new ForbiddenException('Invalid request');
+      throw new ConflictException('Invalid request');
     }
 
     // Fetch the form by ID and check if the user has access

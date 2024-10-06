@@ -3,6 +3,8 @@ import { FileHashService, S3ObjectStorageService } from './files.service';
 import { ResponsesRepository } from './responses.repository';
 import { Types } from 'mongoose';
 import { FormsRepository } from 'src/forms/forms.repository';
+import { Form } from 'src/forms/entities/form.schema';
+import { FormResponseDto } from './dtos/responses.dto';
 
 
 @Injectable()
@@ -120,10 +122,16 @@ export class ResponsesService {
         return uploadResponse;
     }
 
-    async getResponses(formId: string) {
-        return await this.responsesRepository.find({
+    async getResponses(formId: string, page: number, limit: number) {
+        const res = await this.responsesRepository.find({
             formId: new Types.ObjectId(formId),
-        });
+        }, page, limit);
+        return {
+            items: res.items.map(item => (FormResponseDto.fromEntity(item))),
+            total: res.total,
+            page: res.page,
+            limit: res.limit,
+        }
     }
 }
 
