@@ -5,7 +5,7 @@ import { User } from './entities/user.schema';
 
 @Injectable()
 export class UsersRepository {
-  constructor(@InjectModel('User') private userModel: Model<User>) {}
+  constructor(@InjectModel('User') private userModel: Model<User>) { }
 
   async create(user: User): Promise<User> {
     const createdUser = new this.userModel(user);
@@ -24,8 +24,17 @@ export class UsersRepository {
     return this.userModel.findOne({ email: email }).exec();
   }
 
-  async findByEmail(email: string, limit=5): Promise<User[]>{
-    return this.userModel.find({ email: email }).limit(limit).lean().exec();
+  async searchByEmail(email: string, limit = 5): Promise<User[]> {
+    return this.userModel.find({
+      email: {
+        "$regex": email, "$options": "i"
+      }
+    },{
+      "password": 0,
+      "createdAt": 0,
+      "updatedAt": 0,
+      "__v": 0
+    }).limit(limit).lean().exec();
   }
 
   async findById(userId: string): Promise<User> {

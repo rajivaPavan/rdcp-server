@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './entities/user.schema';
 
-import { AddUserDTO } from './dtos/add-user.dto';
+import { AddUserDTO, UserDTO } from './dtos/add-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -14,7 +14,7 @@ export class UsersController {
   }
 
   @Get('search')
-  async searchByEmail(@Query('email') email: string): Promise<User[]> {
+  async searchByEmail(@Query('email') email: string): Promise<UserDTO[]> {
     if(!email) {
       return [];
     }

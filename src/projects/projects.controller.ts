@@ -40,7 +40,7 @@ export class ProjectsController {
     @Body() project: CreateProjectDto,
     @User() user,
   ): Promise<ProjectDTO> {
-    return await this.projectsService.create(project, user.id);
+    return await this.projectsService.create(project, user);
   }
 
   // This endpoint will return all projects where the user is a collaborator

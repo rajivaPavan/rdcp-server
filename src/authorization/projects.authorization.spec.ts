@@ -8,7 +8,11 @@ describe('FormsAuthorization', () => {
     let service: ProjectAuthorization;
     let collaboratorsRepository: CollaboratorsRepository;
     const project = new Types.ObjectId();
-    const user = new Types.ObjectId();
+    const userId = new Types.ObjectId();
+    const collaboratingUser = {
+        user: userId,
+        email: 'user@rdcp.com'
+    };
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -34,51 +38,51 @@ describe('FormsAuthorization', () => {
     it('should return false if collaborator is not found', async () => {
         jest.spyOn(collaboratorsRepository, 'findOne').mockResolvedValue(null);
 
-        const result = await service.isAuthorized(user.toString(), project.toString(), 'create_form');
+        const result = await service.isAuthorized(userId.toString(), project.toString(), 'create_form');
         expect(result).toBe(false);
     });
 
     it('should return true if user is an owner', async () => {
         jest.spyOn(collaboratorsRepository, 'findOne').mockResolvedValue({
             _id: new Types.ObjectId(),
-            project, user,
+            project, ...collaboratingUser,
             roles: [ProjectRoleEnum.OWNER],
         });
 
-        const result = await service.isAuthorized(user.toString(), project.toString(), 'create_form');
+        const result = await service.isAuthorized(userId.toString(), project.toString(), 'create_form');
         expect(result).toBe(true);
     });
 
     it('should return true if user has required role', async () => {
         jest.spyOn(collaboratorsRepository, 'findOne').mockResolvedValue({
             _id: new Types.ObjectId(),
-            project, user,
+            project, ...collaboratingUser,
             roles: [ProjectRoleEnum.MANAGER],
         });
 
-        const result = await service.isAuthorized(user.toString(), project.toString(), 'create_form');
+        const result = await service.isAuthorized(userId.toString(), project.toString(), 'create_form');
         expect(result).toBe(true);
     });
 
     it('should return false if user does not have required role', async () => {
         jest.spyOn(collaboratorsRepository, 'findOne').mockResolvedValue({
             _id: new Types.ObjectId(),
-            project, user,
+            project, ...collaboratingUser,
             roles: [ProjectRoleEnum.EDITOR],
         });
 
-        const result = await service.isAuthorized(user.toString(), project.toString(),'create_form');
+        const result = await service.isAuthorized(userId.toString(), project.toString(),'create_form');
         expect(result).toBe(false);
     });
 
     it('should return true if user has one of the required roles', async () => {
         jest.spyOn(collaboratorsRepository, 'findOne').mockResolvedValue({
             _id: new Types.ObjectId(),
-            project, user,
+            project, ...collaboratingUser,
             roles: [ProjectRoleEnum.ANALYST],
         });
 
-        const result = await service.isAuthorized(user.toString(), project.toString(), 'view_form_responses');
+        const result = await service.isAuthorized(userId.toString(), project.toString(), 'view_form_responses');
         expect(result).toBe(true);
     });
 });
