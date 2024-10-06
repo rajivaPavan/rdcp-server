@@ -54,7 +54,6 @@ export class ProjectsService {
     });
 
     return {
-      ...project,
       id: project._id.toString(),
       name: project.name,
       description: project.description,
