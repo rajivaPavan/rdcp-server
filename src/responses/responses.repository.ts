@@ -7,15 +7,28 @@ import { FormResponse, ResponseDocument } from './entities/response.schema';
 export class ResponsesRepository {
     constructor(
         @InjectModel(FormResponse.name) private readonly responseModel: Model<ResponseDocument>,
-    ) {}
+    ) { }
 
     async create(response: FormResponse): Promise<FormResponse> {
         const created = await this.responseModel.create(response);
         return created.toObject();
     }
 
-    async find(options: any): Promise<FormResponse[]> {
-        return await this.responseModel.find(options).lean().exec();
+    async find(options: any, page: number, limit: number): Promise<{
+        items: FormResponse[];
+        total: number;
+        page: number;
+        limit: number;
+    }> {
+        const skip = (page - 1) * limit; // Skip the previous pages
+        const items = await this.responseModel.find().skip(skip).limit(limit).exec();
+        const total = await this.responseModel.countDocuments(); // Get total count of documents
+        return {
+            items,
+            total,
+            page,
+            limit,
+        };
     }
 
     async findOne(options: any): Promise<FormResponse> {

@@ -1,4 +1,4 @@
-import { Body, ConflictException, Controller, Get, NotFoundException, Post, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ConflictException, Controller, Get, NotFoundException, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ResponsesService } from './responses.service';
 import { FormId } from 'src/forms/decorators/form-id.decorator';
@@ -18,7 +18,8 @@ export class ResponsesController {
         private readonly responsesService: ResponsesService,
         private readonly authService: AuthenticationService,
         private readonly formAuth: FormAuthorization,
-    ) { }
+    ) { 
+    }
 
     @Get("form/:formId")
     async viewForm(
@@ -119,15 +120,16 @@ export class ResponsesController {
         return body;
     }
 
-    @UseGuards(AuthGuard)
-    @UseGuards(FormAuthorizationGuard)
+    @UseGuards(AuthGuard, FormAuthorizationGuard)
     @FormActionMeta('view_form_responses')
-    @Get(':formId')
+    @Get('form/:formId/responses')
     async getResponses(
         @FormId() formId: string,
-        @FormReqDto() form : Form
+        @FormReqDto() form: Form,
+        @Query('page') page: number = 1, // default to page 1
+        @Query('limit') limit: number = 10, // default limit to 10
     ) {
-        const responses = this.responsesService.getResponses(formId);
+        const responses = await this.responsesService.getResponses(formId, Number(page), Number(limit));
         return {
             responses,
             form: FormDTO.fromEntity(form)

@@ -120,10 +120,10 @@ export class ResponsesService {
         return uploadResponse;
     }
 
-    async getResponses(formId: string) {
+    async getResponses(formId: string, page: number, limit: number) {
         return await this.responsesRepository.find({
             formId: new Types.ObjectId(formId),
-        });
+        }, page, limit);
     }
 }
 
