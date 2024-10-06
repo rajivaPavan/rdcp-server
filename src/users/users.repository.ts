@@ -24,9 +24,8 @@ export class UsersRepository {
     return this.userModel.findOne({ email: email }).exec();
   }
 
-  async searchByEmail(email: string, role = "user", limit = 5): Promise<User[]> {
+  async searchByEmail(email: string, limit = 5): Promise<User[]> {
     return this.userModel.find({
-      role: role,
       email: {
         "$regex": email, "$options": "i"
       }
