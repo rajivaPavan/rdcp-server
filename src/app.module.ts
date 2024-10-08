@@ -1,3 +1,4 @@
+// src/app.module.ts
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
@@ -7,6 +8,7 @@ import { ProjectsModule } from './projects/projects.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
 import { FormsModule } from './forms/forms.module';
+import { AdminModule } from './admin/admin.module'; // Import the AdminModule
 
 @Module({
   imports: [
@@ -34,6 +36,7 @@ import { FormsModule } from './forms/forms.module';
     AuthModule,
     ProjectsModule,
     FormsModule,
+    AdminModule, // Register the AdminModule
   ],
 })
 export class AppModule {}
