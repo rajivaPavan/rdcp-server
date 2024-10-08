@@ -2,11 +2,16 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SeedService } from './users/seed';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const seedService = app.get(SeedService);
+  await seedService.initAdmin();
+  
   app.enableCors({
-    origin: ['http://localhost:5173'],
+    origin: ['http://localhost:5173', 'https://rdpc-web.vercel.app'],
     methods: 'GET,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
   });

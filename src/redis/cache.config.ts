@@ -14,9 +14,8 @@ export const createCacheConfig = (configService: ConfigService) => {
 
   // Add password and TLS only in production
   if (isProd) {
-    cacheConfig.tls = true;
+    cacheConfig.tls = configService.get<string>('REDIS_TLS') == 'true';
     cacheConfig.password = configService.get<string>('REDIS_PASSWORD');
   }
-
   return cacheConfig;
 };

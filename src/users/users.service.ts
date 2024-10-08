@@ -8,7 +8,7 @@ import { User } from './entities/user.schema';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { OtpService } from '../utilities/otp/otp.service';
 import { CryptService } from '../utilities/crypt/crypt.service';
-import { AddUserDTO } from './dtos/add-user.dto';
+import { AddUserDTO, UserDTO } from './dtos/add-user.dto';
 import { TypedEventEmitter } from '../event-emitter/typed-event-emitter.class';
 
 @Injectable()
@@ -18,14 +18,27 @@ export class UsersService {
     private readonly otpService: OtpService,
     private readonly cryptService: CryptService,
     private readonly eventEmitter: TypedEventEmitter,
-  ) {}
+  ) { }
 
-  async findAllUsers(): Promise<User[]> {
+  async getAllUsers(): Promise<User[]> {
     return await this.userRepository.findAll();
   }
 
   async findUserByEmail(email: string): Promise<User> {
-    return await this.userRepository.findByEmail(email);
+    return await this.userRepository.findUserByEmail(email);
+  }
+
+  async searchByEmail(email: string): Promise<UserDTO[]> {
+    const searchRes = await this.userRepository.searchByEmail(email);
+    return searchRes.map((user) => UserDTO.fromUser(user));
+  }
+
+  async findUser(userId: string): Promise<string> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return user.email;
   }
 
   async addUser(dto: AddUserDTO) {

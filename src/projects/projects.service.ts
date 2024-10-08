@@ -8,18 +8,17 @@ import { Project } from './entities/project.schema';
 import { Types } from 'mongoose';
 import { ProjectDTO } from './dtos/project.dtos';
 import { CollaboratorsRepository } from './collaborators.repository';
-import { FormsService } from '../forms/forms.service';
 import { CreateProjectDto } from './dtos/create-project.dto';
 import { ProjectRoleEnum } from './entities/project-role.enum';
 import { AddCollaboratorsDto } from './dtos/add-collaborators.dto';
+import { AuthenticatedUser } from 'src/auth/entities/authenticated-user';
 
 @Injectable()
 export class ProjectsService {
   constructor(
-    private readonly formService: FormsService,
     private readonly projectRepository: ProjectRepository,
     private readonly collaboratorRepository: CollaboratorsRepository,
-  ) {}
+  ) { }
 
   private async findProjectOrFail(projectId: string): Promise<Project> {
     const project = await this.projectRepository.findById(projectId);
@@ -46,7 +45,6 @@ export class ProjectsService {
   async getProject(
     projectId: string,
     userId: string,
-    withForms?: boolean,
   ): Promise<ProjectDTO> {
     const project = await this.findProjectOrFail(projectId);
 
@@ -55,22 +53,18 @@ export class ProjectsService {
       user: new Types.ObjectId(userId),
     });
 
-    const forms = withForms
-      ? await this.formService.getForms(projectId, userId)
-      : undefined;
-
     return {
       id: project._id.toString(),
       name: project.name,
       description: project.description,
+      createdAt: project.createdAt,
       roles: collaborator?.roles || [],
-      forms,
     };
   }
 
   async create(
     projectDTO: CreateProjectDto,
-    userId: string,
+    user: AuthenticatedUser
   ): Promise<ProjectDTO> {
     const project = new Project({ ...projectDTO, _id: new Types.ObjectId() });
     const createdProject = await this.projectRepository.create(project);
@@ -79,13 +73,17 @@ export class ProjectsService {
 
     await this.collaboratorRepository.create({
       project: createdProject._id,
-      user: new Types.ObjectId(userId),
+      user: new Types.ObjectId(user.id),
+      email: user.email,
       roles: roles,
     });
 
     return {
       ...createdProject,
       id: createdProject._id.toString(),
+      name: createdProject.name,
+      description: createdProject.description,
+      createdAt: createdProject.createdAt,
       roles,
     };
   }
@@ -130,9 +128,8 @@ export class ProjectsService {
     });
 
     return {
+      ...updatedProject,
       id: updatedProject._id.toString(),
-      name: updatedProject.name,
-      description: updatedProject.description,
       roles: collaborator?.roles || [],
     };
   }
@@ -140,18 +137,19 @@ export class ProjectsService {
   async deleteProject(id: string, userId: string): Promise<void> {
     await this.findProjectOrFail(id);
     await this.authorizeUser(id, userId, ProjectRoleEnum.OWNER);
-
     await this.projectRepository.delete(id);
   }
 
-  // TODO:
+  /// The following methods are for managing collaborators
+
   async addCollaborators(
+    projectId: string,
     collaboratorsDTO: AddCollaboratorsDto,
     userId: string,
   ): Promise<any> {
     // get the project
     const project = await this.projectRepository.findById(
-      collaboratorsDTO.projectId,
+      projectId,
     );
 
     if (!project) {
@@ -163,24 +161,29 @@ export class ProjectsService {
       project: project._id,
       user: new Types.ObjectId(userId),
     });
+
     if (!collaborator || !collaborator.roles.includes(ProjectRoleEnum.OWNER)) {
       throw new UnauthorizedProjectAccessException();
     }
 
     // Add the new collaborators
-    const newCollaborators = collaboratorsDTO.userIds.map((userId) => {
-      return {
-        project: project._id,
-        user: new Types.ObjectId(userId),
-        roles: collaboratorsDTO.roles,
-      };
-    });
+    const newCollaborators = await Promise.all(
+      collaboratorsDTO.users.map(async (user) => {
+        return {
+          project: project._id,
+          user: new Types.ObjectId(user.id),
+          email: user.email,
+          roles: collaboratorsDTO.roles,
+        };
+      }),
+    );
 
     await this.collaboratorRepository.createMany(newCollaborators);
+
+    return { message: 'Collaborators added successfully', success: true };
   }
 
-  // TODO:
-  async getCollaborators(projectId: string, userId: string): Promise<any> {
+  async getCollaborators(projectId: string): Promise<{ userId: string, roles: ProjectRoleEnum[] }[]> {
     const projects = await this.projectRepository.find({
       _id: new Types.ObjectId(projectId),
     });
@@ -195,19 +198,71 @@ export class ProjectsService {
     });
 
     return collaborators.map((collaborator) => ({
+      id: collaborator._id.toString(),
       userId: collaborator.user.toString(),
       roles: collaborator.roles,
     }));
   }
+
+  async updateCollaboratorRoles(
+    projectId: string,
+    collaboratorId: string,
+    roles: ProjectRoleEnum[],
+    userId: string,
+  ) {
+    await this.findProjectOrFail(projectId);
+    await this.authorizeUser(projectId, userId, ProjectRoleEnum.OWNER);
+    // Update the collaborator's roles directly in the database
+    const result = await this.collaboratorRepository.update(
+      collaboratorId, // The collaborator to update
+      { roles: roles }, // The new roles to be assigned
+    );
+
+    if (!result) {
+      throw new NotFoundException('Collaborator not found');
+    }
+
+    return { success: true };
+  }
+
+  async removeCollaborator(
+    projectId: string,
+    collaboratorId: string,
+    userId: string,
+  ): Promise<any> {
+    // Check if the project exists
+    await this.findProjectOrFail(projectId);
+
+    // Authorize the user to ensure they have the OWNER role
+    await this.authorizeUser(projectId, userId, ProjectRoleEnum.OWNER);
+
+    // Remove the collaborator
+    const result = await this.collaboratorRepository.delete(collaboratorId);
+
+    if (!result) {
+      throw new NotFoundException('Collaborator not found');
+    }
+
+    return { success: true };
+  }
+
+  async getUserProjectRoles(userId: string, projectId: string) {
+    const collaborator = await this.collaboratorRepository.findOne({
+      project: new Types.ObjectId(projectId),
+      user: new Types.ObjectId(userId),
+    });
+
+    return collaborator?.roles || [];
+  }
 }
 
-class ProjectNotFoundException extends NotFoundException {
+export class ProjectNotFoundException extends NotFoundException {
   constructor() {
     super('Project not found');
   }
 }
 
-class UnauthorizedProjectAccessException extends UnauthorizedException {
+export class UnauthorizedProjectAccessException extends UnauthorizedException {
   constructor() {
     super(
       'User does not have necesary permission to do this action in the project',

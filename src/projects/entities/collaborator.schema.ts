@@ -6,11 +6,14 @@ import { Project } from './project.schema';
 
 export type CollaboratorDocument = HydratedDocument<Collaborator>;
 
-@Schema()
+@Schema({})
 export class Collaborator {
   constructor(collaborator: Partial<Collaborator>) {
     Object.assign(this, collaborator);
   }
+
+  @Prop({ required: true })
+  _id: Types.ObjectId;
 
   // reference to Project
   @Prop({ type: Types.ObjectId, ref: Project.name, required: true })
@@ -19,6 +22,10 @@ export class Collaborator {
   // reference to User
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
   user: Types.ObjectId;
+
+  // user email
+  @Prop({ type: String})
+  email: string;
 
   @Prop({ type: [String], enum: ProjectRoleEnum, required: true })
   roles: ProjectRoleEnum[];

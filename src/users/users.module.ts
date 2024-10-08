@@ -6,6 +6,7 @@ import { User, UserSchema } from './entities/user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { OTPModule } from 'src/utilities/otp/otp.module';
 import { CryptModule } from 'src/utilities/crypt/crypt.module';
+import { SeedService } from './seed';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { CryptModule } from 'src/utilities/crypt/crypt.module';
     CryptModule,
   ],
   controllers: [UsersController],
-  providers: [UsersService, UsersRepository],
-  exports: [UsersService],
+  providers: [UsersService, UsersRepository, SeedService],
+  exports: [UsersService, UsersRepository, SeedService],
 })
 export class UsersModule {}

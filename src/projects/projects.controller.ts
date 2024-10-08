@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Logger,
   Param,
   Patch,
@@ -15,14 +16,21 @@ import { ProjectDTO } from './dtos/project.dtos';
 import { AuthGuard } from '../auth/auth.guard';
 import { CreateProjectDto } from './dtos/create-project.dto';
 import { AddCollaboratorsDto } from './dtos/add-collaborators.dto';
-import { CollaboratorDto } from './dtos/collaborator.dto';
 import { User } from '../users/decorators/user.decorator';
 import { AuthenticatedUser } from '../auth/entities/authenticated-user';
+import { ProjectRoleEnum } from './entities/project-role.enum';
+import { FormsService } from 'src/forms/forms.service';
+import { UsersService } from 'src/users/users.service';
+import { CollaboratorDto } from './dtos/collaborator.dto';
 
 @UseGuards(AuthGuard)
 @Controller('projects')
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(
+    private readonly projectsService: ProjectsService,
+    private readonly formsService: FormsService,
+    private readonly usersService: UsersService,
+  ) { }
 
   private readonly logger = new Logger('ProjectsController');
 
@@ -32,7 +40,7 @@ export class ProjectsController {
     @Body() project: CreateProjectDto,
     @User() user,
   ): Promise<ProjectDTO> {
-    return await this.projectsService.create(project, user.id);
+    return await this.projectsService.create(project, user);
   }
 
   // This endpoint will return all projects where the user is a collaborator
@@ -56,26 +64,19 @@ export class ProjectsController {
     // If withForms is provided and is 'false', it will be false
     // if withForms is provide and it not 'false', it will be true
     const _withForms = withForms === undefined ? true : withForms !== 'false';
-    return await this.projectsService.getProject(id, user.id, _withForms);
-  }
+    let project = await this.projectsService.getProject(id, user.id);
 
-  // This endpoint will return all collaborators of a project
-  @Get('/collaborators/:projectId')
-  async getCollaborators(
-    @Param('projectId') projectId: string,
-    @User() user: AuthenticatedUser,
-  ): Promise<CollaboratorDto[]> {
-    return await this.projectsService.getCollaborators(projectId, user.id);
-  }
+    if (!_withForms)
+      return project;
 
-  // This endpoint will add collaborators to a project
-  @Post('/collaborators')
-  async addCollaborators(
-    @Body() collaboratorsDTO: AddCollaboratorsDto,
-    @User() user: AuthenticatedUser,
-  ): Promise<any> {
-    await this.projectsService.addCollaborators(collaboratorsDTO, user.id);
-    return { message: 'Collaborators added successfully', success: true };
+    const forms = withForms
+      ? await this.formsService.getForms(project.id, user.id)
+      : undefined;
+
+    return {
+      ...project,
+      forms
+    }
   }
 
   /// Update endpoint for project
