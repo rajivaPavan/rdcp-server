@@ -18,7 +18,7 @@ export class ResponsesController {
         private readonly responsesService: ResponsesService,
         private readonly authService: AuthenticationService,
         private readonly formAuth: FormAuthorization,
-    ) { 
+    ) {
     }
 
     @Get("form/:formId")
@@ -129,12 +129,31 @@ export class ResponsesController {
         @Query('page') page: number = 1, // default to page 1
         @Query('limit') limit: number = 10, // default limit to 10
     ) {
-        const responses = await this.responsesService.getResponses(formId, Number(page), Number(limit));
+
+        const getAll = limit === -1;
+        const responses = getAll ? await this.responsesService.getAllResponses(formId) :
+            await this.responsesService.getResponses(formId, Number(page), Number(limit));
+
         return {
             responses,
             form: FormDTO.fromEntity(form)
         }
     }
+
+    @UseGuards(AuthGuard, FormAuthorizationGuard)
+    @FormActionMeta('view_form_responses')
+    @Get('form/:formId/summary')
+    async getSummary(
+        @FormId() formId: string,
+        @FormReqDto() form: Form,
+        @Query('field') field: string
+    ) {
+        if (!field) throw new NotFoundException('Field is required');
+        // get the type of the field
+        const fieldType = form.schema.find(f => f.field === field)?.type;
+        return this.responsesService.getSummary(formId, field, 'CheckboxField');
+    }
+
 }
 
 
