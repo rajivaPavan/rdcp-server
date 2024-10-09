@@ -133,7 +133,6 @@ export class ResponsesController {
         const getAll = limit === -1;
         const responses = getAll ? await this.responsesService.getAllResponses(formId) :
             await this.responsesService.getResponses(formId, Number(page), Number(limit));
-
         return {
             responses,
             form: FormDTO.fromEntity(form)
@@ -150,8 +149,8 @@ export class ResponsesController {
     ) {
         if (!field) throw new NotFoundException('Field is required');
         // get the type of the field
-        const fieldType = form.schema.find(f => f.field === field)?.type;
-        return this.responsesService.getSummary(formId, field, 'CheckboxField');
+        const fieldType = form.schema.find(f => f.id === field)?.type;
+        return this.responsesService.getSummary(formId, field, fieldType);
     }
 
 }

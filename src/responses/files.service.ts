@@ -75,7 +75,6 @@ export class S3ObjectStorageService {
       };
 
       const url = this.s3.getSignedUrl('getObject', params);
-      console.log(url);
       return url;
     } catch (error) {
       throw new InternalServerErrorException('File retrieval failed');
