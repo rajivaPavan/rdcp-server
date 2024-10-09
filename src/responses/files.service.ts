@@ -53,7 +53,7 @@ export class S3ObjectStorageService {
   ): Promise<string> {
     const params = {
       Bucket: this.bucketName,
-      Key: file.originalname,
+      Key: fileKey,
       Body: file.buffer,
       ContentType: file.mimetype,
     };

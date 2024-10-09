@@ -11,7 +11,7 @@ async function bootstrap() {
   await seedService.initAdmin();
   
   app.enableCors({
-    origin: ['http://localhost:5173'],
+    origin: ['http://localhost:5173', 'https://rdpc-web.vercel.app'],
     methods: 'GET,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
   });
