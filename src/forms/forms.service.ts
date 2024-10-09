@@ -57,8 +57,25 @@ export class FormsService {
     // remove prop projectId from formDto
     let { projectId, ...form } = formDto;
 
-    const updatedForm = await this.formRepository.update(formId, form);
+    let update : Partial<Form> = {
+      ...form,
+    };
 
+    // if published form, update draft by first getting the form 
+    // and then updating the draft
+    if (form.isPublished) {
+      let existingForm = await this.formRepository.findById(formId);
+      if (!existingForm) {
+        throw new NotFoundException('Form not found');
+      }
+      const changes = this.publishChanges(existingForm);
+      update = {
+        ...update,
+        ...changes
+      };
+    }
+
+    const updatedForm = await this.formRepository.update(formId, update);
     return {
       ...updatedForm,
       id: updatedForm._id.toString(),
@@ -74,11 +91,15 @@ export class FormsService {
       throw new Error('Form schema is missing');
     }
 
-    return this.formRepository.update(formId, {
+    return this.formRepository.update(formId, this.publishChanges(form));
+  }
+
+  private publishChanges(form: Form) {
+    return {
       isPublished: true,
       hasChanges: false,
       schema: form.draft,
-    });
+    };
   }
 
   async deleteForm(formId: string) {
