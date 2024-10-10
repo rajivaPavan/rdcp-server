@@ -24,7 +24,7 @@ export class ResponsesRepository {
         if (limit == -1) {
             // Return all responses
             const items = await this.responseModel.find(options).exec();
-            const total = await this.responseModel.countDocuments(); // Get total count of documents
+            const total = await this.responseModel.find(options).countDocuments(); // Get total count of documents
             return {
                 items,
                 total,
