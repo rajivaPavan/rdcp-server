@@ -30,7 +30,6 @@ export class ResponsesService {
         const form = await this.formRepository.findById(formId);
         const schema = form.schema;
 
-        // TODO: check if all required fields are present
         // this.validateRequiredFields(schema, body, files);
 
         // create an array in the order of the schema from the body with labels added 
@@ -47,10 +46,9 @@ export class ResponsesService {
             };
             if (field.type === this.fileUploadFieldType) {
                 const file = res.find(r => r.field === field.id);
-                console.log("File", file);
                 return {
-                    field: file.field,
-                    value: file.key,
+                    field: field.id,
+                    value: file ? file.key : null,
                     ..._record,
                 }
             }
