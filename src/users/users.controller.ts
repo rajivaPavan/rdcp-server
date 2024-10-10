@@ -1,12 +1,16 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './entities/user.schema';
 
 import { AddUserDTO, UserDTO } from './dtos/add-user.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { Roles } from './roles.decorator';
+import { UserRoleEnum } from './entities/user-role.enum';
 
+@UseGuards(AuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UsersService) {}
+  constructor(private readonly userService: UsersService) { }
 
   @Get()
   async getUsers(): Promise<User[]> {
@@ -15,24 +19,21 @@ export class UsersController {
 
   @Get('search')
   async searchByEmail(@Query('email') email: string): Promise<UserDTO[]> {
-    if(!email) {
+    if (!email) {
       return [];
     }
     return await this.userService.searchByEmail(email);
   }
 
-  // TODO: Add Admin Guard
-  // Endpoint used by the admin to add a new user
   @Post()
-  async addUser(@Body() dto: AddUserDTO) {
-    await this.userService.addUser(dto);
-    return { message: 'User added successfully', success: true };
+  @Roles(UserRoleEnum.ADMIN)
+  async addUsers(@Body() dto: { users: AddUserDTO[] }) {
+
+    if (!dto.users || dto.users.length === 0) {
+      throw new BadRequestException('No users to add');
+    }
+
+    return await this.userService.addUsers(dto);
   }
 
-  // TODO: Add Admin Guard and Implement
-  // Endpoint used by the user to admin to bulk add users
-  @Post('bulk')
-  async bulkAddUsers(@Body() users: AddUserDTO[]) {
-    throw new Error('Not implemented');
-  }
 }

@@ -61,6 +61,29 @@ export class UsersService {
     });
   }
 
+  async addUsers({users}:{
+    users: AddUserDTO[]
+  }){
+
+    // add all users and return success count and failures with failed users
+    let successCount = 0;
+    let failedUsers: AddUserDTO[] = [];
+
+    for(const user of users){
+      try{
+        await this.addUser(user);
+        successCount++;
+      } catch(e){
+        failedUsers.push(user);
+      }
+    }
+
+    return {
+      successCount,
+      failedUsers
+    }
+  }
+
   async forgotPassword(email: string) {
     // check if user with email exists
     const user = await this.findUserByEmail(email);
