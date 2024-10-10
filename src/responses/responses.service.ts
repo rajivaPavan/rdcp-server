@@ -128,8 +128,8 @@ export class ResponsesService {
         const res = await this.responsesRepository.find({
             formId: new Types.ObjectId(formId),
         }, page, limit);
-    
-        
+
+
         // Map over the items and for each record, map the fields asynchronously.
         const itemsWithSignedUrls = await Promise.all(
             res.items.map(async (item) => {
@@ -139,18 +139,18 @@ export class ResponsesService {
                         if (field.type !== this.fileUploadFieldType || !field.value) {
                             return field;
                         }
-    
+
                         // Get the signed URL for the file.
                         field.value = await this.s3ObjectStorageService.getFileUrl(field.value);
                         return field;
                     })
                 );
-    
+
                 // Return the DTO after processing the item.
                 return FormResponseDto.fromEntity(item);
             })
         );
-    
+
         return {
             items: itemsWithSignedUrls,
             total: res.total,
@@ -158,6 +158,32 @@ export class ResponsesService {
             limit: res.limit,
         };
     }
-    
+
+    async getAllResponses(formId: string) {
+        const responses = await this.responsesRepository.find({
+            formId: new Types.ObjectId(formId),
+        }, 1, -1);
+        return {
+            items: responses.items.map(FormResponseDto.fromEntity),
+            total: responses.total,
+        };
+    }
+
+    async getSummary(formId: string, field: string, fieldType: string) {
+        let responses;
+        switch (fieldType) {
+            case 'SelectField':
+                responses = await this.responsesRepository.getSelectFieldData(formId, field);
+                break;
+            case 'CheckboxField':
+                responses = await this.responsesRepository.getCheckboxFieldData(formId, field);
+                break;
+            default:
+                throw new Error('Field type not supported');
+        }
+
+        return responses;
+    }
+
 }
 
