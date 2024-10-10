@@ -90,27 +90,18 @@ export class ProjectsService {
 
   async getProjectsOfUser(userId: string): Promise<ProjectDTO[]> {
     const userObjectId = new Types.ObjectId(userId);
-    const collaborations = await this.collaboratorRepository.find({
-      user: userObjectId,
+    let collaborations = await this.collaboratorRepository.getProjectsOfUser(userId) as any;
+    collaborations = collaborations.filter((collab) => collab.project !== null);
+    return collaborations.map((collab) => {
+      const project = collab.project;
+      return {
+        id: project._id.toString(),
+        name: project.name,
+        description: project.description,
+        createdAt: project.createdAt,
+        roles: collab.roles,
+      };
     });
-
-    const projectRoles = collaborations.reduce((acc, curr) => {
-      acc[curr.project.toString()] = curr.roles;
-      return acc;
-    }, {});
-
-    const projectIds = collaborations.map((collab) => collab.project);
-    const projects = await this.projectRepository.find({
-      _id: { $in: projectIds },
-    });
-
-    return projects.map((project) => ({
-      id: project._id.toString(),
-      name: project.name,
-      description: project.description,
-      createdAt: project.createdAt,
-      roles: projectRoles[project._id.toString()],
-    }));
   }
 
   async updateProject(
