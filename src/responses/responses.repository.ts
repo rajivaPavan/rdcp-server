@@ -35,7 +35,7 @@ export class ResponsesRepository {
 
         const skip = (page - 1) * limit; // Skip the previous pages
         const items = await this.responseModel.find(options).skip(skip).limit(limit).exec();
-        const total = await this.responseModel.countDocuments(); // Get total count of documents
+        const total = await this.responseModel.find(options).countDocuments(); // Get total count of documents
         return {
             items,
             total,
