@@ -58,4 +58,23 @@ export class UsersController {
     return await this.userService.deleteUser(userId);
   }
 
+  @Get('/domains')
+  @Roles(UserRoleEnum.ADMIN)
+  async getDomains() {
+    this.logger.log('Getting domains');
+    return await this.userService.getDomains();
+  }
+
+  @Post('/domains')
+  @Roles(UserRoleEnum.ADMIN)
+  async addDomain(@Body('domain') domain: string) {
+    return await this.userService.addDomain(domain);
+  }
+
+  @Delete('/domains/:domainId')
+  @Roles(UserRoleEnum.ADMIN)
+  async deleteDomain(@Param('domainId') domainId: string) {
+    return await this.userService.deleteDomain(domainId);
+  }
+
 }

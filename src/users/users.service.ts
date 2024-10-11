@@ -13,11 +13,14 @@ import { CryptService } from '../utilities/crypt/crypt.service';
 import { AddUserDTO, UserDTO } from './dtos/add-user.dto';
 import { TypedEventEmitter } from 'src/common/event-emitter/typed-event-emitter.class';
 import { AccountSetupDto } from 'src/auth/dtos/account.dto';
+import { DomainsRepository } from './domains.repository';
+import { WhitelistedDomain } from './entities/whitelisted-domain.schema';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly userRepository: UsersRepository,
+    private readonly domainsRepository: DomainsRepository,
     private readonly otpService: OtpService,
     private readonly cryptService: CryptService,
     private readonly eventEmitter: TypedEventEmitter,
@@ -197,6 +200,18 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
     await this.userRepository.delete(userId);
+  }
+
+  async getDomains() {
+    return await this.domainsRepository.find({});
+  }
+
+  async addDomain(domain: string) {
+    await this.domainsRepository.create(new WhitelistedDomain({ domain }));
+  }
+
+  async deleteDomain(domainId: string) {
+    await this.domainsRepository.deleteDomain(domainId);
   }
 }
 
