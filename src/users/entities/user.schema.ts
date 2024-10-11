@@ -25,7 +25,7 @@ export class User {
   role: UserRoleEnum;
 
   @Prop({ default: false })
-  verified: boolean;
+  verified?: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

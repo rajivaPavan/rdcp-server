@@ -2,7 +2,7 @@ import { OtpService } from "src/utilities/otp/otp.service";
 import { UsersRepository } from "./users.repository";
 import { UsersService } from "./users.service";
 import { CryptService } from "src/utilities/crypt/crypt.service";
-import { TypedEventEmitter } from "src/event-emitter/typed-event-emitter.class";
+import { TypedEventEmitter } from "src/common/event-emitter/typed-event-emitter.class";
 import { Test } from "@nestjs/testing";
 import { User } from "./entities/user.schema";
 import { AddUserDTO } from "./dtos/add-user.dto";
