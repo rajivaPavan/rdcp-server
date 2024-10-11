@@ -16,16 +16,25 @@ export class OtpService {
     return this.otpTtlInSeconds / 60;
   }
 
-  async sendOTP(user: User) {
+  async sendOTP(user: User, isNewUser: boolean = false) {
     const otp = this.generateOTP();
     // save otp to the cache
     await this.saveOTPToCache(user.email, otp);
 
-    this.eventEmitter.emit('user.password-reset', {
+    const emailValues = {
       email: user.email,
-      name: user.name,
       otp: otp.toString(),
       otpExpiry: this.getOTPTTLInMinutes(),
+    };
+
+    if(isNewUser) {
+      // send otp to the user
+      return this.eventEmitter.emit('user.account-setup', emailValues);
+    }
+
+    return this.eventEmitter.emit('user.password-reset', {
+      ...emailValues,
+      name: user.name,
     });
   }
 

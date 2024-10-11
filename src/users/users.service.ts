@@ -130,8 +130,8 @@ export class UsersService {
     });
   }
 
-  private async sendOTP(user: User) {
-    await this.otpService.sendOTP(user);
+  private async sendOTP(user: User, isNewUser = false) {
+    await this.otpService.sendOTP(user, isNewUser);
   }
 
   private async verifyOTP(email: string, otp: string) {
@@ -146,15 +146,14 @@ export class UsersService {
     const domain = email.split('@')[1];
 
     if (user) {
-      if (user.verified) 
-        throw new UserExistsException();
+      if (user.verified) throw new UserExistsException();
     }
     else {
       if (domain !== 'cse.mrt.ac.lk') throw new ForbiddenException('You are not allowed to register');
       await this.createUser(new User({ email, name: email.split('@')[0] }));
     }
 
-    this.sendOTP(new User({ email }));
+    this.sendOTP(new User({ email }), true);
 
     return {
       success: true
