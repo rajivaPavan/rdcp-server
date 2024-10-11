@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Logger, Post, Query, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './entities/user.schema';
 
@@ -10,11 +10,25 @@ import { UserRoleEnum } from './entities/user-role.enum';
 @UseGuards(AuthGuard)
 @Controller('users')
 export class UsersController {
+  private readonly logger = new Logger(UsersController.name);
   constructor(private readonly userService: UsersService) { }
 
   @Get()
-  async getUsers(): Promise<User[]> {
-    return await this.userService.getAllUsers();
+  async getUsers(
+    @Query('email') email: string,
+    @Query('role') role: string,
+    @Query('limit') limit: number,
+    @Query('page') page: number,
+  ): Promise<{
+    users: Partial<User>[],
+    total: number
+  }> {
+    this.logger.log(`Getting users with email: ${email}, role: ${role}, limit: ${limit}, page: ${page}`);
+    const {users,total} = await this.userService.getAllUsers(email, role, limit, page,);
+    return {
+      users,
+      total
+    };
   }
 
   @Get('search')

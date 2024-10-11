@@ -23,8 +23,19 @@ export class UsersService {
     private readonly eventEmitter: TypedEventEmitter,
   ) { }
 
-  async getAllUsers(): Promise<User[]> {
-    return await this.userRepository.findAll();
+  async getAllUsers(
+    email: string,
+    role: string,
+    limit: number,
+    page: number,
+  ): Promise<{
+    users: Partial<User>[],
+    total: number
+  }> {
+    return await this.userRepository.find({
+      email: email ? email : undefined,
+      role: role ? role : undefined,
+    }, limit, page);
   }
 
   async findUserByEmail(email: string): Promise<User> {
