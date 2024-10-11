@@ -55,7 +55,7 @@ export class UsersService {
       throw new UserExistsException();
     }
 
-    await this.userRepository.create(user);
+    await this.createUser(user);
 
     // send email to user
     this.eventEmitter.emit('user.account-creation', {
@@ -64,19 +64,23 @@ export class UsersService {
     });
   }
 
-  async addUsers({users}:{
+  private async createUser(user: User) {
+    await this.userRepository.create(user);
+  }
+
+  async addUsers({ users }: {
     users: AddUserDTO[]
-  }){
+  }) {
 
     // add all users and return success count and failures with failed users
     let successCount = 0;
     let failedUsers: AddUserDTO[] = [];
 
-    for(const user of users){
-      try{
+    for (const user of users) {
+      try {
         await this.addUser(user);
         successCount++;
-      } catch(e){
+      } catch (e) {
         failedUsers.push(user);
       }
     }
@@ -140,18 +144,17 @@ export class UsersService {
 
     // extract email domain
     const domain = email.split('@')[1];
-    // if user does not exist, check if domain is allowed
-    if (!user && domain !== 'cse.mrt.ac.lk') {
-      throw new ForbiddenException('You are not allowed to register');
+
+    if (user) {
+      if (user.verified) 
+        throw new UserExistsException();
+    }
+    else {
+      if (domain !== 'cse.mrt.ac.lk') throw new ForbiddenException('You are not allowed to register');
+      await this.createUser(new User({ email, name: email.split('@')[0] }));
     }
 
-    if (user.verified) {
-      throw new UserExistsException();
-    }
-
-    if (!user.verified) {
-      this.sendOTP(new User({ email }));
-    }
+    this.sendOTP(new User({ email }));
 
     return {
       success: true
