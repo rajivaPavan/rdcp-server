@@ -9,7 +9,7 @@ import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { OtpService } from '../utilities/otp/otp.service';
 import { CryptService } from '../utilities/crypt/crypt.service';
 import { AddUserDTO, UserDTO } from './dtos/add-user.dto';
-import { TypedEventEmitter } from '../event-emitter/typed-event-emitter.class';
+import { TypedEventEmitter } from 'src/common/event-emitter/typed-event-emitter.class';
 
 @Injectable()
 export class UsersService {

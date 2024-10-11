@@ -30,22 +30,25 @@ export class ResponsesService {
         const form = await this.formRepository.findById(formId);
         const schema = form.schema;
 
-        // TODO: check if all required fields are present
         // this.validateRequiredFields(schema, body, files);
 
         // create an array in the order of the schema from the body with labels added 
         // and files replaced with their s3 keys
-        const preparedRecord = schema.map(field => {
+        const preparedRecord = schema.map<{
+            field: string,
+            value: any,
+            type: string,
+            label: string,
+        }>(field => {
             const _record = {
                 type: field.type,
                 label: field.extraAttributes.label,
             };
             if (field.type === this.fileUploadFieldType) {
                 const file = res.find(r => r.field === field.id);
-                console.log("File", file);
                 return {
-                    id: file.field,
-                    value: file.key,
+                    field: field.id,
+                    value: file ? file.key : null,
                     ..._record,
                 }
             }
@@ -55,9 +58,6 @@ export class ResponsesService {
                 ..._record,
             }
         });
-
-        console.log(preparedRecord);
-
 
         // save in db
         const response = await this.responsesRepository.create({
@@ -126,12 +126,62 @@ export class ResponsesService {
         const res = await this.responsesRepository.find({
             formId: new Types.ObjectId(formId),
         }, page, limit);
+
+
+        // Map over the items and for each record, map the fields asynchronously.
+        const itemsWithSignedUrls = await Promise.all(
+            res.items.map(async (item) => {
+                // Process each field in the record array asynchronously.
+                item.record = await Promise.all(
+                    item.record.map(async (field) => {
+                        if (field.type !== this.fileUploadFieldType || !field.value) {
+                            return field;
+                        }
+
+                        // Get the signed URL for the file.
+                        field.value = await this.s3ObjectStorageService.getFileUrl(field.value);
+                        return field;
+                    })
+                );
+
+                // Return the DTO after processing the item.
+                return FormResponseDto.fromEntity(item);
+            })
+        );
+
         return {
-            items: res.items.map(item => (FormResponseDto.fromEntity(item))),
+            items: itemsWithSignedUrls,
             total: res.total,
             page: res.page,
             limit: res.limit,
-        }
+        };
     }
+
+    async getAllResponses(formId: string) {
+        const responses = await this.responsesRepository.find({
+            formId: new Types.ObjectId(formId),
+        }, 1, -1);
+        return {
+            items: responses.items.map(FormResponseDto.fromEntity),
+            total: responses.total,
+        };
+    }
+
+    async getSummary(formId: string, field: string, fieldType: string) {
+        let responses;
+        switch (fieldType) {
+            case 'SelectField':
+                responses = await this.responsesRepository.getSelectFieldData(formId, field);
+                break;
+            case 'CheckboxField':
+                responses = await this.responsesRepository.getCheckboxFieldData(formId, field);
+                break;
+            default:
+                throw new Error('Field type not supported');
+        }
+
+        return responses;
+    }
+
 }
 

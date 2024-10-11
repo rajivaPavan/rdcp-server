@@ -7,7 +7,7 @@ import { ProjectsModule } from './projects/projects.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { FormsModule } from './forms/forms.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { TypedEventEmitterModule } from './event-emitter/type-event-emitter.module';
+import { TypedEventEmitterModule } from './common/event-emitter/type-event-emitter.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ResponsesModule } from './responses/responses.module';
 import { EmailModule } from './email/email.module';

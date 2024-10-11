@@ -9,9 +9,14 @@ async function bootstrap() {
 
   const seedService = app.get(SeedService);
   await seedService.initAdmin();
-  
+
   app.enableCors({
-    origin: ['http://localhost:5173', 'https://rdpc-web.vercel.app'],
+    origin: [
+      'http://localhost:5173',
+      'https://rdpc-web.vercel.app',
+      'https://rdcp.live',
+      'https://www.rdcp.live'
+    ],
     methods: 'GET,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type, Authorization',
   });
