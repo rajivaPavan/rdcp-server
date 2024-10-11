@@ -153,6 +153,9 @@ export class UsersService {
       this.sendOTP(new User({ email }));
     }
 
+    return {
+      success: true
+    }
   }
 
   public async accountSetupPost(dto: AccountSetupDto) {

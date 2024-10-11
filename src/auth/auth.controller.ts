@@ -61,6 +61,16 @@ export class AuthenticationController {
     };
   }
 
+
+  @Post('reset-password')
+  async resetPassword(@Body() resetPassword: ResetPasswordDto) {
+    this.logger.debug(`Reset password POST request for ${resetPassword.email}`);
+    await this.userService.resetPassword(resetPassword);
+    return {
+      message: 'Password reset was successful',
+    };
+  }
+
   @Get('register')
   async accountSetup(@Query('email') email: string) {
     this.logger.debug(`Account setup request for ${email}`);
@@ -73,15 +83,7 @@ export class AuthenticationController {
     await this.userService.accountSetupPost(accountSetup);
     return {
       message: 'Account setup was successful',
-    };
-  }
-
-  @Post('reset-password')
-  async resetPassword(@Body() resetPassword: ResetPasswordDto) {
-    this.logger.debug(`Reset password request for ${resetPassword.email}`);
-    await this.userService.resetPassword(resetPassword);
-    return {
-      message: 'Password reset was successful',
+      success: true,
     };
   }
 }
