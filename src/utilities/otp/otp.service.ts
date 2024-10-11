@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { TypedEventEmitter } from '../../event-emitter/typed-event-emitter.class';
+import { TypedEventEmitter } from 'src/common/event-emitter/typed-event-emitter.class';
 import { User } from 'src/users/entities/user.schema';
 
 @Injectable()
