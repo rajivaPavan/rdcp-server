@@ -3,24 +3,30 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { Logger } from '@nestjs/common'; // Optionally, add logging
+import { Reflector } from '@nestjs/core'; // Import Reflector
+import { Logger } from '@nestjs/common';
+import { UserRoleEnum } from 'src/users/entities/user-role.enum';
+import { ROLES_KEY } from 'src/users/roles.decorator';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  private readonly logger = new Logger(AuthGuard.name); // Add logger
+  private readonly logger = new Logger(AuthGuard.name);
 
   constructor(
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
+    private readonly reflector: Reflector, // Inject Reflector
   ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request = this.getRequest(context);
     const token = this.extractToken(request);
+
     if (!token) {
       this.logAndThrowUnauthorized('No token provided');
     }
@@ -31,12 +37,20 @@ export class AuthGuard implements CanActivate {
         secret: this.config.get<string>('JWT_SECRET'),
       });
 
-      // Attach user and sessionId to request object
-      request.user = {
+      const user = {
         id: payload.sub,
-        email: payload.email ?? null, // email may not be available
-        role: payload.role ?? null, // role may not be available
-      };
+        email: payload.email ?? null,
+        role: payload.role ?? null,
+      }
+
+      // Attach user data to request object
+      request.user = user;
+
+      // Check if the role is required by the route
+      const requiredRoles = this.reflector.get<UserRoleEnum[]>(ROLES_KEY, context.getHandler());
+      if (requiredRoles && requiredRoles.length > 0) {
+        this.checkRole(user.role, requiredRoles);
+      }
 
     } catch (error) {
       this.logAndThrowUnauthorized('Invalid token', error.message);
@@ -46,8 +60,16 @@ export class AuthGuard implements CanActivate {
   }
 
   /**
-   * Extract token from authorization header or cookies (if needed).
+   * Check if the user's role matches one of the required roles.
+   * Throws a ForbiddenException if the role does not match.
    */
+  private checkRole(userRole: UserRoleEnum | null, requiredRoles: UserRoleEnum[]): void {
+    if (!userRole || !requiredRoles.includes(userRole)) {
+      this.logger.warn(`User with role ${userRole} is not authorized for this route.`);
+      throw new ForbiddenException('You do not have access to this resource');
+    }
+  }
+
   private extractToken(request: Request): string | undefined {
     const authHeader = request.headers.authorization;
     if (authHeader) {
@@ -56,13 +78,13 @@ export class AuthGuard implements CanActivate {
         return token;
       }
     }
-    // Optionally, check cookies (if tokens are stored in cookies)
-    return request.cookies?.token; // Add fallback to cookies if necessary
+    return request.cookies?.token;
   }
 
-  /**
-   * Helper method to log errors and throw UnauthorizedException
-   */
+  private getRequest(context: ExecutionContext): Request {
+    return context.switchToHttp().getRequest();
+  }
+
   private logAndThrowUnauthorized(message: string, errorDetails?: string): never {
     this.logger.error(`${message}. ${errorDetails ?? ''}`);
     throw new UnauthorizedException(message);

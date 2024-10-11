@@ -4,7 +4,7 @@ import { User } from '../entities/user.schema';
 export class AddUserDTO {
   name: string;
   email: string;
-  role: UserRoleEnum;
+  role?: UserRoleEnum;
 }
 
 export class UserDTO {

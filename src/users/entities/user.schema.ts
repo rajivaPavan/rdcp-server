@@ -21,8 +21,11 @@ export class User {
   @Prop()
   password: string;
 
-  @Prop({ required: true, enum: UserRoleEnum })
+  @Prop({ required: true, enum: UserRoleEnum, default: UserRoleEnum.USER })
   role: UserRoleEnum;
+
+  @Prop({ default: false })
+  verified?: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
