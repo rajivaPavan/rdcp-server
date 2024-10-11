@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Logger, Post, Query, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Logger, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './entities/user.schema';
 
@@ -24,7 +24,7 @@ export class UsersController {
     total: number
   }> {
     this.logger.log(`Getting users with email: ${email}, role: ${role}, limit: ${limit}, page: ${page}`);
-    const {users,total} = await this.userService.getAllUsers(email, role, limit, page,);
+    const { users, total } = await this.userService.getAllUsers(email, role, limit, page,);
     return {
       users,
       total
@@ -48,6 +48,14 @@ export class UsersController {
     }
 
     return await this.userService.addUsers(dto);
+  }
+
+  @Delete("/:userId")
+  @Roles(UserRoleEnum.ADMIN)
+  async deleteUsers(
+    @Param('userId') userId: string,
+  ) {
+    return await this.userService.deleteUser(userId);
   }
 
 }

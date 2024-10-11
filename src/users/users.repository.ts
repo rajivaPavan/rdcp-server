@@ -72,4 +72,8 @@ export class UsersRepository {
   async findById(userId: string): Promise<User> {
     return this.userModel.findById(userId).exec();
   }
+
+  async delete(userId: string) {
+    return this.userModel.findByIdAndDelete(userId).exec();
+  }
 }

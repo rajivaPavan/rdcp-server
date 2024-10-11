@@ -190,6 +190,14 @@ export class UsersService {
       success: true,
     };
   }
+
+  async deleteUser(userId: string) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    await this.userRepository.delete(userId);
+  }
 }
 
 class UserExistsException extends ConflictException {
