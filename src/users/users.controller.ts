@@ -6,12 +6,16 @@ import { AddUserDTO, UserDTO } from './dtos/add-user.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Roles } from './roles.decorator';
 import { UserRoleEnum } from './entities/user-role.enum';
+import { DomainsAdminService } from './admin.service';
 
 @UseGuards(AuthGuard)
 @Controller('users')
 export class UsersController {
   private readonly logger = new Logger(UsersController.name);
-  constructor(private readonly userService: UsersService) { }
+  constructor(
+    private readonly userService: UsersService,
+    private readonly domainsAdminService: DomainsAdminService
+  ) { }
 
   @Get()
   async getUsers(
@@ -62,19 +66,19 @@ export class UsersController {
   @Roles(UserRoleEnum.ADMIN)
   async getDomains() {
     this.logger.log('Getting domains');
-    return await this.userService.getDomains();
+    return await this.domainsAdminService.getDomains();
   }
 
   @Post('/domains')
   @Roles(UserRoleEnum.ADMIN)
   async addDomain(@Body('domain') domain: string) {
-    return await this.userService.addDomain(domain);
+    return await this.domainsAdminService.addDomain(domain);
   }
 
   @Delete('/domains/:domainId')
   @Roles(UserRoleEnum.ADMIN)
   async deleteDomain(@Param('domainId') domainId: string) {
-    return await this.userService.deleteDomain(domainId);
+    return await this.domainsAdminService.deleteDomain(domainId);
   }
 
 }

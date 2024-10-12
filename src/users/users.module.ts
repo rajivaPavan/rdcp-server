@@ -9,6 +9,7 @@ import { CryptModule } from 'src/utilities/crypt/crypt.module';
 import { SeedService } from './seed';
 import { WhitelistedDomain, WhitelistedDomainSchema } from './entities/whitelisted-domain.schema';
 import { DomainsRepository } from './domains.repository';
+import { DomainsAdminService } from './admin.service';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { DomainsRepository } from './domains.repository';
     CryptModule,
   ],
   controllers: [UsersController],
-  providers: [UsersService, UsersRepository, DomainsRepository, SeedService],
+  providers: [UsersService, UsersRepository, DomainsAdminService, DomainsRepository, SeedService],
   exports: [UsersService, UsersRepository, SeedService],
 })
 export class UsersModule { }
