@@ -1,4 +1,4 @@
-import { Body, ConflictException, Controller, Get, NotFoundException, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ConflictException, Controller, Get, Logger, NotFoundException, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ResponsesService } from './responses.service';
 import { FormId } from 'src/forms/decorators/form-id.decorator';
@@ -14,6 +14,8 @@ import { Form } from 'src/forms/entities/form.schema';
 @Controller('submissions')
 export class ResponsesController {
 
+    private readonly logger = new Logger(ResponsesController.name);
+    
     constructor(
         private readonly responsesService: ResponsesService,
         private readonly authService: AuthenticationService,
@@ -26,6 +28,8 @@ export class ResponsesController {
         @FormId() formId: string,
         @Req() req: Request
     ): Promise<FormDTO> {
+        this.logger.log(`Viewing form with ID: ${formId}`);
+
         const form = await this.formAuth.getForm(formId);
 
         const { authorized } = this.formAuth.publicSubmissionAuth(form);
