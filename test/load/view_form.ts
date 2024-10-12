@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import { sleep } from 'k6';
+import { check, sleep } from 'k6';
 
 export let options = {
   stages: [
@@ -11,5 +11,12 @@ export let options = {
 
 export default function () {
   const res = http.get('http://localhost:3000/v1/submissions/form/6707e27fb850f139b16b3c2c');  // Replace with your GET endpoint
+
+  // check function to verify status code, transaction time, etc
+  check(res, {
+    'status is 200': (r) => r.status === 200,
+    'transaction time OK': (r) => r.timings.duration < 200,
+  });
+  
   sleep(1);  // Simulate 1 second of user wait time
 }
