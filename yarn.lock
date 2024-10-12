@@ -1232,6 +1232,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/k6@^0.54.1":
+  version "0.54.1"
+  resolved "https://registry.yarnpkg.com/@types/k6/-/k6-0.54.1.tgz#8767bddd51b8bb1a451d5af14baf14c7dcd977c4"
+  integrity sha512-ezTMhuWr3TZIMOqAv51/4rD5T4FE1pSryrh5BCgxsniuqxbi5jQ3YEiOlO9C1+LvJcliC2byyd2Cw6cnUY7CLg==
+
 "@types/methods@^1.1.4":
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/@types/methods/-/methods-1.1.4.tgz#d3b7ac30ac47c91054ea951ce9eed07b1051e547"
@@ -4573,6 +4578,11 @@ jws@^3.2.2:
   dependencies:
     jwa "^1.4.1"
     safe-buffer "^5.0.1"
+
+k6@^0.0.0:
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/k6/-/k6-0.0.0.tgz#8c923200be0a68c578e8f5a32be96b1d8065cc3b"
+  integrity sha512-GAQSWayS2+LjbH5bkRi+pMPYyP1JSp7o+4j58ANZ762N/RH/SdlAT3CHHztnn8s/xgg8kYNM24Gd2IPo9b5W+g==
 
 kareem@2.6.3:
   version "2.6.3"
