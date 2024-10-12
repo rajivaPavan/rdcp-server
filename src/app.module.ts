@@ -24,7 +24,7 @@ import { RedisModule } from './redis/redis.module';
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
         uri: config.get<string>('MONGODB_URI'), // Loaded from .env
-        dbName: 'rdcp_db',
+        dbName: config.get<string>('MONGODB_DB_NAME') || 'rdcp_db', // Loaded from .env
       }),
     }),
     RedisModule,

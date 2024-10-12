@@ -10,7 +10,7 @@ export let options = {
 };
 
 export default function () {
-  const res = http.get('http://localhost:3000/v1/submissions/form/6707e27fb850f139b16b3c2c');  // Replace with your GET endpoint
+  const res = http.get('https://rdcp-server.greenpond-49de0879.australiaeast.azurecontainerapps.io/v1/submissions/form/6707e27fb850f139b16b3c2c');  
 
   // check function to verify status code, transaction time, etc
   check(res, {
