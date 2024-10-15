@@ -2,6 +2,7 @@ import { ProjectRoleEnum } from "../projects/entities/project-role.enum";
 import { CollaboratorsRepository } from "../projects/collaborators.repository";
 import { Types } from "mongoose";
 import { ForbiddenException, Injectable } from "@nestjs/common";
+import { Exception } from "handlebars";
 
 export const projectActions = {
     create_form: [ProjectRoleEnum.MANAGER],
@@ -26,9 +27,13 @@ export class ProjectAuthorization {
     // This method will check if the user is a collaborator of the project and if the user has
     // the required role to perform the action.
     async isAuthorized(userId: string, projectId: string, action: ProjectAction): Promise<boolean> {
+        let projectRoles;
+        try {
+            projectRoles = await this.getProjectRoles(userId, projectId);
+        } catch (e) {
+            return false;
+        }
 
-        const projectRoles = await this.getProjectRoles(userId, projectId);
-        
         // check if the user is an owner of the project, if so, they can perform any action
         if (projectRoles.includes(ProjectRoleEnum.OWNER)) {
             return true;
@@ -46,11 +51,17 @@ export class ProjectAuthorization {
         });
 
         if (!collaborator) {
-            throw new ForbiddenException('User is not a collaborator of the project');
+            throw new NotCollaboratorException();
         }
 
         const projectRoles = collaborator.roles;
         return projectRoles;
     }
 
+}
+
+export class NotCollaboratorException extends Exception {
+    constructor() {
+        super('User is not a collaborator of the project');
+    }
 }
