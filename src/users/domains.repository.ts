@@ -14,7 +14,7 @@ export class DomainsRepository {
         return await createdDomain.save();
     }
 
-    async find(query: { domain?: string }, limit = 20, page = 1): Promise<{
+    async search(query: { domain?: string }, limit = 20, page = 1): Promise<{
         domains: Partial<WhitelistedDomain>[],
         total: number
     }> {
@@ -44,4 +44,7 @@ export class DomainsRepository {
         return this.domainModel.findByIdAndDelete(domainId).exec();
     }
 
+    async findDomain(domain: string): Promise<WhitelistedDomain> {
+        return this.domainModel.findOne({ domain }).exec();
+    }
 }
