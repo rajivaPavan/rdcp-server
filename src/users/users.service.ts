@@ -13,10 +13,12 @@ import { CryptService } from '../utilities/crypt/crypt.service';
 import { AddUserDTO, UserDTO } from './dtos/add-user.dto';
 import { TypedEventEmitter } from 'src/common/event-emitter/typed-event-emitter.class';
 import { AccountSetupDto } from 'src/auth/dtos/account.dto';
+import { DomainsRepository } from './domains.repository';
 
 @Injectable()
 export class UsersService {
   constructor(
+    private readonly domainsRepository: DomainsRepository,
     private readonly userRepository: UsersRepository,
     private readonly otpService: OtpService,
     private readonly cryptService: CryptService,
@@ -160,7 +162,7 @@ export class UsersService {
       if (user.verified) throw new UserExistsException();
     }
     else {
-      if (domain !== 'cse.mrt.ac.lk') throw new ForbiddenException('You are not allowed to register');
+      if (this.isWhiteListedDomain(domain)) throw new ForbiddenException('You are not allowed to register');
       await this.createUser(new User({ email, name: email.split('@')[0] }));
     }
 
@@ -169,6 +171,10 @@ export class UsersService {
     return {
       success: true
     }
+  }
+
+  private async isWhiteListedDomain(domain: string) {
+    return !!(await this.domainsRepository.findDomain(domain));
   }
 
   public async accountSetupPost(dto: AccountSetupDto) {
