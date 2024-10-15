@@ -162,7 +162,7 @@ export class UsersService {
       if (user.verified) throw new UserExistsException();
     }
     else {
-      if (this.isWhiteListedDomain(domain)) throw new ForbiddenException('You are not allowed to register');
+      if (!this.isWhiteListedDomain(domain)) throw new ForbiddenException('You are not allowed to register');
       await this.createUser(new User({ email, name: email.split('@')[0] }));
     }
 
@@ -174,7 +174,8 @@ export class UsersService {
   }
 
   private async isWhiteListedDomain(domain: string) {
-    return !!(await this.domainsRepository.findDomain(domain));
+    const _domain = await this.domainsRepository.findDomain(domain);
+    return _domain ? true : false;
   }
 
   public async accountSetupPost(dto: AccountSetupDto) {
