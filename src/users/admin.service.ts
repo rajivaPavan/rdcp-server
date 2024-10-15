@@ -9,7 +9,7 @@ export class DomainsAdminService {
     ) {}
 
     async getDomains() {
-        return await this.domainsRepository.find({});
+        return await this.domainsRepository.search({});
     }
 
     async addDomain(domain: string) {
