@@ -42,17 +42,17 @@ export class FormAuthorization {
         if (!form.isPrivate)
             return { authorized: true };
 
-        // check if user is a collaborator of the project
-        const roles = await this.projectAuthorization.getProjectRoles(userId, form.projectId);
+        // Perform both checks in parallel since they are independent
+        const [roles, isParticipant] = await Promise.all([
+            this.projectAuthorization.getProjectRoles(userId, form.projectId),
+            this.isParticipant(userId)
+        ]);
+
+        // If the user has no project roles and is not a participant, deny access
         const isCollaborator = roles.length > 0;
-
-        if (!isCollaborator)
+        if (!isCollaborator && !isParticipant) {
             throw new NoFormAccessException();
-
-        // check if user is a participant
-
-        if (!await this.isParticipant(userId))
-            throw new NoFormAccessException();
+        }
 
         return {
             authorized: true,
