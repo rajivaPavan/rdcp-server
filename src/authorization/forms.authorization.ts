@@ -61,8 +61,9 @@ export class FormAuthorization {
 
 
     async isParticipant(userId: string) {
-        // TODO: Implement
-        return true;
+        // TODO: Implement this method
+        console.error("Implement 'isParticipant' method");
+        return false;
     }
 
     /**
