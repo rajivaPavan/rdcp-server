@@ -6,6 +6,7 @@ import { TypedEventEmitter } from "src/common/event-emitter/typed-event-emitter.
 import { Test } from "@nestjs/testing";
 import { User } from "./entities/user.schema";
 import { AddUserDTO } from "./dtos/add-user.dto";
+import { DomainsRepository } from "./domains.repository";
 
 describe('UsersService', () => {
   let usersService: UsersService;
@@ -18,6 +19,15 @@ beforeEach(async () => {
     const module = await Test.createTestingModule({
         providers: [
             UsersService,
+            {
+                provide: DomainsRepository,
+                useValue: {
+                    search: jest.fn(),
+                    create: jest.fn(),
+                    deleteDomain: jest.fn(),
+                    findDomain: jest.fn(),
+                },
+            },
             {
                 provide: UsersRepository,
                 useValue: {
