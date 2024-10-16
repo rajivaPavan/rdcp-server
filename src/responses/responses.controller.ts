@@ -32,6 +32,10 @@ export class ResponsesController {
 
         const form = await this.formAuth.getForm(formId);
 
+        if(!form) {
+            throw new NotFoundException('Form not found');
+        }
+
         const { authorized } = this.formAuth.publicSubmissionAuth(form);
 
         if (authorized)

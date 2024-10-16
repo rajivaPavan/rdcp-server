@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { Form } from "src/forms/entities/form.schema";
 import { FormsRepository } from "src/forms/forms.repository";
 
@@ -23,7 +23,7 @@ export class FormAuthorization{
     } {
 
         if (!form.isPublished) {
-            throw new NotFoundException('Form is not found');
+            throw new ConflictException('This form is not accepting responses');
         }
 
         // if form is not private then anyone can submit a response
