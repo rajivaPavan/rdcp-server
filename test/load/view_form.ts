@@ -19,11 +19,6 @@ export default function () {
   const url = __ENV.TEST_URL || 'https://rdcp-server.greenpond-49de0879.australiaeast.azurecontainerapps.io/v1/submissions/form/670a049f44979747d9516fd0';
   const res = http.get(url);
 
-  // Log response details
-  console.log(`Response time: ${res.timings.duration} ms`);
-  console.log(`Response status: ${res.status}`);
-  console.log(`Response body: ${res.body}`);
-
   // Check function to verify status code, transaction time, etc
   check(res, {
     'status is 200': (r) => r.status === 200,
