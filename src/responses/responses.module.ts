@@ -3,21 +3,23 @@ import { ResponsesService } from './responses.service';
 import { ResponsesController } from './responses.controller';
 import { S3ObjectStorageService } from './files.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ResponseSchema } from './entities/response.schema';
+import { FormResponse, ResponseSchema } from './entities/response.schema';
 import { ResponsesRepository } from './responses.repository';
 import { AuthModule } from 'src/auth/auth.module';
 import { AuthorizationModule } from 'src/authorization/authorization.module';
+import { FormsModule } from 'src/forms/forms.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Response.name, schema: ResponseSchema }]),
+    MongooseModule.forFeature([{ name: FormResponse.name, schema: ResponseSchema }]),
     AuthModule,
-    AuthorizationModule
+    AuthorizationModule,
+    FormsModule
   ],
   providers: [
     ResponsesService,
     ResponsesRepository,
-    S3ObjectStorageService
+    S3ObjectStorageService,
   ],
   controllers: [ResponsesController],
 })

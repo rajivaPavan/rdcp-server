@@ -127,12 +127,6 @@ export class FormsService {
       throw new Error('Form not found');
     }
 
-    // Check if the user is a project owner  
-    const owner = await this.collaboratorsRepository.findOwnerByProjectIdAndUserId(projectId, userId);
-    if (!owner) {
-      throw new Error('Unauthorized access');
-    }
-
     const newParticipants = emails.map(email => ({
       email,
       id: new Types.ObjectId().toString(),

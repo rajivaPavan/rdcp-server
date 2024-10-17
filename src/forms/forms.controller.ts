@@ -152,6 +152,7 @@ export class FormsController {
   }
 
   @UseGuards(FormAuthorizationGuard)
+  @FormActionMeta('edit_form_properties')
   @Post(':formId/settings')
     async addParticipants(
         @Param('projectId') projectId: string,
