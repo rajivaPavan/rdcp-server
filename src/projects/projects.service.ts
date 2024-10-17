@@ -11,6 +11,7 @@ import { CollaboratorsRepository } from './collaborators.repository';
 import { CreateProjectDto } from './dtos/create-project.dto';
 import { ProjectRoleEnum } from './entities/project-role.enum';
 import { AddCollaboratorsDto } from './dtos/add-collaborators.dto';
+import { AuthenticatedUser } from 'src/auth/entities/authenticated-user';
 
 @Injectable()
 export class ProjectsService {
@@ -56,13 +57,14 @@ export class ProjectsService {
       id: project._id.toString(),
       name: project.name,
       description: project.description,
+      createdAt: project.createdAt,
       roles: collaborator?.roles || [],
     };
   }
 
   async create(
     projectDTO: CreateProjectDto,
-    userId: string,
+    user: AuthenticatedUser
   ): Promise<ProjectDTO> {
     const project = new Project({ ...projectDTO, _id: new Types.ObjectId() });
     const createdProject = await this.projectRepository.create(project);
@@ -71,40 +73,35 @@ export class ProjectsService {
 
     await this.collaboratorRepository.create({
       project: createdProject._id,
-      user: new Types.ObjectId(userId),
+      user: new Types.ObjectId(user.id),
+      email: user.email,
       roles: roles,
     });
 
     return {
       ...createdProject,
       id: createdProject._id.toString(),
+      name: createdProject.name,
+      description: createdProject.description,
+      createdAt: createdProject.createdAt,
       roles,
     };
   }
 
   async getProjectsOfUser(userId: string): Promise<ProjectDTO[]> {
     const userObjectId = new Types.ObjectId(userId);
-    const collaborations = await this.collaboratorRepository.find({
-      user: userObjectId,
+    let collaborations = await this.collaboratorRepository.getProjectsOfUser(userId) as any;
+    collaborations = collaborations.filter((collab) => collab.project !== null);
+    return collaborations.map((collab) => {
+      const project = collab.project;
+      return {
+        id: project._id.toString(),
+        name: project.name,
+        description: project.description,
+        createdAt: project.createdAt,
+        roles: collab.roles,
+      };
     });
-
-    const projectRoles = collaborations.reduce((acc, curr) => {
-      acc[curr.project.toString()] = curr.roles;
-      return acc;
-    }, {});
-
-    const projectIds = collaborations.map((collab) => collab.project);
-    const projects = await this.projectRepository.find({
-      _id: { $in: projectIds },
-    });
-
-    return projects.map((project) => ({
-      id: project._id.toString(),
-      name: project.name,
-      description: project.description,
-      createdAt: project.createdAt,
-      roles: projectRoles[project._id.toString()],
-    }));
   }
 
   async updateProject(
@@ -122,9 +119,8 @@ export class ProjectsService {
     });
 
     return {
+      ...updatedProject,
       id: updatedProject._id.toString(),
-      name: updatedProject.name,
-      description: updatedProject.description,
       roles: collaborator?.roles || [],
     };
   }
@@ -163,10 +159,11 @@ export class ProjectsService {
 
     // Add the new collaborators
     const newCollaborators = await Promise.all(
-      collaboratorsDTO.userIds.map(async (userId) => {
+      collaboratorsDTO.users.map(async (user) => {
         return {
           project: project._id,
-          user: new Types.ObjectId(userId),
+          user: new Types.ObjectId(user.id),
+          email: user.email,
           roles: collaboratorsDTO.roles,
         };
       }),

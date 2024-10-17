@@ -3,7 +3,7 @@ import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class FormsEditingService {
-  constructor(private redisService: RedisService) {}
+  constructor(private redisService: RedisService) { }
 
   private readonly lockTTL = 600; // 10 minutes
 
@@ -27,22 +27,24 @@ export class FormsEditingService {
   // Extend the lock with heartbeat
   async keepAlive(formId: string, userId: string) {
     const currentEditor = await this.getCurrentEditor(formId);
-    if (currentEditor.id === userId) {
-      const lockKey = this.makeLockKey(formId);
-      await this.redisService.updateTTL(lockKey, this.lockTTL);
-      return { success: true };
-    }
-    throw new NoLockOwnershipException();
+
+    if (!currentEditor || currentEditor.id !== userId)
+      throw new NoLockOwnershipException();
+
+    const lockKey = this.makeLockKey(formId);
+    await this.redisService.updateTTL(lockKey, this.lockTTL);
+    return { success: true };
   }
 
   // Release the lock
   async releaseLock(formId: string, userId: string) {
     const currentEditor = await this.getCurrentEditor(formId);
-    if (currentEditor.id === userId) {
-      await this.removeCurrentEditor(formId);
-      return { success: true };
-    }
-    throw new NoLockOwnershipException();
+
+    if (!currentEditor || currentEditor.id !== userId)
+      throw new NoLockOwnershipException();
+
+    await this.removeCurrentEditor(formId);
+    return { success: true };
   }
 
   private async removeCurrentEditor(formId: string) {

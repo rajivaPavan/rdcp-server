@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { FileHashService, S3ObjectStorageService } from './files.service';
 import { ResponsesRepository } from './responses.repository';
 import { Types } from 'mongoose';
+import { FormsRepository } from 'src/forms/forms.repository';
+import { Form } from 'src/forms/entities/form.schema';
+import { FormResponseDto } from './dtos/responses.dto';
+
 
 @Injectable()
 export class ResponsesService {
@@ -9,7 +13,10 @@ export class ResponsesService {
     constructor(
         private readonly s3ObjectStorageService: S3ObjectStorageService,
         private readonly responsesRepository: ResponsesRepository,
+        private readonly formRepository: FormsRepository
     ) { }
+
+    private readonly fileUploadFieldType = 'FileUploadField';
 
     async submit(
         projectId: string,
@@ -18,27 +25,69 @@ export class ResponsesService {
         files: Array<Express.Multer.File>,
         userId?: string
     ) {
-        console.log(body);
-        console.log(files);
 
         const res = await this.uploadFiles(projectId, formId, files);
+        const form = await this.formRepository.findById(formId);
+        const schema = form.schema;
+
+        // this.validateRequiredFields(schema, body, files);
+
+        // create an array in the order of the schema from the body with labels added 
+        // and files replaced with their s3 keys
+        const preparedRecord = schema.map<{
+            field: string,
+            value: any,
+            type: string,
+            label: string,
+        }>(field => {
+            const _record = {
+                type: field.type,
+                label: field.extraAttributes.label,
+            };
+            if (field.type === this.fileUploadFieldType) {
+                const file = res.find(r => r.field === field.id);
+                return {
+                    field: field.id,
+                    value: file ? file.key : null,
+                    ..._record,
+                }
+            }
+            return {
+                field: field.id,
+                value: body[field.id],
+                ..._record,
+            }
+        });
 
         // save in db
         const response = await this.responsesRepository.create({
             _id: new Types.ObjectId(),
             projectId: new Types.ObjectId(projectId),
             formId: new Types.ObjectId(formId),
-            record: {
-                ...body,
-                ...res.reduce((acc, curr) => {
-                    acc[curr.field] = curr.key;
-                    return acc;
-                }, {}),
-            },
+            userId: userId ? new Types.ObjectId(userId) : null,
+            record: preparedRecord,
         });
 
-        console.log(response);
         return response;
+    }
+
+    private validateRequiredFields(schema: Record<string, any>[], body: Record<string, any>, files: Express.Multer.File[]) {
+        // TODO: check the accuracy of  this method
+        const requiredFields = schema.filter(field => field.extraAttributes.required);
+
+        if (requiredFields.length > 0) {
+            // check for missing fields in body
+            const missingFields = requiredFields.filter(field => !body[field.id]);
+
+            // check for missing fields in files
+            const missingFiles = requiredFields.filter(field => !files.find(file => file.fieldname === field.id));
+
+            if (missingFields.length > 0 || missingFiles.length > 0) {
+                const missingFieldNames = missingFields.map(field => field.extraAttributes.label);
+                const missingFileNames = missingFiles.map(field => field.extraAttributes.label);
+                throw new Error(`Missing required fields: ${[...missingFieldNames, ...missingFileNames].join(', ')}`);
+            }
+        }
     }
 
     private async uploadFiles(
@@ -72,5 +121,67 @@ export class ResponsesService {
 
         return uploadResponse;
     }
+
+    async getResponses(formId: string, page: number, limit: number) {
+        const res = await this.responsesRepository.find({
+            formId: new Types.ObjectId(formId),
+        }, page, limit);
+
+
+        // Map over the items and for each record, map the fields asynchronously.
+        const itemsWithSignedUrls = await Promise.all(
+            res.items.map(async (item) => {
+                // Process each field in the record array asynchronously.
+                item.record = await Promise.all(
+                    item.record.map(async (field) => {
+                        if (field.type !== this.fileUploadFieldType || !field.value) {
+                            return field;
+                        }
+
+                        // Get the signed URL for the file.
+                        field.value = await this.s3ObjectStorageService.getFileUrl(field.value);
+                        return field;
+                    })
+                );
+
+                // Return the DTO after processing the item.
+                return FormResponseDto.fromEntity(item);
+            })
+        );
+
+        return {
+            items: itemsWithSignedUrls,
+            total: res.total,
+            page: res.page,
+            limit: res.limit,
+        };
+    }
+
+    async getAllResponses(formId: string) {
+        const responses = await this.responsesRepository.find({
+            formId: new Types.ObjectId(formId),
+        }, 1, -1);
+        return {
+            items: responses.items.map(FormResponseDto.fromEntity),
+            total: responses.total,
+        };
+    }
+
+    async getSummary(formId: string, field: string, fieldType: string) {
+        let responses;
+        switch (fieldType) {
+            case 'SelectField':
+                responses = await this.responsesRepository.getSelectFieldData(formId, field);
+                break;
+            case 'CheckboxField':
+                responses = await this.responsesRepository.getCheckboxFieldData(formId, field);
+                break;
+            default:
+                throw new Error('Field type not supported');
+        }
+
+        return responses;
+    }
+
 }
 

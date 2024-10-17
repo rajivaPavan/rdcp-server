@@ -7,7 +7,7 @@ import { ProjectsModule } from './projects/projects.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { FormsModule } from './forms/forms.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { TypedEventEmitterModule } from './event-emitter/type-event-emitter.module';
+import { TypedEventEmitterModule } from './common/event-emitter/type-event-emitter.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ResponsesModule } from './responses/responses.module';
 import { EmailModule } from './email/email.module';
@@ -24,7 +24,7 @@ import { RedisModule } from './redis/redis.module';
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
         uri: config.get<string>('MONGODB_URI'), // Loaded from .env
-        dbName: 'rdcp_db',
+        dbName: config.get<string>('MONGODB_DB_NAME') || 'rdcp_db', // Loaded from .env
       }),
     }),
     RedisModule,

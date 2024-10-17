@@ -21,6 +21,7 @@ import { FormAuthorizationGuard } from './forms.guard';
 import { FormActionMeta } from './decorators/form-action.decorator';
 import { FormId } from './decorators/form-id.decorator';
 import { UsersService } from 'src/users/users.service';
+import { Form } from './entities/form.schema';
 
 @UseGuards(AuthGuard)
 @Controller('forms')
@@ -61,7 +62,7 @@ export class FormsController {
   @UseGuards(FormAuthorizationGuard)
   @FormActionMeta('view_form')
   @Get('/:formId')
-  async getForm(@FormId() formId: string, @FormReqDto() form,
+  async getForm(@FormId() formId: string, @FormReqDto() form: Form,
     @Query("schema") schema: boolean = false
   ): Promise<FormDTO> {
     
@@ -73,7 +74,7 @@ export class FormsController {
       delete form.schema;
     }
 
-    return form;
+    return FormDTO.fromEntity(form);
   }
 
   /// Update form properties

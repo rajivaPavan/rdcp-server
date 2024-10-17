@@ -1,31 +1,45 @@
-import { Body, ConflictException, Controller, Get, NotFoundException, Post, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, ConflictException, Controller, Get, Logger, NotFoundException, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ResponsesService } from './responses.service';
 import { FormId } from 'src/forms/decorators/form-id.decorator';
 import AuthenticationService from 'src/auth/auth.service';
 import { FormAuthorization } from 'src/authorization/forms.authorization';
 import { FormDTO } from 'src/forms/dtos/form.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { FormAuthorizationGuard } from 'src/forms/forms.guard';
+import { FormActionMeta } from 'src/forms/decorators/form-action.decorator';
+import { FormReqDto } from 'src/forms/decorators/form.decorator';
+import { Form } from 'src/forms/entities/form.schema';
 
 @Controller('submissions')
 export class ResponsesController {
 
+    private readonly logger = new Logger(ResponsesController.name);
+    
     constructor(
         private readonly responsesService: ResponsesService,
         private readonly authService: AuthenticationService,
-        private readonly formAuth: FormAuthorization
-    ) { }
+        private readonly formAuth: FormAuthorization,
+    ) {
+    }
 
     @Get("form/:formId")
     async viewForm(
         @FormId() formId: string,
         @Req() req: Request
     ): Promise<FormDTO> {
+        this.logger.log(`Viewing form with ID: ${formId}`);
+
         const form = await this.formAuth.getForm(formId);
+
+        if(!form) {
+            throw new NotFoundException('Form not found');
+        }
 
         const { authorized } = this.formAuth.publicSubmissionAuth(form);
 
         if (authorized)
-            return FormDTO.fromEntity(form);    
+            return FormDTO.fromEntity(form);
 
         // check if user is authenticated
         // if user is authenticated, check if user has access to the form
@@ -113,6 +127,40 @@ export class ResponsesController {
         }
         return body;
     }
+
+    @UseGuards(AuthGuard, FormAuthorizationGuard)
+    @FormActionMeta('view_form_responses')
+    @Get('form/:formId/responses')
+    async getResponses(
+        @FormId() formId: string,
+        @FormReqDto() form: Form,
+        @Query('page') page: number = 1, // default to page 1
+        @Query('limit') limit: number = 10, // default limit to 10
+    ) {
+
+        const getAll = limit === -1;
+        const responses = getAll ? await this.responsesService.getAllResponses(formId) :
+            await this.responsesService.getResponses(formId, Number(page), Number(limit));
+        return {
+            responses,
+            form: FormDTO.fromEntity(form)
+        }
+    }
+
+    @UseGuards(AuthGuard, FormAuthorizationGuard)
+    @FormActionMeta('view_form_responses')
+    @Get('form/:formId/summary')
+    async getSummary(
+        @FormId() formId: string,
+        @FormReqDto() form: Form,
+        @Query('field') field: string
+    ) {
+        if (!field) throw new NotFoundException('Field is required');
+        // get the type of the field
+        const fieldType = form.schema.find(f => f.id === field)?.type;
+        return this.responsesService.getSummary(formId, field, fieldType);
+    }
+
 }
 
 

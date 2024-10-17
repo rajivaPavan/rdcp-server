@@ -4,6 +4,7 @@ import { CreateProjectDto } from "./dtos/create-project.dto";
 import { ProjectRoleEnum } from "./entities/project-role.enum";
 import { ProjectRepository } from "./projects.repository";
 import { ProjectNotFoundException, ProjectsService, UnauthorizedProjectAccessException } from "./projects.service";
+import { UserRoleEnum } from "src/users/entities/user-role.enum";
 
 describe('ProjectsService', () => {
   let projectsService: ProjectsService;
@@ -35,7 +36,7 @@ describe('ProjectsService', () => {
     it('should return project details with roles', async () => {
       const projectId = new Types.ObjectId().toHexString();
       const userId = new Types.ObjectId().toHexString();
-      const project = { _id: projectId, name: 'Test Project', description: 'Test Description' };
+      const project = { _id: projectId, name: 'Test Project', description: 'Test Description', createdAt: new Date() };
       const collaborator = { roles: [ProjectRoleEnum.OWNER] };
 
       (projectRepository.findById as jest.Mock).mockResolvedValue(project);
@@ -45,8 +46,9 @@ describe('ProjectsService', () => {
 
       expect(result).toEqual({
         id: projectId,
-        name: 'Test Project',
-        description: 'Test Description',
+        name: project.name,
+        description: project.description,
+        createdAt: project.createdAt,
         roles: [ProjectRoleEnum.OWNER],
       });
     });
@@ -71,7 +73,11 @@ describe('ProjectsService', () => {
       (projectRepository.create as jest.Mock).mockResolvedValue(createdProject);
       (collaboratorRepository.create as jest.Mock).mockResolvedValue({});
 
-      const result = await projectsService.create(projectDTO, userId);
+      const result = await projectsService.create(projectDTO, {
+        id: userId,
+        email: 'user@rdcp.com',
+        role: UserRoleEnum.USER
+      });
 
       expect(result).toEqual({
         ...createdProject,

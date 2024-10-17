@@ -28,7 +28,7 @@ import { UsersModule } from 'src/users/users.module';
     FormsService,
     FormsEditingService,
     FormAuthorizationGuard,
-    FormsRepository,],
-  exports: [FormsService],
+    FormsRepository],
+  exports: [FormsService, FormsRepository],
 })
 export class FormsModule { }

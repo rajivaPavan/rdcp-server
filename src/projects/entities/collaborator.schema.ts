@@ -23,6 +23,10 @@ export class Collaborator {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
   user: Types.ObjectId;
 
+  // user email
+  @Prop({ type: String})
+  email: string;
+
   @Prop({ type: [String], enum: ProjectRoleEnum, required: true })
   roles: ProjectRoleEnum[];
 }
