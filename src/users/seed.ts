@@ -35,7 +35,6 @@ export class SeedService {
                     password: hashedPassword,
                     role: UserRoleEnum.ADMIN
                 });
-                console.log('Admin seeded successfully!');
             }
             catch (err) {
                 console.log(`Error seeding admin ${adminEmail}: ${err}`);

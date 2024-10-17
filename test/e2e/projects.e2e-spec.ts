@@ -1,12 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, VERSION_NEUTRAL, VersioningType } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { CoreModule } from 'src/core.module';
-import { ConfigModule } from '@nestjs/config';
-import { MockRedisModule } from 'src/redis/redis.module';
-import { SeedService } from 'src/users/seed';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { MongooseModule } from '@nestjs/mongoose';
+import { initializeE2ETest } from './initializeE2ETest';
 
 describe('ProjectsController (e2e)', () => {
     let app: INestApplication;
@@ -15,39 +10,7 @@ describe('ProjectsController (e2e)', () => {
 
     beforeAll(async () => {
 
-        mongod = await MongoMemoryServer.create({
-            instance: {
-                dbName: 'rdcp_test_db',
-            },
-            binary: {
-                version: '6.0.0',
-            }
-        });
-        const uri = mongod.getUri();
-
-        const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [
-                ConfigModule.forRoot({
-                    isGlobal: true,
-                }),
-                MockRedisModule,
-                MongooseModule.forRoot(uri),
-                CoreModule,
-            ],
-        }).compile();
-        const seed =  moduleFixture.get(SeedService);
-        await seed.initAdmin();
-
-        app = moduleFixture.createNestApplication({
-        });
-
-        app.enableVersioning({
-            defaultVersion: [VERSION_NEUTRAL],
-            type: VersioningType.URI
-        });
-
-        await app.init();
-
+        ({ mongod, app } = await initializeE2ETest(mongod, app));
           
         // Log in to get the auth token using loginV2
         const loginResponse = await request(app.getHttpServer())
@@ -157,3 +120,5 @@ describe('ProjectsController (e2e)', () => {
         expect(response.body.message).toBe('Project deleted successfully');
     });
 });
+
+
