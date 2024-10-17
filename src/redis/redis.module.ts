@@ -19,3 +19,21 @@ import { createCacheConfig } from './cache.config';
     exports: [RedisService],
 })
 export class RedisModule { }
+
+// Mock RedisModule
+@Global()
+@Module({
+    imports: [
+        CacheModule.registerAsync({
+            isGlobal:true,
+            useFactory: () => ({
+                store: 'memory',
+            })
+        })
+    ],
+    providers: [
+        RedisService,
+    ],
+    exports: [RedisService],
+})
+export class MockRedisModule { }

@@ -7,6 +7,7 @@ import {
   Query,
   Req,
   Version,
+  VERSION_NEUTRAL,
 } from '@nestjs/common';
 import AuthenticationService from './auth.service';
 import { UsersService } from '../users/users.service';
@@ -31,7 +32,7 @@ export class AuthenticationController {
     return await this.authService.login(user, loginDto.password);
   }
 
-  @Version('2')
+  @Version(['2', VERSION_NEUTRAL])
   @Post('login')
   async loginV2(@Body() loginDto: LoginDto): Promise<LoginV2ResponseDto>{
     this.logger.debug(`Login request for ${loginDto.email}`);
