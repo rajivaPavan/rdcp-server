@@ -3,17 +3,10 @@ import { ResponsesService } from './responses.service';
 import { ResponsesController } from './responses.controller';
 import { S3ObjectStorageService } from './files.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Response, ResponseSchema } from './entities/response.schema';
+import { ResponseSchema } from './entities/response.schema';
 import { ResponsesRepository } from './responses.repository';
 import { AuthModule } from 'src/auth/auth.module';
 import { AuthorizationModule } from 'src/authorization/authorization.module';
-import { S3ObjectStorageService } from './files.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { FormResponse, ResponseSchema } from './entities/response.schema';
-import { ResponsesRepository } from './responses.repository';
-import { AuthModule } from 'src/auth/auth.module';
-import { AuthorizationModule } from 'src/authorization/authorization.module';
-import { FormsModule } from 'src/forms/forms.module';
 
 @Module({
   imports: [
