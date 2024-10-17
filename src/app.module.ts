@@ -12,6 +12,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ResponsesModule } from './responses/responses.module';
 import { EmailModule } from './email/email.module';
 import { RedisModule } from './redis/redis.module';
+import { AuthorizationModule } from './authorization/authorization.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { RedisModule } from './redis/redis.module';
         },
       }),
     }),
+    AuthorizationModule,
     EmailModule,
     UsersModule,
     AuthModule,
