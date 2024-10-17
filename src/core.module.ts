@@ -1,0 +1,36 @@
+import { Module } from "@nestjs/common";
+import { AuthModule } from "./auth/auth.module";
+import { EmailModule } from "./email/email.module";
+import { ProjectsModule } from "./projects/projects.module";
+import { FormsModule } from "./forms/forms.module";
+import { ResponsesModule } from "./responses/responses.module";
+import { UsersModule } from "./users/users.module";
+import { AuthorizationModule } from "./authorization/authorization.module"
+import { EventEmitterModule } from "@nestjs/event-emitter";
+import { TypedEventEmitterModule } from "./common/event-emitter/type-event-emitter.module";
+import { JwtModule } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
+@Module({
+    imports: [
+        JwtModule.registerAsync({
+            inject: [ConfigService],
+            global: true,
+            useFactory: async (config: ConfigService) => ({
+                secret: config.get('JWT_SECRET'),
+                signOptions: {
+                    expiresIn: '1d',
+                },
+            }),
+        }),
+        AuthorizationModule,
+        EventEmitterModule.forRoot(),
+        TypedEventEmitterModule,
+        EmailModule,
+        UsersModule,
+        AuthModule,
+        ProjectsModule,
+        FormsModule,
+        ResponsesModule
+    ]
+})
+export class CoreModule { }
