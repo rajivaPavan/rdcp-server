@@ -13,6 +13,11 @@ export class SeedService {
         private readonly cryptService: CryptService,
         @InjectModel(User.name) private userModel: Model<User>) { }
 
+    static readonly testAdmin = {
+        email: 'admin@rdcp.com',
+        password: 'admin123'
+    }
+
     async initAdmin() {
         // get specified admin email and password from .env
         const adminEmail = this.configService.get<string>('ADMIN_EMAIL');
@@ -23,6 +28,15 @@ export class SeedService {
         }
         
         // check if admin already exists
+        await this.addAdmin(adminEmail, adminPassword);
+    }
+
+    async initTestAdmin() {
+        const { email, password } = SeedService.testAdmin;
+        await this.addAdmin(email, password);
+    }
+
+    private async addAdmin(adminEmail: string, adminPassword: string) {
         const admin = await this.userModel.findOne({ email: adminEmail });
 
         // if admin does not exist, create one

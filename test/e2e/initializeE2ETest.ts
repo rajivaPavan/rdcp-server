@@ -29,8 +29,7 @@ export async function initializeE2ETest(mongod: MongoMemoryServer, app: INestApp
         ],
     }).compile();
     const seed = moduleFixture.get(SeedService);
-    await seed.initAdmin();
-
+    await seed.initTestAdmin();
     app = moduleFixture.createNestApplication({});
 
     app.enableVersioning({

@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { initializeE2ETest } from './initializeE2ETest';
+import { SeedService } from 'src/users/seed';
 
 describe('ProjectsController (e2e)', () => {
     let app: INestApplication;
@@ -11,11 +12,12 @@ describe('ProjectsController (e2e)', () => {
     beforeAll(async () => {
 
         ({ mongod, app } = await initializeE2ETest(mongod, app));
-          
+        const testAdmin = SeedService.testAdmin;
+        
         // Log in to get the auth token using loginV2
         const loginResponse = await request(app.getHttpServer())
             .post('/v2/auth/login')
-            .send({ email: process.env.ADMIN_EMAIL, password: process.env.ADMIN_PASSWORD })
+            .send({ email: testAdmin.email, password: testAdmin.password })
             .expect(201);
 
         authToken = loginResponse.body.accessToken;
