@@ -1,4 +1,4 @@
-import { Body, ConflictException, Controller, Get, Logger, NotFoundException, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, ForbiddenException, Get, Logger, NotFoundException, Post, Query, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ResponsesService } from './responses.service';
 import { FormId } from 'src/forms/decorators/form-id.decorator';
@@ -155,7 +155,7 @@ export class ResponsesController {
         @FormReqDto() form: Form,
         @Query('field') field: string
     ) {
-        if (!field) throw new NotFoundException('Field is required');
+        if (!field) throw new BadRequestException('Field is required');
         // get the type of the field
         const fieldType = form.schema.find(f => f.id === field)?.type;
         return this.responsesService.getSummary(formId, field, fieldType);
@@ -164,8 +164,8 @@ export class ResponsesController {
 }
 
 
-export class NoFormAccessException extends ConflictException {
+export class NoFormAccessException extends ForbiddenException {
     constructor(message?: string) {
-        super(message || 'User does not have access to the form');
+        super(message || 'You do not have access to the form');
     }
 }

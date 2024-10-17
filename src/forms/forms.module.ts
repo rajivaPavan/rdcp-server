@@ -9,13 +9,11 @@ import { FormsEditingService } from './form-editing.service';
 import { FormAuthorizationGuard } from './forms.guard';
 import { ProjectsService } from 'src/projects/projects.service';
 import { ProjectsModule } from 'src/projects/projects.module';
-import { AuthorizationModule } from 'src/authorization/authorization.module';
 
 @Module({
   imports: [
     ConfigModule,
     MongooseModule.forFeature([{ name: Form.name, schema: FormSchema }]),
-    AuthorizationModule,
     forwardRef(() => ProjectsModule),
   ],
   controllers: [FormsController],

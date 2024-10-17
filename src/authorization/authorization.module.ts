@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ProjectAuthorization } from './projects.authorization';
 import { CollaboratorsRepository } from 'src/projects/collaborators.repository';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -7,6 +7,7 @@ import { FormsRepository } from 'src/forms/forms.repository';
 import { FormAuthorization } from './forms.authorization';
 import { Form, FormSchema } from 'src/forms/entities/form.schema';
 
+@Global()
 @Module({
     imports: [
         MongooseModule.forFeature([
@@ -25,4 +26,4 @@ import { Form, FormSchema } from 'src/forms/entities/form.schema';
         FormAuthorization
     ]
 })
-export class AuthorizationModule { }
+export class AuthorizationModule {}
