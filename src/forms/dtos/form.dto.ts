@@ -1,6 +1,7 @@
 import { ArrayNotEmpty, IsArray, IsEmail } from "class-validator";
+import { Form } from "../entities/form.schema";
 
-export interface FormDTO {
+export class FormDTO {
   projectId: string;
   id: string;
   name: string;
@@ -8,6 +9,14 @@ export interface FormDTO {
   isPrivate: boolean;
   isPublished: boolean;
   multipleResponses: boolean;
+
+  static fromEntity(form: Form): FormDTO {
+    return {
+      ...form,
+      projectId: form.projectId.toString(),
+      id: form._id.toString(),
+    }
+  }
 }
 
 export interface CreateFormDTO {

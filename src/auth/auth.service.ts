@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CryptService } from '../utilities/crypt/crypt.service';
 import { InvalidCredentialsException } from './exceptions/invalid-credentials.exception';
@@ -117,10 +117,51 @@ export class AuthenticationService {
       refreshToken: refresh_token,
     };
   }
+  async extractUserFromRequest(request: Request): Promise<{
+    id: string;
+    email: string | null;
+    role: string | null;
+  }> {
+    const token = this.extractToken(request);
+    if (!token) {
+      this.logAndThrowUnauthorized('No token provided');
+    }
 
-  async logout(sessionId: string, userId: string) {
-    // Implement logout functionality
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      });
+
+      // Return the user object with extracted information
+      return {
+        id: payload.sub,
+        email: payload.email ?? null,
+        role: payload.role ?? null,
+      };
+
+    } catch (error) {
+      this.logAndThrowUnauthorized('Invalid token', error.message);
+    }
   }
+
+  private extractToken(request: Request): string | undefined {
+    //@ts-ignore
+    const authHeader = request.headers.authorization;
+    if (authHeader) {
+      const [type, token] = authHeader.split(' ');
+      if (type === 'Bearer') {
+        return token;
+      }
+    }
+
+    //@ts-ignore
+    return request.cookies?.token;
+  }
+
+  private logAndThrowUnauthorized(message: string, errorDetails?: string): never {
+    throw new UnauthorizedException(message);
+  }
+
 }
 
 export default AuthenticationService;

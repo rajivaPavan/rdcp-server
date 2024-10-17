@@ -33,8 +33,8 @@ describe('ProjectsService', () => {
 
   describe('getProject', () => {
     it('should return project details with roles', async () => {
-      const projectId = 'projectId';
-      const userId = 'userId';
+      const projectId = new Types.ObjectId().toHexString();
+      const userId = new Types.ObjectId().toHexString();
       const project = { _id: projectId, name: 'Test Project', description: 'Test Description' };
       const collaborator = { roles: [ProjectRoleEnum.OWNER] };
 
@@ -52,8 +52,8 @@ describe('ProjectsService', () => {
     });
 
     it('should throw ProjectNotFoundException if project not found', async () => {
-      const projectId = 'projectId';
-      const userId = 'userId';
+      const projectId = new Types.ObjectId().toHexString();
+      const userId = new Types.ObjectId().toHexString();
 
       (projectRepository.findById as jest.Mock).mockResolvedValue(null);
 
@@ -64,7 +64,7 @@ describe('ProjectsService', () => {
   describe('create', () => {
     it('should create a new project and return project details', async () => {
       const projectDTO = { name: 'New Project', description: 'New Description' } as CreateProjectDto;
-      const userId = 'userId';
+      const userId = new Types.ObjectId().toHexString();
       const project = { _id: new Types.ObjectId(), ...projectDTO };
       const createdProject = { ...project, _id: new Types.ObjectId() };
 
@@ -83,8 +83,8 @@ describe('ProjectsService', () => {
 
   describe('deleteProject', () => {
     it('should delete a project if user is authorized', async () => {
-      const projectId = 'projectId';
-      const userId = 'userId';
+      const projectId = new Types.ObjectId().toHexString();
+      const userId = new Types.ObjectId().toHexString();
       const project = { _id: projectId };
 
       (projectRepository.findById as jest.Mock).mockResolvedValue(project);
@@ -97,8 +97,8 @@ describe('ProjectsService', () => {
     });
 
     it('should throw UnauthorizedProjectAccessException if user is not authorized', async () => {
-      const projectId = 'projectId';
-      const userId = 'userId';
+      const projectId = new Types.ObjectId().toHexString();
+      const userId = new Types.ObjectId().toHexString();
       const project = { _id: projectId };
 
       (projectRepository.findById as jest.Mock).mockResolvedValue(project);
