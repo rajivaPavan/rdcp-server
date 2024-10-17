@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, VERSION_NEUTRAL, VersioningType } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule, dbModule } from '../src/app.module';
 import { CoreModule } from 'src/core.module';
 import { ConfigModule } from '@nestjs/config';
 import { MockRedisModule } from 'src/redis/redis.module';
@@ -12,8 +11,19 @@ import { MongooseModule } from '@nestjs/mongoose';
 describe('ProjectsController (e2e)', () => {
     let app: INestApplication;
     let authToken: string;
+    let mongod: MongoMemoryServer;
 
     beforeAll(async () => {
+
+        mongod = await MongoMemoryServer.create({
+            instance: {
+                dbName: 'rdcp_test_db',
+            },
+            binary: {
+                version: '6.0.0',
+            }
+        });
+        const uri = mongod.getUri();
 
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [
@@ -21,32 +31,35 @@ describe('ProjectsController (e2e)', () => {
                     isGlobal: true,
                 }),
                 MockRedisModule,
-                dbModule,
+                MongooseModule.forRoot(uri),
                 CoreModule,
             ],
         }).compile();
+        const seed =  moduleFixture.get(SeedService);
+        await seed.initAdmin();
 
-        app = moduleFixture.createNestApplication();
-        await app.init();
-        const seed = app.get(SeedService);
-        seed.initAdmin();
-        
+        app = moduleFixture.createNestApplication({
+        });
+
         app.enableVersioning({
-            defaultVersion: '1',
+            defaultVersion: [VERSION_NEUTRAL],
             type: VersioningType.URI
         });
+
+        await app.init();
+
           
         // Log in to get the auth token using loginV2
         const loginResponse = await request(app.getHttpServer())
-            .post('/auth/login')
+            .post('/v2/auth/login')
             .send({ email: process.env.ADMIN_EMAIL, password: process.env.ADMIN_PASSWORD })
             .expect(201);
 
-        console.log(loginResponse.body);
-        authToken = loginResponse.body.jwt;
+        authToken = loginResponse.body.accessToken;
     });
 
     afterAll(async () => {
+        await mongod.stop();
         await app.close();
     });
 
