@@ -4,7 +4,7 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import { initializeE2ETest } from './initializeE2ETest';
 import { SeedService } from 'src/users/seed';
 import { FormDTO } from 'src/forms/dtos/form.dto';
-import exp from 'constants';
+import { createProject } from './testHelpers';
 
 describe('FormsController (e2e)', () => {
     let app: INestApplication;
@@ -16,7 +16,7 @@ describe('FormsController (e2e)', () => {
         ({ mongod, app } = await initializeE2ETest(mongod, app));
 
         authToken = await loginAsAdmin(app);
-        projectId = await createProject(app, authToken, 'Test Project', 'Test Description');
+        projectId = await createProject(app, 'Test Project', 'Test Description', authToken);
     });
 
     afterAll(async () => {
@@ -112,15 +112,6 @@ async function loginAsAdmin(app: INestApplication): Promise<string> {
         .send({ email: testAdmin.email, password: testAdmin.password })
         .expect(201);
     return response.body.accessToken;
-}
-
-async function createProject(app: INestApplication, token: string, name: string, description: string) {
-    const response = await request(app.getHttpServer())
-        .post('/projects')
-        .set('Authorization', `Bearer ${token}`)
-        .send({ name, description })
-        .expect(201);
-    return response.body.id;
 }
 
 async function createForm(app: INestApplication, token: string, formDto: any) {

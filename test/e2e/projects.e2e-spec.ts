@@ -3,6 +3,7 @@ import * as request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { initializeE2ETest } from './initializeE2ETest';
 import { SeedService } from 'src/users/seed';
+import { createProject } from './testHelpers';
 
 describe('ProjectsController (e2e)', () => {
   let app: INestApplication;
@@ -37,23 +38,14 @@ describe('ProjectsController (e2e)', () => {
     description: 'Updated Description',
   };
 
-  const createProject = async () => {
-    return await request(app.getHttpServer())
-      .post('/projects')
-      .set('Authorization', `Bearer ${authToken}`)
-      .send(createProjectDto)
-      .expect(201);
-  };
-
   it('should create a new project (/projects POST)', async () => {
-    const response = await createProject();
-
-    expect(response.body.name).toBe(createProjectDto.name);
-    expect(response.body.description).toBe(createProjectDto.description);
+    const { name, description } = createProjectDto;
+    await createProject(app, name, description, authToken);
   });
 
   it('should get all projects (/projects GET)', async () => {
-    await createProject();
+    const { name, description } = createProjectDto;
+    await createProject(app, name, description, authToken);
 
     const response = await request(app.getHttpServer())
       .get('/projects')
@@ -65,10 +57,11 @@ describe('ProjectsController (e2e)', () => {
   });
 
   it('should get a project by ID (/projects/:id GET)', async () => {
-    const createdProject = await createProject();
+    const { name, description } = createProjectDto;
+    const id = await createProject(app, name, description, authToken);
 
     const response = await request(app.getHttpServer())
-      .get(`/projects/${createdProject.body.id}`)
+      .get(`/projects/${id}`)
       .set('Authorization', `Bearer ${authToken}`)
       .expect(200);
 
@@ -78,10 +71,11 @@ describe('ProjectsController (e2e)', () => {
   });
 
   it('should update a project by ID (/projects PATCH)', async () => {
-    const createdProject = await createProject();
+    const { name, description } = createProjectDto;
+    const id = await createProject(app, name, description, authToken);
 
     const updateProjectDto = {
-      id: createdProject.body.id,
+      id: id,
       ...updatedProjectDto,
     };
 
@@ -95,10 +89,11 @@ describe('ProjectsController (e2e)', () => {
   });
 
   it('should delete a project by ID (/projects/:id DELETE)', async () => {
-    const createdProject = await createProject();
+    const {name, description} = createProjectDto;
+    const id = await createProject(app, name, description, authToken);
 
     const response = await request(app.getHttpServer())
-      .delete(`/projects/${createdProject.body.id}`)
+      .delete(`/projects/${id}`)
       .set('Authorization', `Bearer ${authToken}`)
       .expect(200);
 
@@ -107,7 +102,7 @@ describe('ProjectsController (e2e)', () => {
 
   it('should return 404 for non-existent project ID (/projects/:id GET)', async () => {
     const nonExistentId = '5f8f8c44b54764421b7156f1';
-    
+
     await request(app.getHttpServer())
       .get(`/projects/${nonExistentId}`)
       .set('Authorization', `Bearer ${authToken}`)
