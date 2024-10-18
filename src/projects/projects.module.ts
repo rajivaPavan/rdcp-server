@@ -26,5 +26,6 @@ import { CollaboratorsController } from './collaborators.controller';
   ],
   controllers: [ProjectsController, CollaboratorsController],
   providers: [ProjectsService, ProjectRepository, CollaboratorsRepository],
+  exports: [CollaboratorsRepository],
 })
 export class ProjectsModule {}

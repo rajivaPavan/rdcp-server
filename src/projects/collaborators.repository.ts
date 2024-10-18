@@ -2,6 +2,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { Collaborator } from './entities/collaborator.schema';
+import { ProjectRoleEnum } from './entities/project-role.enum';
 
 @Injectable()
 export class CollaboratorsRepository {
@@ -55,4 +56,13 @@ export class CollaboratorsRepository {
       select: 'name description createdAt',  // Specify which fields to select from the 'projects' collection
     }).exec();
   }
+
+  async findOwnerByProjectIdAndUserId(projectId: string, userId: string): Promise<Collaborator | null> {
+    return this.collaboratorModel.findOne({
+      projectId,
+      userId,
+      roles: ProjectRoleEnum.OWNER,
+    }).exec();
+  }
+
 }

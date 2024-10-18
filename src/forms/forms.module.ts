@@ -7,13 +7,16 @@ import { Form, FormSchema } from './entities/form.schema';
 import { ConfigModule } from '@nestjs/config';
 import { FormsEditingService } from './form-editing.service';
 import { FormAuthorizationGuard } from './forms.guard';
-import { ProjectsService } from 'src/projects/projects.service';
 import { ProjectsModule } from 'src/projects/projects.module';
+import { AuthorizationModule } from 'src/authorization/authorization.module';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
     ConfigModule,
     MongooseModule.forFeature([{ name: Form.name, schema: FormSchema }]),
+    AuthorizationModule,
+    UsersModule,
     forwardRef(() => ProjectsModule),
   ],
   controllers: [FormsController],
