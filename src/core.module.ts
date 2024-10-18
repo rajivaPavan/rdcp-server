@@ -25,7 +25,6 @@ import { ConfigService } from "@nestjs/config";
         AuthorizationModule,
         EventEmitterModule.forRoot(),
         TypedEventEmitterModule,
-        EmailModule,
         UsersModule,
         AuthModule,
         ProjectsModule,

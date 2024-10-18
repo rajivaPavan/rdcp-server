@@ -1,3 +1,4 @@
+import { MailerService } from "@nestjs-modules/mailer";
 import { INestApplication, VERSION_NEUTRAL, VersioningType } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
@@ -27,6 +28,14 @@ export async function initializeE2ETest(mongod: MongoMemoryServer, app: INestApp
             MongooseModule.forRoot(uri),
             CoreModule,
         ],
+        providers: [
+            {
+                provide: MailerService,
+                useValue: {
+                    sendMail: jest.fn()
+                }
+            }
+        ]
     }).compile();
     const seed = moduleFixture.get(SeedService);
     await seed.initTestAdmin();
