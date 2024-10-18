@@ -1,4 +1,5 @@
 import { Form } from "../entities/form.schema";
+import { ArrayNotEmpty, IsArray, IsEmail } from "class-validator";
 
 export class FormDTO {
   projectId: string;
@@ -36,4 +37,11 @@ export interface UpdateFormDTO {
 export interface ParticipantsDTO {
   email: string;
   id: string;
+}
+
+export class AddParticipantsDTO {
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsEmail({}, { each: true })
+  emails: string[];
 }

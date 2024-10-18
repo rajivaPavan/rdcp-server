@@ -3,10 +3,14 @@ import { CreateFormDTO, FormDTO, ParticipantsDTO } from './dtos/form.dto';
 import { FormsRepository } from './forms.repository';
 import { Form } from './entities/form.schema';
 import { Types } from 'mongoose';
+import { CollaboratorsRepository } from 'src/projects/collaborators.repository';
 
 @Injectable()
 export class FormsService {
-  constructor(private readonly formRepository: FormsRepository) { }
+  constructor(
+    private readonly formRepository: FormsRepository,
+    private readonly collaboratorsRepository: CollaboratorsRepository,
+  ) {}
 
   async createForm(formDto: CreateFormDTO, userId: any): Promise<FormDTO> {
     // check if user is authorized to create form
@@ -99,19 +103,29 @@ export class FormsService {
     return form.participants;
   }
 
-  async addParticipants(projectId: string, formId: string, emails: string[]): Promise<ParticipantsDTO[]> {
+  async addParticipants(projectId: string, formId: string, emails: string[], userId: string): Promise<any> {
     const form = await this.formRepository.findById(formId);
     if (!form) {
       throw new Error('Form not found');
     }
+
+    // Check if the user is a project owner  
+    const owner = await this.collaboratorsRepository.findOwnerByProjectIdAndUserId(projectId, userId);
+    if (!owner) {
+      throw new Error('Unauthorized access');
+    }
+
     const newParticipants = emails.map(email => ({
       email,
       id: new Types.ObjectId().toString(),
     }));
+
     form.participants.push(...newParticipants);
     await this.formRepository.update(formId, form);
-    return form.participants;
+
+    return { message: 'Participants added successfully', success: true };
   }
+
 
   async removeParticipant(projectId: string, formId: string, participantId: string): Promise<void> {
     const form = await this.formRepository.findById(formId);

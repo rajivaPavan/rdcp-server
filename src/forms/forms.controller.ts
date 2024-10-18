@@ -11,7 +11,7 @@ import {
   Param,
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
-import { CreateFormDTO, FormDTO, ParticipantsDTO } from './dtos/form.dto';
+import { CreateFormDTO, FormDTO, ParticipantsDTO, AddParticipantsDTO } from './dtos/form.dto';
 import { FormsService } from './forms.service';
 import { AuthenticatedUser } from '../auth/entities/authenticated-user';
 import { User } from '../users/decorators/user.decorator';
@@ -21,14 +21,17 @@ import { FormAuthorizationGuard } from './forms.guard';
 import { FormActionMeta } from './decorators/form-action.decorator';
 import { FormId } from './decorators/form-id.decorator';
 import { Form } from './entities/form.schema';
+import { UsersService } from 'src/users/users.service';
 
 @UseGuards(AuthGuard)
 @Controller('forms')
 export class FormsController {
   private readonly logger = new Logger(FormsController.name);
 
-  constructor(private readonly formsService: FormsService,
-    private readonly formEditingService: FormsEditingService
+  constructor(
+    private readonly formsService: FormsService,
+    private readonly formEditingService: FormsEditingService,
+    private readonly usersService: UsersService,
   ) { }
 
   @FormActionMeta('create_form')
@@ -135,9 +138,17 @@ export class FormsController {
   async fetchParticipants(
     @Param('projectId') projectId: string,
     @Param('formId') formId: string,
+    @User() user: AuthenticatedUser,
   ): Promise<ParticipantsDTO[]> {
-    this.logger.debug(`Fetching participants for form with id: ${formId}`);
-    return await this.formsService.fetchParticipants(projectId, formId);
+    let participants = await this.formsService.fetchParticipants(projectId, formId);
+    const participantDetails = await Promise.all(participants.map(async participant => {
+      let user = await this.usersService.findUser(participant.id);
+      return {
+        email: user,
+        id: participant.id,
+      }
+    }));
+    return participantDetails;
   }
 
   @UseGuards(FormAuthorizationGuard)
@@ -145,10 +156,11 @@ export class FormsController {
   async addParticipants(
     @Param('projectId') projectId: string,
     @Param('formId') formId: string,
-    @Body('emails') emails: string[],
-  ): Promise<ParticipantsDTO[]> {
-    this.logger.debug(`Adding participants to form with id: ${formId}`);
-    return await this.formsService.addParticipants(projectId, formId, emails);
+    @Body() addParticipantsDto: AddParticipantsDTO,
+        @User() user: AuthenticatedUser,
+    ): Promise<any> {
+        await this.formsService.addParticipants(projectId, formId, addParticipantsDto.emails, user.id);
+        return { message: 'Participants added successfully', success: true };
   }
 
   @UseGuards(FormAuthorizationGuard)
