@@ -1,49 +1,37 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UsersModule } from './users/users.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { AuthModule } from './auth/auth.module';
-import { ProjectsModule } from './projects/projects.module';
-import { CacheModule } from '@nestjs/cache-manager';
-import { FormsModule } from './forms/forms.module';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { TypedEventEmitterModule } from './event-emitter/type-event-emitter.module';
 import { JwtModule } from '@nestjs/jwt';
-import { ResponsesModule } from './responses/responses.module';
-import { EmailModule } from './email/email.module';
 import { RedisModule } from './redis/redis.module';
+import { CoreModule } from './core.module';
+import { EmailModule } from './email/email.module';
+import { JWTConfigFactory } from './config/jwt.config';
+
+export const dbModule = MongooseModule.forRootAsync({
+  inject: [ConfigService],
+  useFactory: async (config: ConfigService) => ({
+    uri: config.get<string>('MONGODB_URI'), // Loaded from .env
+    dbName: config.get<string>('MONGODB_DB_NAME') || 'rdcp_db',
+  }),
+});
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    EventEmitterModule.forRoot(),
-    TypedEventEmitterModule,
-    MongooseModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: async (config: ConfigService) => ({
-        uri: config.get<string>('MONGODB_URI'), // Loaded from .env
-        dbName: 'rdcp_db',
-      }),
-    }),
-    RedisModule,
+    dbModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       global: true,
-      useFactory: async (config: ConfigService) => ({
-        secret: config.get('JWT_SECRET'),
-        signOptions: {
-          expiresIn: '1d',
-        },
-      }),
+      useFactory: async (config: ConfigService) => {
+        const factory = new JWTConfigFactory(config);
+        return factory.create();
+      },
     }),
     EmailModule,
-    UsersModule,
-    AuthModule,
-    ProjectsModule,
-    FormsModule,
-    ResponsesModule
+    RedisModule,
+    CoreModule
   ]
 })
 export class AppModule { }

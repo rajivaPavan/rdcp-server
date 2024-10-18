@@ -55,11 +55,13 @@ export class NodeMailerService extends IEmailService {
   async handleUserPasswordResetEvent(event: UserPasswordResetEvent) {
     this.logger.log(`Sending password reset email to ${event.email}`);
     const { email, ...context } = event;
-    await this.mailerService.sendMail({
-      to: email,
-      subject: 'Password Reset',
-      template: 'password-reset',
-      context: context,
-    });
+    this.sendEmail(email, 'Password Reset', 'password-reset', context);
+  }
+
+  @OnEvent('user.account-setup')
+  async handleUserAccountSetupEvent(event: UserAccountCreationEvent) {
+    this.logger.log(`Sending account setup email to ${event.email}`);
+    const { email, ...context } = event;
+    this.sendEmail(email, 'Account Setup', 'account-setup', context);
   }
 }

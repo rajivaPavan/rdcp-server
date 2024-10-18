@@ -16,12 +16,44 @@ export class UsersRepository {
     return this.userModel.findByIdAndUpdate(user._id.toString(), user).exec();
   }
 
+  async find(query: { email: string, role: string }, limit = 5, page = 1): Promise<{
+    users: Partial<User>[],
+    total: number
+  }> {
+    // prepare query
+    let preparedQuery = {};
+    if (query.email) {
+      preparedQuery = {
+        ...preparedQuery,
+        email: { $regex: query.email, $options: 'i' }
+      };
+    }
+    if (query.role) {
+      preparedQuery = {
+        ...preparedQuery,
+        role: query.role
+      };
+    }
+    
+    const users = await this.userModel.find(preparedQuery, {
+      "password": 0,
+      "createdAt": 0,
+      "updatedAt": 0,
+      "__v": 0
+    }).limit(limit).skip(limit * (page - 1)).exec();
+
+    return {
+      users,
+      total: await this.userModel.countDocuments().exec(),
+    };
+  }
+
   async findAll(): Promise<User[]> {
     return this.userModel.find().exec();
   }
 
   async findUserByEmail(email: string): Promise<User> {
-    return this.userModel.findOne({ email: email }).exec();
+    return this.userModel.findOne({ email: email }).lean().exec();
   }
 
   async searchByEmail(email: string, limit = 5): Promise<User[]> {
@@ -29,7 +61,7 @@ export class UsersRepository {
       email: {
         "$regex": email, "$options": "i"
       }
-    },{
+    }, {
       "password": 0,
       "createdAt": 0,
       "updatedAt": 0,
@@ -39,5 +71,9 @@ export class UsersRepository {
 
   async findById(userId: string): Promise<User> {
     return this.userModel.findById(userId).exec();
+  }
+
+  async delete(userId: string) {
+    return this.userModel.findByIdAndDelete(userId).exec();
   }
 }

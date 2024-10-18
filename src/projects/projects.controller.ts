@@ -94,7 +94,6 @@ export class ProjectsController {
     @Param('projectId') projectId: string,
     @User() user: AuthenticatedUser,
   ): Promise<any> {
-    console.log('projectId', projectId);
     await this.projectsService.deleteProject(projectId, user.id);
     return { message: 'Project deleted successfully', success: true };
   }

@@ -34,7 +34,7 @@ export class CollaboratorsRepository {
     return this.collaboratorModel.insertMany(collaboratorsWithIds);
   }
 
-  async update(id:string, update: Partial<Collaborator>): Promise<Collaborator> {
+  async update(id: string, update: Partial<Collaborator>): Promise<Collaborator> {
     return this.collaboratorModel.findByIdAndUpdate(id, update).exec();
   }
 
@@ -48,6 +48,13 @@ export class CollaboratorsRepository {
 
   async delete(id: string): Promise<any> {
     return this.collaboratorModel.findByIdAndDelete(id).exec();
+  }
+
+  async getProjectsOfUser(userId: string){
+    return this.collaboratorModel.find({ user: new Types.ObjectId(userId) }).populate({
+      path: 'project',  // Populates the 'project' field from the 'projects' collection
+      select: 'name description createdAt',  // Specify which fields to select from the 'projects' collection
+    }).exec();
   }
 
   async findOwnerByProjectIdAndUserId(projectId: string, userId: string): Promise<Collaborator | null> {

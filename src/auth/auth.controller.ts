@@ -7,12 +7,14 @@ import {
   Query,
   Req,
   Version,
+  VERSION_NEUTRAL,
 } from '@nestjs/common';
 import AuthenticationService from './auth.service';
 import { UsersService } from '../users/users.service';
 import { ResetPasswordDto } from '../users/dtos/reset-password.dto';
 import { LoginDto } from './dtos/login.dto';
 import { EmailRequiredException } from './exceptions/email-required.exception';
+import { AccountSetupDto } from './dtos/account.dto';
 
 @Controller('auth')
 export class AuthenticationController {
@@ -30,7 +32,7 @@ export class AuthenticationController {
     return await this.authService.login(user, loginDto.password);
   }
 
-  @Version('2')
+  @Version(['2', VERSION_NEUTRAL])
   @Post('login')
   async loginV2(@Body() loginDto: LoginDto): Promise<LoginV2ResponseDto>{
     this.logger.debug(`Login request for ${loginDto.email}`);
@@ -60,12 +62,29 @@ export class AuthenticationController {
     };
   }
 
+
   @Post('reset-password')
   async resetPassword(@Body() resetPassword: ResetPasswordDto) {
-    this.logger.debug(`Reset password request for ${resetPassword.email}`);
+    this.logger.debug(`Reset password POST request for ${resetPassword.email}`);
     await this.userService.resetPassword(resetPassword);
     return {
       message: 'Password reset was successful',
+    };
+  }
+
+  @Get('register')
+  async accountSetup(@Query('email') email: string) {
+    this.logger.debug(`Account setup request for ${email}`);
+    return await this.userService.accountSetup(email);
+  }
+
+  @Post('register')
+  async accountSetupPost(@Body() accountSetup: AccountSetupDto) {
+    this.logger.debug(`Account setup request for ${accountSetup.email}`);
+    await this.userService.accountSetupPost(accountSetup);
+    return {
+      message: 'Account setup was successful',
+      success: true,
     };
   }
 }

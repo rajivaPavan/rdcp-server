@@ -6,14 +6,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { FormResponse, ResponseSchema } from './entities/response.schema';
 import { ResponsesRepository } from './responses.repository';
 import { AuthModule } from 'src/auth/auth.module';
-import { AuthorizationModule } from 'src/authorization/authorization.module';
 import { FormsModule } from 'src/forms/forms.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: FormResponse.name, schema: ResponseSchema }]),
     AuthModule,
-    AuthorizationModule,
     FormsModule
   ],
   providers: [

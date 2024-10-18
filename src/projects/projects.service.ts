@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -53,6 +54,10 @@ export class ProjectsService {
       user: new Types.ObjectId(userId),
     });
 
+    if(!collaborator) {
+      throw new UnauthorizedProjectAccessException();
+    }
+
     return {
       id: project._id.toString(),
       name: project.name,
@@ -90,27 +95,18 @@ export class ProjectsService {
 
   async getProjectsOfUser(userId: string): Promise<ProjectDTO[]> {
     const userObjectId = new Types.ObjectId(userId);
-    const collaborations = await this.collaboratorRepository.find({
-      user: userObjectId,
+    let collaborations = await this.collaboratorRepository.getProjectsOfUser(userId) as any;
+    collaborations = collaborations.filter((collab) => collab.project !== null);
+    return collaborations.map((collab) => {
+      const project = collab.project;
+      return {
+        id: project._id.toString(),
+        name: project.name,
+        description: project.description,
+        createdAt: project.createdAt,
+        roles: collab.roles,
+      };
     });
-
-    const projectRoles = collaborations.reduce((acc, curr) => {
-      acc[curr.project.toString()] = curr.roles;
-      return acc;
-    }, {});
-
-    const projectIds = collaborations.map((collab) => collab.project);
-    const projects = await this.projectRepository.find({
-      _id: { $in: projectIds },
-    });
-
-    return projects.map((project) => ({
-      id: project._id.toString(),
-      name: project.name,
-      description: project.description,
-      createdAt: project.createdAt,
-      roles: projectRoles[project._id.toString()],
-    }));
   }
 
   async updateProject(
@@ -262,10 +258,10 @@ export class ProjectNotFoundException extends NotFoundException {
   }
 }
 
-export class UnauthorizedProjectAccessException extends UnauthorizedException {
+export class UnauthorizedProjectAccessException extends ForbiddenException {
   constructor() {
     super(
-      'User does not have necesary permission to do this action in the project',
+      'User does not have necessary permission to do this action in the project',
     );
   }
 }

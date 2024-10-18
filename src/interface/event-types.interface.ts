@@ -10,7 +10,14 @@ export interface UserPasswordResetEvent {
   otpExpiry: number;
 }
 
+export interface UserAccountSetupEvent {
+  email: string;
+  otp: string;
+  otpExpiry: number;
+}
+
 export interface EventPayloads {
   'user.account-creation': UserAccountCreationEvent;
+  'user.account-setup': UserAccountSetupEvent;
   'user.password-reset': UserPasswordResetEvent;
 }

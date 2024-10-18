@@ -4,6 +4,7 @@ import { FormsRepository } from './forms.repository';
 import { CreateFormDTO, FormDTO, UpdateFormDTO } from './dtos/form.dto';
 import { Form } from './entities/form.schema';
 import { Types } from 'mongoose';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 
 describe('FormsService', () => {
     let service: FormsService;
@@ -114,32 +115,6 @@ describe('FormsService', () => {
         });
     });
 
-    describe('updateForm', () => {
-        it('should update a form', async () => {
-            const formId = '507f1f77bcf86cd799439011';
-            const formDto: UpdateFormDTO = {
-                name: 'Updated Form',
-                description: 'Updated Description',
-                projectId: '507f1f77bcf86cd799439012',
-            };
-            const updatedForm = {
-                ...formDto,
-                _id: new Types.ObjectId(formId),
-                projectId: new Types.ObjectId(formDto.projectId),
-            };
-
-            jest.spyOn(repository, 'update').mockResolvedValue(updatedForm as any);
-
-            const result = await service.updateForm(formId, formDto as FormDTO);
-
-            expect(result).toEqual({
-                ...updatedForm,
-                id: updatedForm._id.toString(),
-                projectId: updatedForm.projectId.toString(),
-            });
-        });
-    });
-
     describe('publishForm', () => {
         it('should publish a form', async () => {
             const formId = '507f1f77bcf86cd799439011';
@@ -168,7 +143,7 @@ describe('FormsService', () => {
 
             jest.spyOn(repository, 'findById').mockResolvedValue(form as any);
 
-            await expect(service.publishForm(formId)).rejects.toThrow('Form schema is missing');
+            await expect(service.publishForm(formId)).rejects.toThrow(ConflictException);
         });
     });
 
@@ -194,6 +169,91 @@ describe('FormsService', () => {
             const result = await service.saveFormSchema(formId, schema);
 
             expect(result).toEqual({ draft: schema });
+        });
+    });
+    
+    describe('updateForm', () => {
+        it('should update a form', async () => {
+            const formId = '507f1f77bcf86cd799439011';
+            const formDto: FormDTO = {
+                name: 'Updated Form',
+                description: 'Updated Description',
+                projectId: '507f1f77bcf86cd799439012',
+                isPrivate: true,
+                isPublished: false,
+                multipleResponses: true,
+                id: formId,
+            };
+            const updatedForm = {
+                ...formDto,
+                _id: new Types.ObjectId(formId),
+                projectId: new Types.ObjectId(formDto.projectId),
+            };
+
+            jest.spyOn(repository, 'findById').mockResolvedValue(updatedForm as any);
+            jest.spyOn(repository, 'update').mockResolvedValue(updatedForm as any);
+
+            const result = await service.updateForm(formId, formDto);
+
+            expect(result).toEqual({
+                ...updatedForm,
+                id: updatedForm._id.toString(),
+                projectId: updatedForm.projectId.toString(),
+            });
+        });
+
+        it('should throw NotFoundException if form does not exist', async () => {
+            const formId = '507f1f77bcf86cd799439011';
+            const formDto: FormDTO = {
+                name: 'Updated Form',
+                description: 'Updated Description',
+                projectId: '507f1f77bcf86cd799439012',
+                isPrivate: true,
+                isPublished: true,
+                multipleResponses: true,
+                id: formId,
+            };
+
+            jest.spyOn(repository, 'findById').mockResolvedValue(null);
+
+            await expect(service.updateForm(formId, formDto)).rejects.toThrow(NotFoundException);
+        });
+
+        it('should update draft if form is published', async () => {
+            const formId = '507f1f77bcf86cd799439011';
+            const formDto: FormDTO = {
+                name: 'Updated Form',
+                description: 'Updated Description',
+                projectId: '507f1f77bcf86cd799439012',
+                isPrivate: true,
+                isPublished: true,
+                multipleResponses: true,
+                id: formId,
+            };
+            const existingForm = {
+                ...formDto,
+                _id: new Types.ObjectId(formId),
+                projectId: new Types.ObjectId(formDto.projectId),
+                draft: [{ field: 'value' }],
+                hasChanges: true,
+                schema:[]
+            };
+            const updatedForm = {
+                ...existingForm,
+                ...formDto,
+                hasChanges: false,
+                schema: existingForm.draft,
+            };
+
+            jest.spyOn(repository, 'findById').mockResolvedValue(existingForm as any);
+            jest.spyOn(repository, 'update').mockResolvedValue(updatedForm as any);
+
+            const result = await service.updateForm(formId, formDto);
+            expect(result).toEqual({
+                ...updatedForm,
+                id: updatedForm._id.toString(),
+                projectId: updatedForm.projectId.toString(),
+            });
         });
     });
 });
