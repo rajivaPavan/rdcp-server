@@ -3,6 +3,8 @@ import * as request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { initializeE2ETest } from './initializeE2ETest';
 import { SeedService } from 'src/users/seed';
+import { FormDTO } from 'src/forms/dtos/form.dto';
+import exp from 'constants';
 
 describe('FormsController (e2e)', () => {
     let app: INestApplication;
@@ -32,7 +34,7 @@ describe('FormsController (e2e)', () => {
     it('/forms/:formId (GET)', async () => {
         const formDto = { name: 'Test Form', description: 'Test Description', projectId };
         const createdForm = await createForm(app, authToken, formDto);
-        const fetchedForm = await getForm(app, authToken, createdForm._id);
+        const fetchedForm = await getForm(app, authToken, createdForm.id);
         expect(fetchedForm.name).toBe(formDto.name);
         expect(fetchedForm.description).toBe(formDto.description);
     });
@@ -42,7 +44,7 @@ describe('FormsController (e2e)', () => {
         const createdForm = await createForm(app, authToken, formDto);
 
         const updateDto = { name: 'Updated Form', description: 'Updated Description' };
-        const updatedForm = await updateForm(app, authToken, createdForm._id, updateDto);
+        const updatedForm = await updateForm(app, authToken, createdForm.id, updateDto);
 
         expect(updatedForm.name).toBe(updateDto.name);
         expect(updatedForm.description).toBe(updateDto.description);
@@ -52,7 +54,7 @@ describe('FormsController (e2e)', () => {
         const formDto = { name: 'Test Form', description: 'Test Description', projectId };
         const createdForm = await createForm(app, authToken, formDto);
 
-        const response = await deleteForm(app, authToken, createdForm._id);
+        const response = await deleteForm(app, authToken, createdForm.id);
         expect(response.message).toBe('Form deleted successfully');
     });
 
@@ -60,8 +62,8 @@ describe('FormsController (e2e)', () => {
         const formDto = { name: 'Test Form', description: 'Test Description', projectId };
         const createdForm = await createForm(app, authToken, formDto);
 
-        const saveFormDto = { draft: [{ field: 'value' }] };
-        const response = await saveFormDraft(app, authToken, createdForm._id, saveFormDto);
+        const saveFormDto = { data: [{ field: 'value' }] };
+        const response = await saveFormDraft(app, authToken, createdForm.id, saveFormDto);
 
         expect(response.success).toBe(true);
     });
@@ -71,9 +73,9 @@ describe('FormsController (e2e)', () => {
         const createdForm = await createForm(app, authToken, formDto);
 
         // Save draft
-        await saveFormDraft(app, authToken, createdForm._id, { draft: [{ field: 'value' }] });
+        await saveFormDraft(app, authToken, createdForm.id, { data: [{ field: 'value' }] });
 
-        const publishedForm = await publishForm(app, authToken, createdForm._id);
+        const publishedForm = await publishForm(app, authToken, createdForm.id);
         expect(publishedForm.isPublished).toBe(true);
     });
 
@@ -81,14 +83,14 @@ describe('FormsController (e2e)', () => {
         const formDto = { name: 'Test Form', description: 'Test Description', projectId };
         const createdForm = await createForm(app, authToken, formDto);
 
-        const response = await lockForm(app, authToken, createdForm._id);
+        const response = await lockForm(app, authToken, createdForm.id);
     });
 
     it('/forms/:formId/keep-alive (POST)', async () => {
         const formDto = { name: 'Test Form', description: 'Test Description', projectId };
         const createdForm = await createForm(app, authToken, formDto);
 
-        const response = await keepFormAlive(app, authToken, createdForm._id);
+        const response = await keepFormAlive(app, authToken, createdForm.id);
         expect(response.statusCode).toBe(409); // Conflict expected because the form isn't locked
     });
 
@@ -96,7 +98,7 @@ describe('FormsController (e2e)', () => {
         const formDto = { name: 'Test Form', description: 'Test Description', projectId };
         const createdForm = await createForm(app, authToken, formDto);
 
-        const response = await releaseFormLock(app, authToken, createdForm._id);
+        const response = await releaseFormLock(app, authToken, createdForm.id);
         expect(response.statusCode).toBe(409); // Conflict expected because the form isn't locked
     });
 
@@ -127,7 +129,8 @@ async function createForm(app: INestApplication, token: string, formDto: any) {
         .set('Authorization', `Bearer ${token}`)
         .send(formDto)
         .expect(201);
-    return response.body;
+
+    return response.body as FormDTO;
 }
 
 async function getForm(app: INestApplication, token: string, formId: string) {
