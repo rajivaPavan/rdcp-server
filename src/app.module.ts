@@ -4,6 +4,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { RedisModule } from './redis/redis.module';
 import { CoreModule } from './core.module';
+import { EmailModule } from './email/email.module';
+import { JWTConfigFactory } from './config/jwt.config';
 
 export const dbModule = MongooseModule.forRootAsync({
   inject: [ConfigService],
@@ -19,6 +21,15 @@ export const dbModule = MongooseModule.forRootAsync({
       isGlobal: true,
     }),
     dbModule,
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      global: true,
+      useFactory: async (config: ConfigService) => {
+        const factory = new JWTConfigFactory(config);
+        return factory.create();
+      },
+    }),
+    EmailModule,
     RedisModule,
     CoreModule
   ]

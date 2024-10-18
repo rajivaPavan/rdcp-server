@@ -1,9 +1,12 @@
 import { MailerService } from "@nestjs-modules/mailer";
 import { INestApplication, VERSION_NEUTRAL, VersioningType } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { JwtModule } from "@nestjs/jwt";
 import { MongooseModule } from "@nestjs/mongoose";
 import { TestingModule, Test } from "@nestjs/testing";
 import { MongoMemoryServer } from "mongodb-memory-server";
+import { Environment } from "src/common/environments.enum";
+import { JWTConfigFactory } from "src/config/jwt.config";
 import { CoreModule } from "src/core.module";
 import { MockRedisModule } from "src/redis/redis.module";
 import { SeedService } from "src/users/seed";
@@ -26,6 +29,14 @@ export async function initializeE2ETest(mongod: MongoMemoryServer, app: INestApp
             }),
             MockRedisModule,
             MongooseModule.forRoot(uri),
+            JwtModule.registerAsync({
+                inject: [ConfigService],
+                global: true,
+                useFactory: async (config: ConfigService) => {
+                    const factory = new JWTConfigFactory(config);
+                    return factory.create(Environment.Testing);
+                },
+            }),
             CoreModule,
         ],
         providers: [
