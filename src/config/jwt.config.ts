@@ -1,8 +1,10 @@
 import { ConfigService } from "@nestjs/config";
+import { JwtModuleOptions } from "@nestjs/jwt";
 import { Environment } from "src/common/environments.enum";
 
 const testingConfig = {
-    secret: 'test',
+    // jwt secret for testing - valid signature
+    secret: '8Zz5tw0Ionm3XPZZfN0NOml3z9FMfmpgXwovR9fp6ryDIoGRM8EPHAB6iHsc0fb',
     signOptions: {
         expiresIn: '1d',
     },
@@ -23,7 +25,7 @@ export class JWTConfigFactory {
      * @returns {object} The JWT configuration object. If the environment is `Testing`, returns the `testingConfig`.
      * Otherwise, returns an object containing the JWT secret and sign options.
      */
-    create(env?: Environment) {
+    create(env?: Environment): JwtModuleOptions {
         const _env = env || this.env;
 
         if (_env === Environment.Testing) {

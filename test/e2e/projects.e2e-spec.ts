@@ -5,122 +5,130 @@ import { initializeE2ETest } from './initializeE2ETest';
 import { SeedService } from 'src/users/seed';
 
 describe('ProjectsController (e2e)', () => {
-    let app: INestApplication;
-    let authToken: string;
-    let mongod: MongoMemoryServer;
+  let app: INestApplication;
+  let authToken: string;
+  let mongod: MongoMemoryServer;
 
-    beforeAll(async () => {
+  beforeAll(async () => {
+    ({ mongod, app } = await initializeE2ETest(mongod, app));
+    const testAdmin = SeedService.testAdmin;
 
-        ({ mongod, app } = await initializeE2ETest(mongod, app));
-        const testAdmin = SeedService.testAdmin;
-        
-        // Log in to get the auth token using loginV2
-        const loginResponse = await request(app.getHttpServer())
-            .post('/v2/auth/login')
-            .send({ email: testAdmin.email, password: testAdmin.password })
-            .expect(201);
+    // Log in to get the auth token using loginV2
+    const loginResponse = await request(app.getHttpServer())
+      .post('/v2/auth/login')
+      .send({ email: testAdmin.email, password: testAdmin.password })
+      .expect(201);
 
-        authToken = loginResponse.body.accessToken;
-    });
+    authToken = loginResponse.body.accessToken;
+  });
 
-    afterAll(async () => {
-        await mongod.stop();
-        await app.close();
-    });
+  afterAll(async () => {
+    await mongod.stop();
+    await app.close();
+  });
 
-    it('/projects (POST)', async () => {
-        const createProjectDto = {
-            name: 'Test Project',
-            description: 'Test Description',
-        };
+  const createProjectDto = {
+    name: 'Test Project',
+    description: 'Test Description',
+  };
 
-        const response = await request(app.getHttpServer())
-            .post('/projects')
-            .set('Authorization', `Bearer ${authToken}`)
-            .send(createProjectDto)
-            .expect(201);
+  const updatedProjectDto = {
+    name: 'Updated Project',
+    description: 'Updated Description',
+  };
 
-        expect(response.body.name).toBe(createProjectDto.name);
-        expect(response.body.description).toBe(createProjectDto.description);
-    });
+  const createProject = async () => {
+    return await request(app.getHttpServer())
+      .post('/projects')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send(createProjectDto)
+      .expect(201);
+  };
 
-    it('/projects (GET)', async () => {
-        const response = await request(app.getHttpServer())
-            .get('/projects')
-            .set('Authorization', `Bearer ${authToken}`)
-            .expect(200);
+  it('should create a new project (/projects POST)', async () => {
+    const response = await createProject();
 
-        expect(Array.isArray(response.body)).toBe(true);
-    });
+    expect(response.body.name).toBe(createProjectDto.name);
+    expect(response.body.description).toBe(createProjectDto.description);
+  });
 
-    it('/projects/:id (GET)', async () => {
-        const createProjectDto = {
-            name: 'Test Project',
-            description: 'Test Description',
-        };
+  it('should get all projects (/projects GET)', async () => {
+    await createProject();
 
-        const createdProject = await request(app.getHttpServer())
-            .post('/projects')
-            .set('Authorization', `Bearer ${authToken}`)
-            .send(createProjectDto)
-            .expect(201);
+    const response = await request(app.getHttpServer())
+      .get('/projects')
+      .set('Authorization', `Bearer ${authToken}`)
+      .expect(200);
 
-        const response = await request(app.getHttpServer())
-            .get(`/projects/${createdProject.body.id}`)
-            .set('Authorization', `Bearer ${authToken}`)
-            .expect(200);
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body.length).toBeGreaterThan(0);
+  });
 
-        expect(response.body).toHaveProperty('id');
-        expect(response.body.name).toBe(createProjectDto.name);
-        expect(response.body.description).toBe(createProjectDto.description);
-    });
+  it('should get a project by ID (/projects/:id GET)', async () => {
+    const createdProject = await createProject();
 
-    it('/projects/:id (PATCH)', async () => {
-        const createProjectDto = {
-            name: 'Test Project',
-            description: 'Test Description',
-        };
+    const response = await request(app.getHttpServer())
+      .get(`/projects/${createdProject.body.id}`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .expect(200);
 
-        const createdProject = await request(app.getHttpServer())
-            .post('/projects')
-            .set('Authorization', `Bearer ${authToken}`)
-            .send(createProjectDto)
-            .expect(201);
+    expect(response.body).toHaveProperty('id');
+    expect(response.body.name).toBe(createProjectDto.name);
+    expect(response.body.description).toBe(createProjectDto.description);
+  });
 
-        const updateProjectDto = {
-            id: createdProject.body.id,
-            name: 'Updated Project',
-            description: 'Updated Description',
-        };
+  it('should update a project by ID (/projects PATCH)', async () => {
+    const createdProject = await createProject();
 
-        const response = await request(app.getHttpServer())
-            .patch(`/projects`)
-            .set('Authorization', `Bearer ${authToken}`)
-            .send(updateProjectDto)
-            .expect(200);
+    const updateProjectDto = {
+      id: createdProject.body.id,
+      ...updatedProjectDto,
+    };
 
-        expect(response.body.message).toBe('Project updated successfully');
-    });
+    const response = await request(app.getHttpServer())
+      .patch(`/projects`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .send(updateProjectDto)
+      .expect(200);
 
-    it('/projects/:id (DELETE)', async () => {
-        const createProjectDto = {
-            name: 'Test Project',
-            description: 'Test Description',
-        };
+    expect(response.body.message).toBe('Project updated successfully');
+    expect(response.body.project.name).toBe(updatedProjectDto.name);
+    expect(response.body.project.description).toBe(updatedProjectDto.description);
+  });
 
-        const createdProject = await request(app.getHttpServer())
-            .post('/projects')
-            .set('Authorization', `Bearer ${authToken}`)
-            .send(createProjectDto)
-            .expect(201);
+  it('should delete a project by ID (/projects/:id DELETE)', async () => {
+    const createdProject = await createProject();
 
-        const response = await request(app.getHttpServer())
-            .delete(`/projects/${createdProject.body.id}`)
-            .set('Authorization', `Bearer ${authToken}`)
-            .expect(200);
+    const response = await request(app.getHttpServer())
+      .delete(`/projects/${createdProject.body.id}`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .expect(200);
 
-        expect(response.body.message).toBe('Project deleted successfully');
-    });
+    expect(response.body.message).toBe('Project deleted successfully');
+  });
+
+  it('should return 404 for non-existent project ID (/projects/:id GET)', async () => {
+    const nonExistentId = '5f8f8c44b54764421b7156f1';
+    
+    await request(app.getHttpServer())
+      .get(`/projects/${nonExistentId}`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .expect(404);
+  });
+
+  it('should return 400 for invalid project creation (/projects POST)', async () => {
+    const invalidCreateDto = { description: 'Missing name' };
+
+    await request(app.getHttpServer())
+      .post('/projects')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send(invalidCreateDto)
+      .expect(400);
+  });
+
+  it('should return 401 for unauthorized access to projects (/projects GET)', async () => {
+    await request(app.getHttpServer())
+      .get('/projects')
+      .expect(401);
+  });
 });
-
-

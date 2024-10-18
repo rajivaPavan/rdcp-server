@@ -34,7 +34,9 @@ export async function initializeE2ETest(mongod: MongoMemoryServer, app: INestApp
                 global: true,
                 useFactory: async (config: ConfigService) => {
                     const factory = new JWTConfigFactory(config);
-                    return factory.create(Environment.Testing);
+                    const jwtConfig = factory.create(Environment.Testing);
+                    config.set('JWT_SECRET', jwtConfig.secret);
+                    return jwtConfig;
                 },
             }),
             CoreModule,
@@ -48,8 +50,10 @@ export async function initializeE2ETest(mongod: MongoMemoryServer, app: INestApp
             }
         ]
     }).compile();
+    
     const seed = moduleFixture.get(SeedService);
-    await seed.initTestAdmin();
+    await seed.initTestUsers();
+
     app = moduleFixture.createNestApplication({});
 
     app.enableVersioning({
