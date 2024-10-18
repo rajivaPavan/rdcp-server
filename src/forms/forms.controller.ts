@@ -1,15 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Logger,
-  Patch,
-  Post,
-  Query,
-  UseGuards,
-  Param,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Logger, Patch, Post, Query, UseGuards, Param } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import { CreateFormDTO, FormDTO, ParticipantsDTO, AddParticipantsDTO } from './dtos/form.dto';
 import { FormsService } from './forms.service';
@@ -134,7 +123,7 @@ export class FormsController {
   }
 
   @UseGuards(FormAuthorizationGuard)
-  @Get(':formId/settings')
+  @Get(':formId/get-participants')
   async fetchParticipants(
     @Param('projectId') projectId: string,
     @Param('formId') formId: string,
@@ -152,7 +141,7 @@ export class FormsController {
   }
 
   @UseGuards(FormAuthorizationGuard)
-  @Post(':formId/settings')
+  @Post(':formId/participants')
   async addParticipants(
     @Param('projectId') projectId: string,
     @Param('formId') formId: string,
