@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { SeedService } from './users/seed';
 
@@ -9,6 +9,8 @@ async function bootstrap() {
 
   const seedService = app.get(SeedService);
   await seedService.initAdmin();
+
+  app.useGlobalPipes(new ValidationPipe());
 
   app.enableCors({
     origin: [
