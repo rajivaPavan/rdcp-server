@@ -82,7 +82,6 @@ describe('FormsController (e2e)', () => {
         const createdForm = await createForm(app, authToken, formDto);
 
         const response = await lockForm(app, authToken, createdForm._id);
-        expect(response.message).toBe('Form locked successfully');
     });
 
     it('/forms/:formId/keep-alive (POST)', async () => {

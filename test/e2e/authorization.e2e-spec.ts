@@ -76,7 +76,12 @@ describe('Authorization (e2e)', () => {
         await request(app.getHttpServer())
             .post(`/projects/${projectId}/collaborators`)
             .set('Authorization', `Bearer ${authToken}`)
-            .send({ userId, roles: [role] })
+            .send({
+                users: [
+                    { id: userId, email: user.email }
+                ],
+                roles: [role]
+            })
             .expect(201);
     };
 });

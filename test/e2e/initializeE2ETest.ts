@@ -1,5 +1,5 @@
 import { MailerService } from "@nestjs-modules/mailer";
-import { INestApplication, VERSION_NEUTRAL, VersioningType } from "@nestjs/common";
+import { INestApplication, ValidationPipe, VERSION_NEUTRAL, VersioningType } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { MongooseModule } from "@nestjs/mongoose";
@@ -55,7 +55,8 @@ export async function initializeE2ETest(mongod: MongoMemoryServer, app: INestApp
     await seed.initTestUsers();
 
     app = moduleFixture.createNestApplication({});
-
+    
+    app.useGlobalPipes(new ValidationPipe());
     app.enableVersioning({
         defaultVersion: [VERSION_NEUTRAL],
         type: VersioningType.URI
