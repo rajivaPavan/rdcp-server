@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -52,6 +53,10 @@ export class ProjectsService {
       project: project._id,
       user: new Types.ObjectId(userId),
     });
+
+    if(!collaborator) {
+      throw new UnauthorizedProjectAccessException();
+    }
 
     return {
       id: project._id.toString(),
@@ -253,10 +258,10 @@ export class ProjectNotFoundException extends NotFoundException {
   }
 }
 
-export class UnauthorizedProjectAccessException extends UnauthorizedException {
+export class UnauthorizedProjectAccessException extends ForbiddenException {
   constructor() {
     super(
-      'User does not have necesary permission to do this action in the project',
+      'User does not have necessary permission to do this action in the project',
     );
   }
 }

@@ -21,7 +21,6 @@ export class NodeMailerService extends IEmailService {
 
   onModuleInit() {
     this.webClient = this.configService.get('WEB_CLIENT');
-    console.log("Web client:", this.webClient);
   }
 
   async sendEmail(

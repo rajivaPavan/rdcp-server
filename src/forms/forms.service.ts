@@ -88,7 +88,7 @@ export class FormsService {
     const form = await this.formRepository.findById(formId);
 
     if (!form.draft || form.draft.length === 0) {
-      throw new Error('Form schema is missing');
+      throw new ConflictException('Form draft is empty');
     }
 
     return this.formRepository.update(formId, this.publishChanges(form));

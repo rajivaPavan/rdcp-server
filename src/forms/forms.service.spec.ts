@@ -4,7 +4,7 @@ import { FormsRepository } from './forms.repository';
 import { CreateFormDTO, FormDTO, UpdateFormDTO } from './dtos/form.dto';
 import { Form } from './entities/form.schema';
 import { Types } from 'mongoose';
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 
 describe('FormsService', () => {
     let service: FormsService;
@@ -143,7 +143,7 @@ describe('FormsService', () => {
 
             jest.spyOn(repository, 'findById').mockResolvedValue(form as any);
 
-            await expect(service.publishForm(formId)).rejects.toThrow('Form schema is missing');
+            await expect(service.publishForm(formId)).rejects.toThrow(ConflictException);
         });
     });
 
